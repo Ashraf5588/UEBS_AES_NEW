@@ -623,7 +623,7 @@
                   required 
                   id="passingMarks"
                   min="0">
-                  <div class="col-md-6">
+                  <div class="col-md-7">
                 <label for="creditHour" class="form-label">Credit Hour</label>
                 <input 
                   type="number" 
@@ -633,7 +633,7 @@
                   value="<%=editing?newsubjectData.creditHour:''%>" 
                   required 
                   id="creditHour"
-                  min="0">
+                  min="0" step="0.5">
 <br> 
           </div><br> 
           <script>
@@ -717,6 +717,7 @@ document.getElementById("subject").addEventListener("input", function() {
                   
                   <th>Total Marks</th>
                   <th>Passing Marks</th>
+                   <th>Credit Hour</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -739,8 +740,11 @@ document.getElementById("subject").addEventListener("input", function() {
                     <td>
                       <%= subject.total %>
                     </td>
+                        <td>
+                          <%= subject.passingMarks %>
+                        </td>
                     <td>
-                      <%= subject.passingMarks %>
+                      <%= subject.creditHour %>
                     </td>
                     <td>
                       <a href="/admin/new/subject/<%= subject._id %>/edit?editing=true" 
