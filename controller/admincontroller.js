@@ -949,14 +949,15 @@ exports.addNewSubjectPost = async (req, res, next) => {
     const practical = req.body.practical ? parseFloat(req.body.practical) : 0
     const total = theory + practical;
     const passingMarks = req.body.passingMarks ? parseFloat(req.body.passingMarks) : 0;
+    const creditHour = req.body.creditHour ? parseFloat(req.body.creditHour) : 0;
     if (subjectId) {
       await newsubject.findByIdAndUpdate(
         subjectId,
-        { newsubject: `${updatedNewSubject}`, forClass, theory, practical, total, passingMarks },
+        { newsubject: `${updatedNewSubject}`, forClass, theory, practical, total, passingMarks, creditHour },
         { new: true, runValidators: true }
       );
     } else {
-      await newsubject.create({ newsubject: updatedNewSubject, forClass, theory, practical, total, passingMarks });
+      await newsubject.create({ newsubject: updatedNewSubject, forClass, theory, practical, total, passingMarks, creditHour  } );
     }
     res.redirect("/admin/new/subject");
   } catch (err) {
