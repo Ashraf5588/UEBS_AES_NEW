@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Practical Marks Entry</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bo    .marks-table tbody td {
+      padding: 5px 3px;
+      vertical-align: middle;
+      border: none;
+      font-size: 13px;
+    }p.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --sky-blue: #4A90E2;
+      --light-sky-blue: #7BB3F0;
+      --dark-brown: #8B4513;
+      --light-brown: #CD853F;
+      --cream: #FDF5E6;
+      --white: #FFFFFF;
+      --light-gray: #F8F9FA;
+      --border-color: #E3F2FD;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--cream) 0%, #E3F2FD 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--dark-brown);
+      margin: 0;
+      padding: 15px;
+      min-height: 100vh;
+    }
+
+    .container-fluid {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header Section */
+    .page-header {
+      background: linear-gradient(135deg, var(--sky-blue) 0%, var(--light-sky-blue) 100%);
+      color: white;
+      padding: 20px 25px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      opacity: 0.9;
+      margin: 5px 0 0 0;
+    }
+
+    /* Selection Card */
+    .selection-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+      border: 1px solid var(--border-color);
+    }
+
+    .selection-title {
+      color: var(--dark-brown);
+      font-size: 20px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .selection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      color: var(--dark-brown);
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-select {
+      border: 2px solid var(--light-sky-blue);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      background: var(--white);
+      color: var(--dark-brown);
+      height: auto;
+    }
+
+    .form-select:focus {
+      border-color: var(--sky-blue);
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+      outline: none;
+    }
+
+    .btn-enter {
+      background: var(--dark-brown);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 auto;
+      min-width: 140px;
+    }
+
+    .btn-enter:hover {
+      background: var(--light-brown);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(139, 69, 19, 0.4);
+    }
+
+    /* Entry Section */
+    .entry-section {
+      background: var(--white);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+      border: 1px solid var(--border-color);
+    }
+
+    .entry-header {
+      background: linear-gradient(135deg, var(--sky-blue) 0%, var(--light-sky-blue) 100%);
+      color: white;
+      padding: 18px 25px;
+    }
+
+    .entry-title {
+      width: 100%;
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subject-name {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 15px;
+      background: var(--dark-brown);
+      color: white;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 2px 8px rgba(139, 69, 19, 0.3);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    .entry-info {
+      font-size: 13px;
+      opacity: 0.9;
+      margin: 4px 0 0 0;
+    }
+
+    .entry-body {
+      padding: 15px 20px;
+    }
+
+    .info-alert {
+      background: linear-gradient(135deg, var(--cream) 0%, #E3F2FD 100%);
+      border: 1px solid var(--light-sky-blue);
+      color: var(--dark-brown);
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    /* Table Styling */
+    .table-container {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    table
+    {
+      font-size: 13px;
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    .marks-table {
+      margin: 0;
+      border: none;
+    }
+
+    .marks-table thead {
+      background: linear-gradient(135deg, var(--dark-brown) 0%, var(--light-brown) 100%);
+    }
+
+    .marks-table thead th {
+      background-color: var(--dark-brown);
+      border: none;
+      padding: 8px 6px;
+      font-weight: 600;
+      font-size: 14px;
+      text-align: center;
+      color: white;
+      vertical-align: middle;
+    }
+
+    .marks-table tbody tr {
+      transition: background-color 0.2s ease;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .marks-table tbody tr:nth-child(odd) {
+      background-color: #F8F9FA;
+    }
+
+    .marks-table tbody tr:nth-child(even) {
+      background-color: var(--white);
+    }
+
+    .marks-table tbody tr:hover {
+      background-color: rgba(74, 144, 226, 0.08) !important;
+    }
+
+    .marks-table tbody td {
+      padding: 6px 4px;
+      vertical-align: middle;
+      border: none;
+      font-size: 17px;
+    }
+
+    .student-photo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--light-sky-blue);
+      object-fit: cover;
+    }
+
+    .student-info {
+      text-align: left;
+      padding-left: 4px !important;
+      max-width: 200px;
+      overflow: hidden;
+    }
+
+    .student-name {
+      font-weight: 600;
+      color: darkblue;
+      font-size: 13px;
+      margin: 0;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .student-details {
+      font-size: 10px;
+      color: rgb(177, 176, 176);
+      margin: 1px 0 0 0;
+      line-height: 1.0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .marks-input {
+      width: 55px;
+      text-align: center;
+      border: 2px solid var(--light-sky-blue);
+      border-radius: 6px;
+      padding: 3px 2px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      margin: 0 auto;
+      display: block;
+    }
+
+    .marks-input[data-type="theory"] {
+      background-color: var(--light-gray);
+      color: var(--light-brown);
+      cursor: not-allowed;
+      border-color: #D6D8DB;
+    }
+
+    .marks-input[data-type="practical"] {
+      background-color: var(--white);
+      color: var(--dark-brown);
+    }
+
+    .marks-input[data-type="practical"]:focus {
+      border-color: var(--sky-blue);
+      box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+      outline: none;
+    }
+
+    .total-input {
+      width: 55px;
+      text-align: center;
+      background: var(--cream);
+      border: 2px solid var(--light-sky-blue);
+      border-radius: 6px;
+      padding: 3px 2px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dark-brown);
+      cursor: not-allowed;
+      margin: 0 auto;
+      display: block;
+    }
+
+    .entry-footer {
+      background: var(--cream);
+      padding: 12px 25px;
+      border-top: 1px solid var(--border-color);
+      color: var(--light-brown);
+      font-size: 13px;
+    }
+
+    /* Status Messages */
+    .save-status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      display: none;
+      z-index: 1000;
+      font-weight: 500;
+      font-size: 14px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .alert-success {
+      background: linear-gradient(135deg, #D4EDDA 0%, #C3E6CB 100%);
+      color: #155724;
+      border: 1px solid #C3E6CB;
+    }
+
+    .alert-danger {
+      background: linear-gradient(135deg, #F8D7DA 0%, #F5C6CB 100%);
+      color: #721C24;
+      border: 1px solid #F5C6CB;
+    }
+
+    /* No Data State */
+    .no-data-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+      border: 1px solid var(--border-color);
+    }
+
+    .no-data-icon {
+      font-size: 42px;
+      color: var(--light-sky-blue);
+      margin-bottom: 15px;
+    }
+
+    .no-data-text {
+      color: var(--dark-brown);
+      font-size: 16px;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    .warning-text {
+      color: var(--light-brown);
+      font-size: 14px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .selection-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      
+      .page-header, .selection-card, .entry-body {
+        padding: 15px 18px;
+      }
+      
+      .marks-table {
+        font-size: 12px;
+      }
+      
+      .student-photo {
+        width: 35px;
+        height: 35px;
+      }
+      
+      .marks-input, .total-input {
+        width: 45px;
+        font-size: 12px;
+        padding: 2px 1px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .marks-table thead th,
+      .marks-table tbody td {
+        padding: 3px 1px;
+      }
+      
+      .student-info {
+        padding-left: 2px !important;
+        max-width: 120px;
+      }
+      
+      .student-name {
+        font-size: 11px;
+      }
+      
+      .student-details {
+        font-size: 9px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <!-- Header -->
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="fas fa-calculator"></i>
+        Practical Marks Entry System
+      </h1>
+      <p class="page-subtitle">Enter and manage practical marks for students efficiently</p>
+    </div>
+
+    <!-- Selection Section -->
+    <div class="selection-card">
+      <h2 class="selection-title">
+        <i class="fas fa-sliders-h"></i>
+        Selection Parameters
+      </h2>
+      
+      <div class="selection-grid">
+        <div class="form-group">
+          <label for="classSelector" class="form-label">
+            <i class="fas fa-chalkboard"></i>Class & Section
+          </label>
+          <select id="classSelector" class="form-select">
+            <option value="" selected disabled>Choose class and section</option>
+            <% 
+              const sortedClassData = [...studentClassdata].sort((a, b) => {
+                const classA = parseInt(a.studentClass);
+                const classB = parseInt(b.studentClass);
+                if (classA !== classB) return classA - classB;
+                return a.section.localeCompare(b.section);
+              });
+              const classGroups = {};
+              sortedClassData.forEach(item => {
+                const classNum = item.studentClass;
+                if (!classGroups[classNum]) classGroups[classNum] = [];
+                classGroups[classNum].push(item);
+              });
+              const sortedClassNumbers = Object.keys(classGroups).sort((a, b) => parseInt(a) - parseInt(b));
+              sortedClassNumbers.forEach(classNum => {
+                const sections = classGroups[classNum];
+            %>
+              <optgroup label="Class <%= classNum %>">
+                <% sections.forEach(studentclass => { %>
+                  <option 
+                    value="<%=studentclass.studentClass.trim()%>/<%=studentclass.section.trim()%>"
+                    data-class="<%=studentclass.studentClass%>"
+                    data-section="<%=studentclass.section%>">
+                    Class <%= studentclass.studentClass %> - <%= studentclass.section %>
+                  </option>
+                <% }); %>
+              </optgroup>
+            <% }); %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="terminal" class="form-label">
+            <i class="fas fa-calendar-alt"></i>Terminal
+          </label>
+          <select id="terminal" class="form-select">
+            <option value="" selected disabled>Select terminal</option>
+            <% if (terminals && terminals.length > 0) { %>
+              <% terminals.forEach(term => { %>
+                <option value="<%= term.terminal%>"><%= term.terminal%></option>
+              <% }); %>
+            <% } %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="academicyear" class="form-label">
+            <i class="fas fa-graduation-cap"></i>Academic Year
+          </label>
+          <select name="academicyear" id="academicyear" class="form-select">
+            <option value="" selected disabled>Select academic year</option>
+            <option value="2081">2081 B.S.</option>
+            <option value="2082">2082 B.S.</option>
+            <option value="2083">2083 B.S.</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="subject" class="form-label">
+            <i class="fas fa-book"></i>Subject
+          </label>
+          <select name="subject" id="subject" class="form-select">
+            <option value="" selected disabled>Choose subject</option>
+            <% uniqueSubjects = new Set(subjects.map(sub => sub.newsubject)); %>
+            <% uniqueSubjects.forEach(subject => { %>
+              <option value="<%= subject %>"><%= subject %></option>
+            <% }); %>
+          </select>
+        </div>
+      </div>
+
+      <button onclick="entry()" class="btn-enter">
+        <i class="fas fa-arrow-right"></i>Load Entry Form
+      </button>
+    </div>
+
+    <!-- Entry Section -->
+    <% if (studentThData && studentThData.length > 0) { %>
+      <div class="entry-section">
+        <div class="entry-header">
+          <h3 class="entry-title">
+            <span class="subject-name">
+              <i class="fas fa-edit"></i>
+              <%= subjectinput %> - Practical Marks
+            </span>
+          </h3>
+          <p class="entry-info">
+            Class: <%= studentClass %> <%= section %> | Terminal: <%= terminal %> | Academic Year: <%= academicyear %>
+          </p>
+        </div>
+
+        <!-- Hidden IDs to send in autosave -->
+        <input type="hidden" id="subjectinput" value="<%= subjectinput %>">
+        <input type="hidden" id="studentClass" value="<%= studentClass %>">
+        <input type="hidden" id="section" value="<%= section %>">
+        <input type="hidden" id="terminalHidden" value="<%= terminal %>">
+        <input type="hidden" id="academicyearHidden" value="<%= academicyear %>">
+
+        <div class="entry-body">
+          <div class="info-alert">
+            <i class="fas fa-info-circle"></i>
+            Theory marks are shown for reference only. Enter practical marks and they will be saved automatically.
+          </div>
+          
+          <div class="table-container">
+            <table class="marks-table table">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">Roll</th>
+                  <th style="width: 60px;">Photo</th>
+                  <th style="width: 180px;">Student Details</th>
+                  <th style="width: 70px;">Theory<br><small class="opacity-75">(readonly)</small></th>
+                  <th style="width: 70px;">Practical<br><small class="opacity-75">(editable)</small></th>
+                  <th style="width: 70px;">Total<br><small class="opacity-75">(auto)</small></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% studentPrData.forEach(student => { %>
+                  <tr data-roll="<%= student.roll %>">
+                    <td class="text-center fw-bold"><%= student.roll %></td>
+                    <td class="text-center">
+                      <img src="/student.png" alt="<%= student.name %>" class="student-photo">
+                    </td>
+                    <td class="student-info">
+                      <div class="student-name"><%= student.name %></div>
+                      <div class="student-details">Class: <%= studentClass %> | Section: <%= section %></div>
+                    </td>
+                    <td class="text-center">
+                      <input type="number" 
+                             class="marks-input" 
+                             data-type="theory" 
+                             name="th_<%= student.roll %>" 
+                             value="<%= student.theory || '' %>" 
+                             readonly
+                             title="Theory marks (read-only)">
+                    </td>
+                    <td class="text-center">
+                      <input type="number" 
+                             class="marks-input" 
+                             data-type="practical" 
+                             name="pr_<%= student.roll %>" 
+                             value="<%= student.practical || '' %>" 
+                             min="0" 
+                             max="100" 
+                             title="Enter practical marks"
+                             placeholder="0">
+                    </td>
+                    <td class="text-center">
+                      <input type="number" 
+                             class="total-input" 
+                             readonly 
+                             title="Total marks (auto-calculated)">
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="entry-footer">
+          <i class="fas fa-sync-alt"></i>
+          Changes are saved automatically after typing
+        </div>
+      </div>
+
+    <% } else { %>
+      <!-- Initial state (before selection) -->
+      <div class="no-data-card">
+        <div class="no-data-icon">
+          <i class="fas fa-clipboard-list"></i>
+        </div>
+        <h4 class="no-data-text">Ready to Enter Marks</h4>
+        <p class="warning-text">Please select all parameters above and click "Load Entry Form" to begin entering practical marks.</p>
+        
+        <% if (typeof message !== 'undefined' && message) { %>
+          <div class="alert alert-warning mt-3">
+            <i class="fas fa-exclamation-triangle"></i> <%= message %>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+
+   <script>
+    function entry() {
+      const classSelector = document.getElementById('classSelector');
+      const selectedOption = classSelector.options[classSelector.selectedIndex];
+      const classValue = selectedOption.getAttribute('data-class');
+      const sectionValue = selectedOption.getAttribute('data-section');
+      const terminalValue = document.getElementById('terminal').value;
+      const subjectValue = document.getElementById('subject').value; 
+      const academicyearValue = document.getElementById('academicyear').value;
+      console.log("Selected Class:", classValue);
+      console.log("Selected Section:", sectionValue); 
+      console.log("Selected Terminal:", terminalValue);
+      console.log("Selected Subject:", subjectValue);
+      // Check if all required values are selected
+  if(terminalValue && subjectValue && academicyearValue && classValue && sectionValue) {
+
+      // Redirect to the practical entry page with class and section
+      window.location.href = `/practical?subjectinput=${subjectValue}&studentClass=${classValue}&section=${sectionValue}&terminal=${terminalValue}&academicyear=${academicyearValue}`;
+    }
+    else {
+      alert("Please select class, section, terminal, subject and academic year before proceeding.");
+  }
+}
+
+    </script>
+<!-- Hidden inputs already defined above, no need to duplicate -->
+
+<script>
+// Simple debounce helper
+function debounce(func, delay) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => func.apply(this, args), delay);
+  };
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const inputs = document.querySelectorAll(".marks-entry");
+  const statusMessage = document.createElement('div');
+  statusMessage.className = 'save-status alert';
+  statusMessage.style.position = 'fixed';
+  statusMessage.style.bottom = '20px';
+  statusMessage.style.right = '20px';
+  statusMessage.style.padding = '10px 20px';
+  statusMessage.style.borderRadius = '5px';
+  statusMessage.style.display = 'none';
+  statusMessage.style.zIndex = '1000';
+  document.body.appendChild(statusMessage);
+  
+  function showStatus(message, isSuccess) {
+    statusMessage.textContent = message;
+    statusMessage.className = isSuccess ? 'save-status alert alert-success' : 'save-status alert alert-danger';
+    statusMessage.style.display = 'block';
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+      statusMessage.style.display = 'none';
+    }, 3000);
+  }
+  
+  // Calculate initial totals on page load
+  document.querySelectorAll('tr[data-roll]').forEach(row => {
+    const theory = parseFloat(row.querySelector('input[data-type="theory"]').value || 0);
+    const practical = parseFloat(row.querySelector('input[data-type="practical"]').value || 0);
+    const total = theory + practical;
+    row.querySelector(".total-input").value = total || '';
+  });
+
+  // ✅ Debounced save function
+  const saveMarks = debounce(async (row) => {
+    const roll = row.dataset.roll;
+    const theoryInput = row.querySelector('input[data-type="theory"]');
+    const practicalInput = row.querySelector('input[data-type="practical"]');
+    const totalCell = row.querySelector(".total-input");
+    
+    const theory = parseFloat(theoryInput.value || 0);
+    const practical = parseFloat(practicalInput.value || 0);
+    const total = theory + practical;
+
+    // ✅ Update total immediately
+    totalCell.value = total;
+    
+    // Highlight the cell being saved
+    practicalInput.style.backgroundColor = '#ffffcc';
+
+    const subjectinput = document.getElementById("subjectinput").value;
+    const studentClass = document.getElementById("studentClass").value;
+    const section = document.getElementById("section").value;
+    const terminal = document.getElementById("terminalHidden").value;
+    const academicyear = document.getElementById("academicyearHidden")?.value;
+
+    try {
+      const res = await fetch("/practicalMarks/autoSave", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subjectinput,
+          studentClass,
+          section,
+          terminal,
+          academicyear,
+          roll,
+          theory,
+          practical
+        })
+      });
+
+      const data = await res.json();
+      
+      if (data.success) {
+        // Success indication
+        practicalInput.style.backgroundColor = '#d4edda';
+        setTimeout(() => {
+          practicalInput.style.backgroundColor = '';
+        }, 2000);
+        
+        showStatus(`Marks saved for Roll ${roll}`, true);
+        console.log("✅ Auto-saved:", data);
+      } else {
+        // Error indication
+        practicalInput.style.backgroundColor = '#f8d7da';
+        showStatus(`Error: ${data.error}`, false);
+        console.error("❌ Auto-save failed", data.error);
+      }
+    } catch (err) {
+      practicalInput.style.backgroundColor = '#f8d7da';
+      showStatus(`Failed to save: Network error`, false);
+      console.error("❌ Auto-save failed", err);
+    }
+  }, 500); // waits 0.5s after typing stops
+
+  inputs.forEach(input => {
+    // Only attach to practical inputs (theory is readonly)
+    if (input.dataset.type === 'practical') {
+      input.addEventListener("input", (e) => {
+        const row = e.target.closest("tr");
+        saveMarks(row); // ✅ debounced
+      });
+    }
+  });
+});
+</script>
+
+</body>
+</html>

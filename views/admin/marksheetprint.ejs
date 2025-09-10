@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Grade Sheet</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+        background: white;
+      }
+      .controls, .no-print {
+        display: none !important;
+      }
+      .marksheet {
+        page-break-after: always;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      .header, .footer-line {
+        border-color: #000 !important;
+      }
+      .watermark {
+        display: block !important;
+        opacity: 0.1 !important;
+      }
+    }
+    
+    body {
+      font-family: "Kalimati", "Preeti", "Times New Roman", serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+      font-size: 13px;
+    }
+    
+    .controls {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      max-width: 800px;
+      margin: 0 auto 20px;
+    }
+    
+    .controls h3 {
+      margin-top: 0;
+      color: #444;
+    }
+    
+    .form-group {
+      margin-bottom: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .form-group label {
+      font-weight: bold;
+      margin-right: 5px;
+    }
+    
+    .form-group select, .form-group button {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    
+    .action-buttons {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    
+    .btn-primary {
+      background: #1a73e8;
+      color: white;
+    }
+    
+    .btn-success {
+      background: #0f9d58;
+      color: white;
+    }
+    
+    .btn:hover {
+      opacity: 0.9;
+    }
+    
+    .marksheet {
+      width: 800px;
+      margin: 0 auto 40px;
+      border: 2px solid #000;
+      padding: 20px;
+      background: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .watermark {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 80px;
+      color: #000;
+      opacity: 0.05;
+      z-index: 0;
+      width: 100%;
+      text-align: center;
+      pointer-events: none;
+    }
+    
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #000;
+      padding-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .school-logo {
+      width: 80px;
+      height: 80px;
+      position: absolute;
+      left: 20px;
+      top: 10px;
+    }
+    
+    .header h2 {
+      margin: 0;
+      font-size: 22px;
+      text-transform: uppercase;
+      color: #b71c1c;
+    }
+    
+    .header p {
+      margin: 3px 0;
+    }
+    
+    .grade-title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 10px;
+      text-decoration: underline;
+    }
+    
+    .student-info {
+      margin-top: 15px;
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .student-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .student-info-item {
+      display: flex;
+    }
+    
+    .student-info-label {
+      font-weight: bold;
+      min-width: 120px;
+    }
+    
+    .student-photo {
+      width: 100px;
+      height: 120px;
+      border: 1px solid #000;
+      position: absolute;
+      right: 20px;
+      top: 0;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    th, td {
+      border: 1px solid #000;
+      padding: 6px;
+      text-align: center;
+    }
+    
+    th {
+      background: #f2f2f2;
+      font-weight: bold;
+    }
+    
+    .absent-cell {
+      color: red;
+      font-weight: bold;
+    }
+    
+    .fail-result {
+      color: red;
+      font-weight: bold;
+      border: 2px solid red;
+      padding: 2px 10px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    
+    .remarks-section {
+      margin-top: 15px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: #f9f9f9;
+    }
+    
+    .footer-line {
+      border-top: 1px solid #000;
+      margin-top: 5px;
+    }
+    
+    .signature-section {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 40px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .signature-box {
+      text-align: center;
+      width: 30%;
+    }
+    
+    .school-seal {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 120px;
+      opacity: 0.2;
+    }
+    
+    .grading-scale {
+      margin-top: 20px;
+      border: 1px solid #000;
+      padding: 10px;
+      font-size: 11px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .grading-scale h4 {
+      margin-top: 0;
+      margin-bottom: 5px;
+      text-align: center;
+    }
+    
+    .scale-table {
+      width: 100%;
+      font-size: 10px;
+    }
+    
+    .scale-table th, .scale-table td {
+      padding: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="controls no-print">
+  <h3>Generate Grade Sheet</h3>
+  <div class="form-group">
+    <label for="class">Class:</label>
+    <select name="class" id="class">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+      <option value="10">10</option>
+      <option value="11">11</option>
+      <option value="12">12</option>
+    </select>
+
+    <label for="section">Section:</label>
+    <select name="section" id="section">
+      <option value="Moon">Moon</option>
+      <option value="Sun">Sun</option>
+      <option value="x">X</option>
+      <option value="A">A</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+    </select>
+    
+    <label for="terminal">Term:</label>
+    <select name="terminal" id="terminal">
+      <option value="FIRST">First Term</option>
+      <option value="SECOND">Second Term</option>
+      <option value="THIRD">Third Term</option>
+      <option value="FINAL">Final</option>
+    </select>
+  </div>
+  
+  <div class="action-buttons">
+    <button onclick="generate()" class="btn btn-primary">Generate Marksheets</button>
+    <button onclick="window.print()" class="btn btn-success">Print All</button>
+    <button onclick="downloadAllAsPDF()" class="btn btn-success">Download All as PDF</button>
+  </div>
+</div>
+
+  <script>
+    function generate() {
+      const classValue = document.getElementById('class').value;
+      const sectionValue = document.getElementById('section').value;
+      const terminalValue = document.getElementById('terminal').value;
+      const redirectUrl = `/marksheetprint?studentClass=${classValue}&section=${sectionValue}&terminal=${terminalValue}`;
+      window.location.href = redirectUrl;
+    }
+    
+    function downloadMarksheet(marksheetId) {
+      const { jsPDF } = window.jspdf;
+      const marksheet = document.getElementById(marksheetId);
+      
+      html2canvas(marksheet, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        scrollY: -window.scrollY,
+        windowWidth: document.documentElement.offsetWidth,
+        windowHeight: document.documentElement.offsetHeight
+      }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+        
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`${marksheetId}.pdf`);
+      });
+    }
+    
+    function downloadAllAsPDF() {
+      const { jsPDF } = window.jspdf;
+      const marksheets = document.querySelectorAll('.marksheet');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      let currentPage = 0;
+      
+      function processNext(index) {
+        if (index >= marksheets.length) {
+          pdf.save('all_marksheets.pdf');
+          return;
+        }
+        
+        html2canvas(marksheets[index], {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true
+        }).then(canvas => {
+          const imgData = canvas.toDataURL('image/png');
+          const imgProps = pdf.getImageProperties(imgData);
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+          
+          if (currentPage > 0) {
+            pdf.addPage();
+          }
+          
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          currentPage++;
+          
+          processNext(index + 1);
+        });
+      }
+      
+      processNext(0);
+    }
+  </script>
+ 
+  <script>
+function getGradePoint(total) {
+  if (total == 'AB' || total == 'ab') return { grade: "AB", point: 0, remark: "Absent" };
+  if (isNaN(total) || total === null) return { grade: "N/A", point: 0, remark: "Not Applicable" };
+  
+  const numTotal = parseFloat(total);
+  
+  if (numTotal >= 90) return { grade: "A+", point: 4.0, remark: "Outstanding" };
+  if (numTotal >= 80) return { grade: "A",  point: 3.6, remark: "Excellent" };
+  if (numTotal >= 70) return { grade: "B+", point: 3.2, remark: "Very Good" };
+  if (numTotal >= 60) return { grade: "B",  point: 2.8, remark: "Good" };
+  if (numTotal >= 50) return { grade: "C+", point: 2.4, remark: "Satisfactory" };
+  if (numTotal >= 40) return { grade: "C",  point: 2.0, remark: "Acceptable" };
+  if (numTotal >= 35) return { grade: "D",  point: 1.6, remark: "Partially Acceptable" };
+  return { grade: "NG", point: 0, remark: "Not Graded" };
+}
+
+function calculateGrades() {
+  // Loop through all students
+  document.querySelectorAll(".student-table").forEach(table => {
+    let totalPoints = 0;
+    let subjectsCount = 0;
+    let totalMarks = 0;
+    let maxMarks = 0;
+
+    // Loop through all subjects for this student
+    table.querySelectorAll("tbody tr").forEach(row => {
+      const thElement = row.querySelector(".th-mark");
+      const prElement = row.querySelector(".pr-mark");
+      
+      let th = thElement?.innerText.trim().toUpperCase();
+      let pr = prElement?.innerText.trim().toUpperCase();
+      
+      const thMaxElement = row.querySelector(".th-max");
+      const prMaxElement = row.querySelector(".pr-max");
+      const thMax = parseFloat(thMaxElement?.innerText || 0);
+      const prMax = parseFloat(prMaxElement?.innerText || 0);
+      
+      // Check for absent
+      let isAbsent = (th === 'AB' || pr === 'AB');
+      let total = isAbsent ? 'AB' : null;
+      
+      if (!isAbsent) {
+        const thValue = parseFloat(th) || 0;
+        const prValue = parseFloat(pr) || 0;
+        total = thValue + prValue;
+        
+        // Add to total marks
+        totalMarks += total;
+        maxMarks += (thMax + prMax);
+      }
+
+      const gradeCell = row.querySelector(".grade");
+      const pointCell = row.querySelector(".point");
+      const remarkCell = row.querySelector(".remark");
+      const totalCell = row.querySelector(".total");
+
+      // Fill total marks
+      totalCell.innerText = isAbsent ? "AB" : (total ? total : "-");
+      
+      // Calculate grade & point
+      const { grade, point, remark } = getGradePoint(total);
+      
+      // Apply appropriate styling
+      if (isAbsent) {
+        totalCell.classList.add("absent-cell");
+        gradeCell.classList.add("absent-cell");
+        pointCell.classList.add("absent-cell");
+      }
+      
+      gradeCell.innerText = grade;
+      pointCell.innerText = point;
+      if (remarkCell) {
+        remarkCell.innerText = remark;
+      }
+
+      if (!isAbsent && point > 0) {
+        totalPoints += point;
+        subjectsCount++;
+      }
+    });
+
+    // Compute GPA and percentage
+    const gpa = subjectsCount > 0 ? (totalPoints / subjectsCount).toFixed(2) : "0.00";
+    const percentage = maxMarks > 0 ? ((totalMarks / maxMarks) * 100).toFixed(2) : "0.00";
+    
+    const gpaElement = table.closest(".marksheet").querySelector(".gpa-value");
+    const percentageElement = table.closest(".marksheet").querySelector(".percentage-value");
+    const divisionElement = table.closest(".marksheet").querySelector(".division-value");
+    
+    if (gpaElement) gpaElement.innerText = gpa;
+    if (percentageElement) percentageElement.innerText = percentage + "%";
+    
+    // Determine division
+    let division = "";
+    if (percentage >= 80) division = "Distinction";
+    else if (percentage >= 60) division = "First Division";
+    else if (percentage >= 45) division = "Second Division";
+    else if (percentage >= 35) division = "Third Division";
+    else division = "Fail";
+    
+    if (divisionElement) divisionElement.innerText = division;
+    
+    // Set result (Pass/Fail)
+    const resultElement = table.closest(".marksheet").querySelector(".result-value");
+    if (resultElement) {
+      const failCount = Array.from(table.querySelectorAll("tbody tr")).filter(row => {
+        const grade = row.querySelector(".grade")?.innerText;
+        return grade === "NG" || grade === "AB";
+      }).length;
+      
+      resultElement.innerText = failCount > 0 ? "FAIL" : "PASS";
+      if (failCount > 0) resultElement.classList.add("fail-result");
+    }
+  });
+}
+
+// Call after page loads
+document.addEventListener("DOMContentLoaded", calculateGrades);
+</script>
+  });
+}
+
+// Call after page loads
+document.addEventListener("DOMContentLoaded", calculateGrades);
+</script>
+<% 
+// Convert Nepali date
+function toNepaliDate(date) {
+  const nepaliMonths = [
+    'Baisakh', 'Jestha', 'Asar', 'Shrawan', 
+    'Bhadra', 'Ashwin', 'Kartik', 'Mangsir', 
+    'Poush', 'Magh', 'Falgun', 'Chaitra'
+  ];
+  
+  // Simple conversion (this is just an approximation)
+  // In a real system, you would use a proper Bikram Sambat conversion library
+  const year = date.getFullYear() + 56;  // approximation
+  const month = nepaliMonths[date.getMonth()];
+  const day = date.getDate();
+  
+  return `${day} ${month}, ${year} B.S.`;
+}
+
+// Format terminal name
+function formatTerminal(terminal) {
+  switch(terminal.toUpperCase()) {
+    case 'FIRST': return 'First Term Assessment';
+    case 'SECOND': return 'Second Term Assessment';
+    case 'THIRD': return 'Third Term Assessment';
+    case 'FINAL': return 'Final Assessment';
+    default: return terminal;
+  }
+}
+
+// Get current Nepali academic year 
+const currentNepaliYear = new Date().getFullYear() + 56;
+const academicYear = `${currentNepaliYear}/${currentNepaliYear+1}`;
+
+// Format student name with honorific
+function formatStudentName(name) {
+  return name;  // You can add honorifics like "श्री/सुश्री" for Nepali names if needed
+}
+
+Object.keys(students).forEach((studentName, studentIndex) => { 
+  const student = students[studentName]; 
+  const marksheetId = `marksheet-${student.roll}`;
+  // Make sure terminal is defined before trying to format it
+  const terminalValue = typeof terminal !== 'undefined' ? terminal : 'FIRST';
+  const formattedTerminal = formatTerminal(terminalValue);
+%>
+
+<div class="marksheet" id="<%= marksheetId %>">
+  <div class="watermark">CERTIFIED COPY</div>
+  
+  <div class="header">
+    <!-- <img src="/public/school.jpg" alt="School Logo" class="school-logo"> -->
+    <h2>ZENITH SECONDARY SCHOOL</h2>
+    <p>Piple, Hetauda-05, Makwanpur</p>
+    <p>Phone: 057-520750 | Email: zenithcollege.official@gmail.com</p>
+    <p>Academic Session: <b><%= academicYear %></b></p>
+    <div class="grade-title"><%= formattedTerminal.toUpperCase() %> GRADE-SHEET</div>
+  </div>
+
+  <div class="student-info">
+    <!-- <div class="student-photo"></div> -->
+    <p><b>The Grade(s) Secured By:</b> <u><%= formatStudentName(studentName) %></u></p>
+    
+    <div class="student-info-grid">
+      <div class="student-info-item">
+        <div class="student-info-label">Class:</div>
+        <div><%= typeof studentClass !== 'undefined' ? studentClass : '2' %></div>
+      </div>
+      
+      <div class="student-info-item">
+        <div class="student-info-label">Section:</div>
+        <div><%= typeof section !== 'undefined' ? section : 'Sun' %></div>
+      </div>
+      
+      <div class="student-info-item">
+        <div class="student-info-label">Roll No:</div>
+        <div><%= student.roll %></div>
+      </div>
+      
+      <div class="student-info-item">
+        <div class="student-info-label">Symbol No:</div>
+        <div><%= student.roll + '/' + (typeof studentClass !== 'undefined' ? studentClass : '2') %></div>
+      </div>
+    </div>
+  </div>
+
+  <table class="student-table">
+    <thead>
+      <tr>
+        <th rowspan="2">S.N.</th>
+        <th rowspan="2">Subjects</th>
+        <th rowspan="2">C.H.</th>
+        <th colspan="2">Theory</th>
+        <th colspan="2">Practical</th>
+        <th rowspan="2">Total</th>
+        <th rowspan="2">Grade</th>
+        <th rowspan="2">Grade Point</th>
+        <th rowspan="2">Remarks</th>
+      </tr>
+      <tr>
+        <th>Full</th>
+        <th>Obt.</th>
+        <th>Full</th>
+        <th>Obt.</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% 
+      let thTotal = 0;
+      let prTotal = 0;
+      let fullTotal = 0;
+      
+      subjectname.forEach((sub, idx) => {
+        const subjData = student[sub] || { theory: 0, practical: 0 };
+        // Make sure subjectConfigs exists and has an entry for this subject
+        const defaultConfig = { theory: 75, practical: 25, total: 100, passingMarks: 35 };
+        const subConfig = typeof subjectConfigs !== 'undefined' && subjectConfigs && subjectConfigs[sub] 
+                        ? subjectConfigs[sub] 
+                        : defaultConfig;
+        const thFull = subConfig.theory;  // Full marks for theory from subject config
+        const prFull = subConfig.practical;  // Full marks for practical from subject config
+        
+        // Check if marks are "AB" for absent
+        const isThAbsent = String(subjData.theory).toUpperCase() === "AB";
+        const isPrAbsent = String(subjData.practical).toUpperCase() === "AB";
+        
+        thTotal += isThAbsent ? 0 : (parseFloat(subjData.theory) || 0);
+        prTotal += isPrAbsent ? 0 : (parseFloat(subjData.practical) || 0);
+        fullTotal += thFull + prFull;
+      %>
+        <tr>
+          <td><%= idx+1 %></td>
+          <td style="text-align: left; padding-left: 10px;"><%= sub %></td>
+          <td>1</td>
+          <td class="th-max"><%= thFull %></td>
+          <td class="th-mark <%= isThAbsent ? 'absent-cell' : '' %>">
+            <%= isThAbsent ? 'AB' : subjData.theory || 0 %>
+          </td>
+          <td class="pr-max"><%= prFull %></td>
+          <td class="pr-mark <%= isPrAbsent ? 'absent-cell' : '' %>">
+            <%= isPrAbsent ? 'AB' : subjData.practical || 0 %>
+          </td>
+          <td class="total">-</td>
+          <td class="grade">-</td>
+          <td class="point">-</td>
+          <td class="remark">-</td>
+        </tr>
+      <% }) %>
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="3">Grand Total</th>
+        <th><%= fullTotal %></th>
+        <th colspan="3"><%= thTotal + prTotal %></th>
+        <th colspan="4"></th>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="remarks-section">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+      <div><b>GRADE POINT AVERAGE (GPA):</b> <span class="gpa-value">0.00</span></div>
+      <div><b>PERCENTAGE:</b> <span class="percentage-value">0.00%</span></div>
+      <div><b>DIVISION:</b> <span class="division-value">-</span></div>
+    </div>
+    <div><b>RESULT:</b> <span class="result-value">-</span></div>
+  </div>
+
+  <div class="grading-scale">
+    <h4>GRADING SCALE</h4>
+    <table class="scale-table">
+      <tr>
+        <th>Percentage Range</th>
+        <th>90-100</th>
+        <th>80-89</th>
+        <th>70-79</th>
+        <th>60-69</th>
+        <th>50-59</th>
+        <th>40-49</th>
+        <th>35-39</th>
+        <th>0-34</th>
+        <th>-</th>
+      </tr>
+      <tr>
+        <th>Grade</th>
+        <td>A+</td>
+        <td>A</td>
+        <td>B+</td>
+        <td>B</td>
+        <td>C+</td>
+        <td>C</td>
+        <td>D</td>
+        <td>NG</td>
+        <td>AB</td>
+      </tr>
+      <tr>
+        <th>Grade Point</th>
+        <td>4.0</td>
+        <td>3.6</td>
+        <td>3.2</td>
+        <td>2.8</td>
+        <td>2.4</td>
+        <td>2.0</td>
+        <td>1.6</td>
+        <td>0.0</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>Outstanding</td>
+        <td>Excellent</td>
+        <td>Very Good</td>
+        <td>Good</td>
+        <td>Satisfactory</td>
+        <td>Acceptable</td>
+        <td>Partially Acceptable</td>
+        <td>Not Graded</td>
+        <td>Absent</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="signature-section">
+    <div class="signature-box">
+      <div class="footer-line"></div>
+      Class Teacher
+    </div>
+    <div class="signature-box">
+      <div class="footer-line"></div>
+      Examination Controller
+    </div>
+    <div class="signature-box">
+      <div class="footer-line"></div>
+      Principal
+    </div>
+  </div>
+
+  <!-- School seal watermark -->
+  <!-- <img src="/public/school-seal.png" alt="School Seal" class="school-seal"> -->
+  
+  <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 11px;">
+    <div>Issue Date: <%= toNepaliDate(new Date()) %></div>
+    <div class="no-print">
+      <button onclick="downloadMarksheet('<%= marksheetId %>')" class="btn btn-primary" style="padding: 3px 8px; font-size: 11px;">Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<% }) %>
+
+</body>
+</html>

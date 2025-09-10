@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marksheet Setup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+    form {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: inline-block;
+      width: 180px;
+      font-weight: bold;
+      text-transform: capitalize;
+    }
+    input[type="text"], select {
+      width: 300px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
+    .section {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 15px;
+      margin-bottom: 15px;
+    }
+    .section-title {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 15px;
+    }
+    .class-selector {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .class-selector label {
+      width: auto;
+      margin-right: 10px;
+    }
+    .class-selector select {
+      width: auto;
+      margin-right: 15px;
+    }
+    .alert {
+      padding: 10px;
+      background-color: #d4edda;
+      border-color: #c3e6cb;
+      color: #155724;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Marksheet Configuration</h1>
+  
+  <div class="class-selector">
+    <form id="classForm" action="/admin/marksheetsetup" method="GET">
+      <label for="classSelector">Select Class:</label>
+      <select id="classSelector" name="studentClass" onchange="this.form.submit()">
+        <option value="">Select Class</option>
+        <option value="1" <%= typeof studentClass !== 'undefined' && studentClass === '1' ? 'selected' : '' %>>Class 1</option>
+        <option value="2" <%= typeof studentClass !== 'undefined' && studentClass === '2' ? 'selected' : '' %>>Class 2</option>
+        <option value="3" <%= typeof studentClass !== 'undefined' && studentClass === '3' ? 'selected' : '' %>>Class 3</option>
+        <option value="4" <%= typeof studentClass !== 'undefined' && studentClass === '4' ? 'selected' : '' %>>Class 4</option>
+        <option value="5" <%= typeof studentClass !== 'undefined' && studentClass === '5' ? 'selected' : '' %>>Class 5</option>
+        <option value="6" <%= typeof studentClass !== 'undefined' && studentClass === '6' ? 'selected' : '' %>>Class 6</option>
+        <option value="7" <%= typeof studentClass !== 'undefined' && studentClass === '7' ? 'selected' : '' %>>Class 7</option>
+        <option value="8" <%= typeof studentClass !== 'undefined' && studentClass === '8' ? 'selected' : '' %>>Class 8</option>
+        <option value="9" <%= typeof studentClass !== 'undefined' && studentClass === '9' ? 'selected' : '' %>>Class 9</option>
+        <option value="10" <%= typeof studentClass !== 'undefined' && studentClass === '10' ? 'selected' : '' %>>Class 10</option>
+        <option value="11" <%= typeof studentClass !== 'undefined' && studentClass === '11' ? 'selected' : '' %>>Class 11</option>
+        <option value="12" <%= typeof studentClass !== 'undefined' && studentClass === '12' ? 'selected' : '' %>>Class 12</option>
+      </select>
+    </form>
+  </div>
+  
+  <% if (typeof studentClass !== 'undefined' && studentClass) { %>
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="alert">
+        Settings saved successfully!
+      </div>
+    <% } %>
+    
+    <form action="/admin/marksheetsetup" method="POST">
+      <input type="hidden" name="studentClass" value="<%= studentClass %>">
+      
+      <div class="section">
+        <div class="section-title">School Information</div>
+        <div class="form-group">
+          <label for="schoolName">School Name:</label>
+          <input type="text" id="schoolName" name="schoolName" value="<%= typeof schoolName !== 'undefined' ? schoolName : 'ZENITH SECONDARY SCHOOL' %>"><br>
+        </div>
+        <div class="form-group">
+          <label for="schoolAddress">School Address:</label>
+          <input type="text" id="schoolAddress" name="schoolAddress" value="<%= typeof schoolAddress !== 'undefined' ? schoolAddress : 'Piple, Hetauda-05, Makwanpur' %>"><br>
+        </div>
+        <div class="form-group">
+          <label for="schoolLogo">School Logo URL:</label>
+          <input type="text" id="schoolLogo" name="schoolLogo" value="<%= typeof schoolLogo !== 'undefined' ? schoolLogo : '/public/school.jpg' %>"><br>
+        </div>
+        <div class="form-group">
+          <label for="schoolSeal">School Seal URL:</label>
+          <input type="text" id="schoolSeal" name="schoolSeal" value="<%= typeof schoolSeal !== 'undefined' ? schoolSeal : '' %>"><br>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Subject & Marking Configuration for Class <%= studentClass %></div>
+        <div class="form-group">
+          <label for="subjects">Subjects (comma separated):</label>
+          <input type="text" id="subjects" name="subjects" value="<%= typeof subjects !== 'undefined' ? subjects : 'Nepali,English,Mathematics,Science,Social Studies' %>"><br>
+        </div>
+        <div class="form-group">
+          <label for="fullTheory">Full Theory Marks:</label>
+          <input type="text" id="fullTheory" name="fullTheory" value="<%= typeof fullTheory !== 'undefined' ? fullTheory : '75' %>"><br>
+        </div>
+      <div class="form-group">
+        <label for="fullPractical">Full Practical Marks:</label>
+        <input type="text" id="fullPractical" name="fullPractical" value="<%= typeof fullPractical !== 'undefined' ? fullPractical : '25' %>"><br>
+      </div>
+      <div class="form-group">
+        <label for="fullMarks">Total Full Marks:</label>
+        <input type="text" id="fullMarks" name="fullMarks" value="<%= typeof fullMarks !== 'undefined' ? fullMarks : '100' %>"><br>
+      </div>
+      <div class="form-group">
+        <label for="passingMarks">Passing Marks:</label>
+        <input type="text" id="passingMarks" name="passingMarks" value="<%= typeof passingMarks !== 'undefined' ? passingMarks : '35' %>"><br>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Report Information</div>
+      <div class="form-group">
+        <label for="terminal">Terminal:</label>
+        <select id="terminal" name="terminal">
+          <option value="FIRST" <%= typeof terminal !== 'undefined' && terminal === 'FIRST' ? 'selected' : '' %>>First Term</option>
+          <option value="SECOND" <%= typeof terminal !== 'undefined' && terminal === 'SECOND' ? 'selected' : '' %>>Second Term</option>
+          <option value="THIRD" <%= typeof terminal !== 'undefined' && terminal === 'THIRD' ? 'selected' : '' %>>Third Term</option>
+          <option value="FINAL" <%= typeof terminal !== 'undefined' && terminal === 'FINAL' ? 'selected' : '' %>>Final Term</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="academicYear">Academic Year:</label>
+        <input type="text" id="academicYear" name="academicYear" value="<%= typeof academicYear !== 'undefined' ? academicYear : new Date().getFullYear() + 56 + '/' + (new Date().getFullYear() + 57) %>"><br>
+      </div>
+      <div class="form-group">
+        <label for="classTeacher">Class Teacher Name:</label>
+        <input type="text" id="classTeacher" name="classTeacher" value="<%= typeof classTeacher !== 'undefined' ? classTeacher : '' %>"><br>
+      </div>
+      <div class="form-group">
+        <label for="principalName">Principal Name:</label>
+        <input type="text" id="principalName" name="principalName" value="<%= typeof principalName !== 'undefined' ? principalName : '' %>"><br>
+      </div>
+    </div>
+
+    <button type="submit">Save Configuration</button>
+  </form>
+
+  <script>
+    // Add client-side validation if needed
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const subjects = document.getElementById('subjects').value.trim();
+      if (!subjects) {
+        alert('Please enter at least one subject');
+        e.preventDefault();
+        return;
+      }
+      
+      const theory = parseFloat(document.getElementById('fullTheory').value);
+      const practical = parseFloat(document.getElementById('fullPractical').value);
+      const total = parseFloat(document.getElementById('fullMarks').value);
+      
+      if (isNaN(theory) || isNaN(practical) || isNaN(total)) {
+        alert('Please enter valid numbers for marks');
+        e.preventDefault();
+        return;
+      }
+      
+      if (theory + practical !== total) {
+        if (!confirm(`Theory marks (${theory}) + Practical marks (${practical}) = ${theory + practical}, which doesn't equal Total marks (${total}). Continue anyway?`)) {
+          e.preventDefault();
+        }
+      }
+    });
+  </script>
+  <% } else { %>
+    <div style="text-align: center; margin-top: 50px;">
+      <p>Please select a class to configure marksheet settings.</p>
+    </div>
+  <% } %>
+</body>
+</html>
