@@ -225,7 +225,7 @@ student.post(
   newscontroller.savenewspost
 );
 
-student.get('/api/news', newscontroller.getNewsJson);
+student.get('/news', newscontroller.getNewsJson);
 
 
 module.exports = student;
