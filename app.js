@@ -8,7 +8,11 @@ const {verifytoken} = require('./middleware/auth');
 const cors = require("cors");
 
 app.use(cors({
-  origin: "https://uebschool.edu.np",  // allow only your main site
+  origin: [
+    'https://uebschool.edu.np',   // production site
+    'http://127.0.0.1:5500',      // local test
+    'http://localhost:5500'       // another common local URL
+  ]
 }));
 const connection = require('./config/connection')
 // Serve static files from 'uploads' folder
