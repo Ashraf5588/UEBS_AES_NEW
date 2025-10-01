@@ -212,6 +212,7 @@ student.get('/view-pdf/:filename', (req, res) => {
 student.get('/admin/diagnostics', admincontrol.diagnostics)
 student.get('/user/edit-teacher/:userId/:editing?', verifytoken, authorized, isAdmin, admincontrol.editTeacher);
 
+student.get('/newsadmin',verifytoken,authorized,isAdmin,newscontroller.newsadmin);
 student.post(
   '/newsadmin',
   verifytoken,
