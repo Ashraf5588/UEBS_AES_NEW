@@ -1,6 +1,7 @@
 const express = require('express');
 const student = express.Router();
 const controller = require('../controller/controller')
+const newscontroller = require('../controller/newscontroller')
 const multer  = require('multer')
 
 
@@ -210,6 +211,20 @@ student.get('/view-pdf/:filename', (req, res) => {
 // Diagnostic route for VM deployment issues
 student.get('/admin/diagnostics', admincontrol.diagnostics)
 student.get('/user/edit-teacher/:userId/:editing?', verifytoken, authorized, isAdmin, admincontrol.editTeacher);
+
+student.post(
+  '/newsadmin',
+  verifytoken,
+  authorized,
+  isAdmin,
+  upload.fields([
+    { name: 'image1', maxCount: 1 },     // matches form name
+    { name: 'image2', maxCount: 1 }      // matches form name
+  ]),
+  newscontroller.savenewspost
+);
+
+student.get('/api/news', newscontroller.getNewsJson);
 
 
 module.exports = student;

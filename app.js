@@ -5,7 +5,11 @@ const admincontrol = require('./controller/admincontroller')
 
 const app = express();
 const {verifytoken} = require('./middleware/auth');
+const cors = require("cors");
 
+app.use(cors({
+  origin: "https://uebschool.edu.np",  // allow only your main site
+}));
 const connection = require('./config/connection')
 // Serve static files from 'uploads' folder
 // app.use('/uploads', express.static(__dirname + '/uploads'));

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News Admin</title>
+</head>
+<body>
+  <form action="/newsadmin" method="POST" enctype="multipart/form-data">
+    <label for="title">News Headline:</label>
+    <input type="text" id="title" name="headline" required><br><br>
+ <label for="image">Thumbnail Image:</label>
+    <input type="file" id="image1" name="image1" accept="image/*"><br><br>
+    <label for="content">Content:</label>
+    <textarea id="content" name="content" required></textarea><br><br>
+
+    <label for="image">Secondary Image:</label>
+    <input type="file" id="image2" name="image2" accept="image/*"><br><br>
+
+    <button type="submit">Submit</button>
+</body>
+</html>
