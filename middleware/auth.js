@@ -89,11 +89,28 @@ const isAdmin = async (req, res, next) => {
 };
 const isnewsAdmin = async (req, res, next) => {
   const user = req.user;
-  if (user.role !== "NEWSADMIN") {
-    return res.render("block",{teacherName: user.teacherName, username: user.username, role: user.role, allowedSubjects: user.allowedSubjects || []}); // Render a block page or redirect
+
+  if (!user) {
+    // User not logged in → redirect to login
+    return res.redirect('/admin/login');
   }
-  next();
+
+  if (user.role === "NEWSADMIN") {
+    // If user is NEWSADMIN, redirect to newsadmin dashboard
+    return res.redirect('/newsadmin');
+  }
+
+  // If user is not NEWSADMIN → block
+  return res.render("block", {
+    teacherName: user.teacherName,
+    username: user.username,
+    role: user.role,
+    allowedSubjects: user.allowedSubjects || []
+  });
 };
+
+module.exports = isnewsAdmin;
+
 
 
 
