@@ -281,7 +281,7 @@ const token = generateToken(user);
       if (user.role === "NEWSADMIN") {
   return res.redirect('/newsadmin');
 } else if (user.role === "ADMIN") {
-  return res.redirect('/admin/terminal/FIRST');
+  return res.redirect('/admin/term/FIRST');
 } else {
   return res.redirect('/');
 }
