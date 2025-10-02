@@ -646,15 +646,16 @@
         <td><%= article.content.replace(/<[^>]+>/g, '').substring(0, 100) + '...' %></td>
 
 
-        <td><button onclick="editArticle(<%= article._id %>)">Edit</button>
-       <button onclick="deleteArticle(<%= article._id %>)">Delete</button>
-        <button onclick="shareArticle(<%= article._id %>)">Share</button></td>
+        <td><button onclick="editArticle('<%= article._id %>')">Edit</button>
+       <button onclick="deleteArticle('<%= article._id %>')">Delete</button>
+        <button onclick="shareArticle('<%= article._id %>')">Share</button></td>
       </tr>
     <% }); %>
   </table></center>
 
 <script>
   function shareArticle(articleId) {
+    console.log('Sharing article with ID:', articleId);
     const url = encodeURIComponent(`https://aes.uebschool.edu.np/newsdescription?newsId=${articleId}`);
     const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
     
