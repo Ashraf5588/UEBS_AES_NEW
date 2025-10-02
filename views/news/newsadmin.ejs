@@ -646,9 +646,9 @@
         <td><%= article.content.replace(/<[^>]+>/g, '').substring(0, 100) + '...' %></td>
 
 
-        <td><button onclick="editArticle(<%= article.id %>)">Edit</button>
-       <button onclick="deleteArticle(<%= article.id %>)">Delete</button>
-        <button onclick="shareArticle(<%= article.id %>)">Share</button></td>
+        <td><button onclick="editArticle(<%= article._id %>)">Edit</button>
+       <button onclick="deleteArticle(<%= article._id %>)">Delete</button>
+        <button onclick="shareArticle(<%= article._id %>)">Share</button></td>
       </tr>
     <% }); %>
   </table></center>
