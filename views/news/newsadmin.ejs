@@ -653,17 +653,19 @@
     <% }); %>
   </table></center>
 
-  <script>
-
+<script>
   function shareArticle(articleId) {
-    const url = encodeURIComponent(`${window.location.origin}/newsdescription?newsId=${articleId}`);
+    const url = encodeURIComponent(`https://aes.uebschool.edu.np/newsdescription?newsId=${articleId}`);
+    const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    
     window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-      '_blank',
-      'width=600,height=400'
+      facebookShareUrl,
+      'facebook-share-dialog',
+      'width=626,height=436,resizable=yes,scrollbars=yes'
     );
   }
 </script>
+
 
 
 </body>
