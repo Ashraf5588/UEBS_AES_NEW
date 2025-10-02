@@ -3,20 +3,674 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>News Admin</title>
+  <meta property="og:type" content="article">
+<meta property="og:title" content="<%= newsItem.headline %>">
+<meta property="og:description" content="<%= cleanContent.substring(0,150) %>...">
+<meta property="og:image" content="<%= baseUrl + newsItem.image1Url %>">
+<meta property="og:url" content="<%= baseUrl %>/newsdescription?newsId=<%= newsItem._id %>">
+<meta property="og:site_name" content="UEBS News Portal">
+
+  <title>News Admin Dashboard</title>
+  
+  <!-- Open Graph / Facebook Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="News Admin Dashboard - UEBS">
+  <meta property="og:description" content="Professional news management system for creating and sharing articles">
+  <meta property="og:site_name" content="UEBS News Portal">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:url" content="https://uebschool.edu.np/newsadmin">
+  
+  <!-- Facebook App ID (replace with your actual app ID when you get one) -->
+  <meta property="fb:app_id" content="your_facebook_app_id">
+  
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 123, 255, 0.1);
+      border: 1px solid rgba(135, 206, 250, 0.2);
+    }
+
+    .header h1 {
+      color: #2c5aa0;
+      font-size: 2.2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .header h1 i {
+      color: #87ceeb;
+    }
+
+    .header p {
+      color: #5a7ba7;
+      margin-top: 8px;
+      font-size: 1.1rem;
+    }
+
+    .form-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 12px 40px rgba(0, 123, 255, 0.15);
+      border: 1px solid rgba(135, 206, 250, 0.3);
+    }
+
+    .form-group {
+      margin-bottom: 30px;
+    }
+
+    .form-group label {
+      display: block;
+      color: #2c5aa0;
+      font-weight: 600;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group label i {
+      color: #87ceeb;
+      width: 20px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 15px 20px;
+      border: 2px solid #e1f0ff;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #87ceeb;
+      box-shadow: 0 0 20px rgba(135, 206, 250, 0.3);
+      background: #fff;
+    }
+
+    .form-textarea {
+      min-height: 120px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .editor-container {
+      border: 2px solid #e1f0ff;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.8);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .editor-container:focus-within {
+      border-color: #87ceeb;
+      box-shadow: 0 0 20px rgba(135, 206, 250, 0.3);
+      background: #fff;
+    }
+
+    .editor-toolbar {
+      background: linear-gradient(135deg, #f8fbff 0%, #e6f3ff 100%);
+      padding: 12px 15px;
+      border-bottom: 1px solid #e1f0ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-btn {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid #d1e9ff;
+      border-radius: 6px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #2c5aa0;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      height: 32px;
+    }
+
+    .toolbar-btn:hover {
+      background: rgba(135, 206, 250, 0.2);
+      border-color: #87ceeb;
+      transform: translateY(-1px);
+    }
+
+    .toolbar-btn:active, .toolbar-btn.active {
+      background: rgba(135, 206, 250, 0.4);
+      border-color: #5a9fd4;
+      transform: translateY(0);
+    }
+
+    .toolbar-separator {
+      width: 1px;
+      height: 24px;
+      background: #d1e9ff;
+      margin: 0 4px;
+    }
+
+    .color-picker {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #d1e9ff;
+      border-radius: 6px;
+      cursor: pointer;
+      background: none;
+      padding: 0;
+    }
+
+    .color-picker::-webkit-color-swatch-wrapper {
+      padding: 0;
+      border-radius: 6px;
+    }
+
+    .color-picker::-webkit-color-swatch {
+      border: none;
+      border-radius: 4px;
+    }
+
+    .rich-editor {
+      min-height: 200px;
+      padding: 20px;
+      outline: none;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #2c5aa0;
+    }
+
+    .rich-editor:empty:before {
+      content: attr(placeholder);
+      color: #9bb5d6;
+      pointer-events: none;
+    }
+
+    .rich-editor h1, .rich-editor h2, .rich-editor h3 {
+      margin: 15px 0 10px 0;
+      color: #2c5aa0;
+    }
+
+    .rich-editor p {
+      margin: 10px 0;
+    }
+
+    .rich-editor ul, .rich-editor ol {
+      margin: 10px 0;
+      padding-left: 30px;
+    }
+
+    .rich-editor li {
+      margin: 5px 0;
+    }
+
+    .rich-editor strong {
+      font-weight: bold;
+    }
+
+    .rich-editor em {
+      font-style: italic;
+    }
+
+    .rich-editor u {
+      text-decoration: underline;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .file-input {
+      position: absolute;
+      left: -9999px;
+    }
+
+    .file-input-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px 20px;
+      border: 2px dashed #87ceeb;
+      border-radius: 12px;
+      background: rgba(135, 206, 250, 0.1);
+      color: #2c5aa0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .file-input-label:hover {
+      background: rgba(135, 206, 250, 0.2);
+      border-color: #5a9fd4;
+      transform: translateY(-2px);
+    }
+
+    .file-input-label i {
+      font-size: 1.2rem;
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, #5a9fd4 0%, #4a8bc2 100%);
+      color: white;
+      border: none;
+      padding: 18px 40px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(90, 159, 212, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 30px auto 0;
+      min-width: 200px;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(90, 159, 212, 0.4);
+      background: linear-gradient(135deg, #4a8bc2 0%, #3a7ba2 100%);
+    }
+
+    .submit-btn:active {
+      transform: translateY(-1px);
+    }
+
+    .file-preview {
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(135, 206, 250, 0.1);
+      border-radius: 8px;
+      color: #2c5aa0;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .breadcrumb {
+      color: #5a7ba7;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+
+    .breadcrumb a {
+      color: #4a8bc2;
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
+      .header, .form-container {
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      
+      .header h1 {
+        font-size: 1.8rem;
+      }
+      
+      .form-group {
+        margin-bottom: 20px;
+      }
+    }
+
+    /* Loading animation */
+    .loading {
+      display: none;
+    }
+
+    .loading .submit-btn {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .loading .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <form action="/newsadmin" method="POST" enctype="multipart/form-data">
-    <label for="title">News Headline:</label>
-    <input type="text" id="title" name="headline" required><br><br>
- <label for="image">Thumbnail Image:</label>
-    <input type="file" id="image1" name="image1" accept="image/*"><br><br>
-    <label for="content">Content:</label>
-    <textarea id="content" name="content" required></textarea><br><br>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/admin">Dashboard</a> / <span>News Management</span>
+    </div>
 
-    <label for="image">Secondary Image:</label>
-    <input type="file" id="image2" name="image2" accept="image/*"><br><br>
+    <div class="header">
+      <h1>
+        <i class="fas fa-newspaper"></i>
+        News Administration
+      </h1>
+      <p>Create and manage news articles for your platform</p>
+    </div>
 
-    <button type="submit">Submit</button>
+    <div class="form-container">
+      <form action="/newsadmin" method="POST" enctype="multipart/form-data" id="newsForm">
+        <div class="form-group">
+          <label for="title">
+            <i class="fas fa-heading"></i>
+            News Headline
+          </label>
+          <input type="text" id="title" name="headline" class="form-input" required 
+                 placeholder="Enter an engaging headline for your news article">
+        </div>
+
+        <div class="form-group">
+          <label for="content">
+            <i class="fas fa-edit"></i>
+            Article Content
+          </label>
+          <div class="editor-container">
+            <div class="editor-toolbar">
+              <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="Bold">
+                <i class="fas fa-bold"></i>
+              </button>
+              <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="Italic">
+                <i class="fas fa-italic"></i>
+              </button>
+              <button type="button" class="toolbar-btn" onclick="formatText('underline')" title="Underline">
+                <i class="fas fa-underline"></i>
+              </button>
+              <div class="toolbar-separator"></div>
+              <button type="button" class="toolbar-btn" onclick="formatText('justifyLeft')" title="Align Left">
+                <i class="fas fa-align-left"></i>
+              </button>
+              <button type="button" class="toolbar-btn" onclick="formatText('justifyCenter')" title="Align Center">
+                <i class="fas fa-align-center"></i>
+              </button>
+              <button type="button" class="toolbar-btn" onclick="formatText('justifyRight')" title="Align Right">
+                <i class="fas fa-align-right"></i>
+              </button>
+              <div class="toolbar-separator"></div>
+              <button type="button" class="toolbar-btn" onclick="formatText('insertUnorderedList')" title="Bullet List">
+                <i class="fas fa-list-ul"></i>
+              </button>
+              <button type="button" class="toolbar-btn" onclick="formatText('insertOrderedList')" title="Numbered List">
+                <i class="fas fa-list-ol"></i>
+              </button>
+              <div class="toolbar-separator"></div>
+              <input type="color" id="textColor" class="color-picker" onchange="changeTextColor(this.value)" title="Text Color">
+              <button type="button" class="toolbar-btn" onclick="formatText('removeFormat')" title="Clear Formatting">
+                <i class="fas fa-eraser"></i>
+              </button>
+            </div>
+            <div id="editor" class="rich-editor" contenteditable="true" 
+                 placeholder="Write your news article content here..."></div>
+            <textarea id="content" name="content" style="display: none;" required></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="image1">
+            <i class="fas fa-image"></i>
+            Thumbnail Image
+          </label>
+          <div class="file-input-wrapper">
+            <input type="file" id="image1" name="image1" accept="image/*" class="file-input">
+            <label for="image1" class="file-input-label">
+              <i class="fas fa-cloud-upload-alt"></i>
+              Choose thumbnail image or drag and drop
+            </label>
+          </div>
+          <div class="file-preview" id="preview1"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="image2">
+            <i class="fas fa-images"></i>
+            Secondary Image (Optional)
+          </label>
+          <div class="file-input-wrapper">
+            <input type="file" id="image2" name="image2" accept="image/*" class="file-input">
+            <label for="image2" class="file-input-label">
+              <i class="fas fa-cloud-upload-alt"></i>
+              Choose secondary image or drag and drop
+            </label>
+          </div>
+          <div class="file-preview" id="preview2"></div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <i class="fas fa-paper-plane"></i>
+          Publish News Article
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // File input handling
+    function handleFileInput(inputId, previewId) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      
+      input.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          preview.style.display = 'block';
+          preview.innerHTML = '<i class="fas fa-check-circle"></i> Selected: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+        } else {
+          preview.style.display = 'none';
+        }
+      });
+    }
+
+    // Initialize file inputs
+    handleFileInput('image1', 'preview1');
+    handleFileInput('image2', 'preview2');
+
+    // Drag and drop functionality
+    function setupDragDrop(labelSelector, inputSelector) {
+      const label = document.querySelector(labelSelector);
+      const input = document.querySelector(inputSelector);
+
+      label.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        label.style.background = 'rgba(135, 206, 250, 0.3)';
+      });
+
+      label.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        label.style.background = 'rgba(135, 206, 250, 0.1)';
+      });
+
+      label.addEventListener('drop', function(e) {
+        e.preventDefault();
+        label.style.background = 'rgba(135, 206, 250, 0.1)';
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          input.files = files;
+          const event = new Event('change', { bubbles: true });
+          input.dispatchEvent(event);
+        }
+      });
+    }
+
+    setupDragDrop('label[for="image1"]', '#image1');
+    setupDragDrop('label[for="image2"]', '#image2');
+
+    // Rich text editor functionality
+    const textarea = document.getElementById('content');
+    const editor = document.getElementById('editor');
+    
+    function formatText(command, value) {
+      if (value === undefined) value = null;
+      document.execCommand(command, false, value);
+      editor.focus();
+      updateHiddenTextarea();
+      updateToolbarState();
+    }
+
+    function changeTextColor(color) {
+      formatText('foreColor', color);
+    }
+
+    function updateHiddenTextarea() {
+      textarea.value = editor.innerHTML;
+    }
+
+    function updateToolbarState() {
+      const commands = ['bold', 'italic', 'underline'];
+      commands.forEach(function(command) {
+        const button = document.querySelector('[onclick="formatText(\'' + command + '\')"]');
+        if (button) {
+          if (document.queryCommandState(command)) {
+            button.classList.add('active');
+          } else {
+            button.classList.remove('active');
+          }
+        }
+      });
+    }
+
+    // Initialize editor
+    editor.addEventListener('input', function() {
+      updateHiddenTextarea();
+    });
+
+    editor.addEventListener('keyup', function() {
+      updateToolbarState();
+    });
+
+    editor.addEventListener('mouseup', function() {
+      updateToolbarState();
+    });
+
+    // Handle paste events to clean up formatting
+    editor.addEventListener('paste', function(e) {
+      e.preventDefault();
+      const text = e.clipboardData.getData('text/plain');
+      document.execCommand('insertText', false, text);
+      updateHiddenTextarea();
+    });
+
+    // Keyboard shortcuts
+    editor.addEventListener('keydown', function(e) {
+      if (e.ctrlKey || e.metaKey) {
+        switch(e.key) {
+          case 'b':
+            e.preventDefault();
+            formatText('bold');
+            break;
+          case 'i':
+            e.preventDefault();
+            formatText('italic');
+            break;
+          case 'u':
+            e.preventDefault();
+            formatText('underline');
+            break;
+        }
+      }
+    });
+
+    // Ensure content is updated before form submission
+    document.getElementById('newsForm').addEventListener('submit', function(e) {
+      updateHiddenTextarea();
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.innerHTML = '<div class="spinner"></div> Publishing...';
+      submitBtn.disabled = true;
+      document.body.classList.add('loading');
+    });
+  </script>
+
+  <center><table cellspacing="0" border="1">
+    <tr>
+      <th>SN</th>
+      <th>Date</th>
+      <th>Headline</th>
+      <th>Thumbnail</th>
+      <th>Content</th>
+      <th colspan="3">Action</th>
+    </tr>
+    <%news.forEach(function(article, index) { %>
+      <tr>
+        <td><%= index + 1 %></td>
+        <td><%= new Date(article.date).toLocaleDateString() %></td>
+        <td><%= article.headline %></td>
+        <td>
+          <% if (article.image1Url) { %>
+            <img src="<%= article.image1Url %>" alt="Thumbnail" style="width: 100px; height: auto; border-radius: 8px;">
+          <% } else { %>
+            N/A
+          <% } %>
+        </td>
+        <td><%= article.content.replace(/<[^>]+>/g, '').substring(0, 100) + '...' %></td>
+
+
+        <td><button onclick="editArticle(<%= article.id %>)">Edit</button>
+       <button onclick="deleteArticle(<%= article.id %>)">Delete</button>
+        <button onclick="shareArticle(<%= article.id %>)">Share</button></td>
+      </tr>
+    <% }); %>
+  </table></center>
+
+  <script>
+
+  function shareArticle(articleId) {
+    const url = encodeURIComponent(`${window.location.origin}/newsdescription?newsId=${articleId}`);
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      '_blank',
+      'width=600,height=400'
+    );
+  }
+</script>
+
+
 </body>
 </html>

@@ -5,7 +5,7 @@ const newscontroller = require('../controller/newscontroller')
 const multer  = require('multer')
 
 
-const {verifytoken,authorized,isAdmin}=require('../middleware/auth')
+const {verifytoken,authorized,isAdmin,isnewsAdmin}=require('../middleware/auth')
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -212,12 +212,12 @@ student.get('/view-pdf/:filename', (req, res) => {
 student.get('/admin/diagnostics', admincontrol.diagnostics)
 student.get('/user/edit-teacher/:userId/:editing?', verifytoken, authorized, isAdmin, admincontrol.editTeacher);
 
-student.get('/newsadmin',verifytoken,authorized,isAdmin,newscontroller.newsadmin);
+student.get('/newsadmin',verifytoken,authorized,isnewsAdmin,newscontroller.newsadmin);
 student.post(
   '/newsadmin',
   verifytoken,
   authorized,
-  isAdmin,
+  isnewsAdmin,
   upload.fields([
     { name: 'image1', maxCount: 1 },     // matches form name
     { name: 'image2', maxCount: 1 }      // matches form name
@@ -226,6 +226,8 @@ student.post(
 );
 
 student.get('/news', newscontroller.getNewsJson);
+student.get('/newsdescription', newscontroller.getNewsPage);
+student.post('/newsadmin/delete/:id', verifytoken, authorized, isnewsAdmin, newscontroller.deleteNews);
 
 
 module.exports = student;

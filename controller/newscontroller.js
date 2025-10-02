@@ -103,10 +103,14 @@ const getSidenavData = async (req) => {
 exports.newsadmin = async (req, res) => {
   try {
     const sidenavData = await getSidenavData(req);
+    const news = await newsModel.find().sort({ date: -1 }).lean();
 
     res.render("news/newsadmin", {
       pageTitle: "News Admin",
-      sidenavData
+      sidenavData,
+      news,
+      user: req.user
+
     });
   } catch (error) { 
     console.error("Error rendering news admin page:", error);
@@ -135,7 +139,7 @@ exports.savenewspost = async (req, res) => {
 
     await newPost.save();
 
-    res.redirect('news/newsadmin'); // or res.json({ success: true, newPost });
+    res.redirect('/newsadmin'); // or res.json({ success: true, newPost });
   } catch (error) {
     console.error("Error saving news post:", error);
     res.status(500).send("Internal Server Error");
@@ -148,5 +152,70 @@ exports.getNewsJson = async (req, res) => {
   } catch (err) {
     console.error("Error fetching news:", err);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.getNewsPage = async (req, res) => {
+  try {
+    const newsId = req.query.newsId;
+    
+    if (!newsId) {
+      return res.status(400).send("News ID is required");
+    }
+
+    const newsItem = await newsModel.findById(newsId).lean();
+    
+    if (!newsItem) {
+      return res.status(404).send("News not found");
+    }
+
+    // Clean content for meta description
+    const cleanContent = newsItem.content.replace(/<[^>]+>/g, '').substring(0, 160);
+    
+    res.render("news/newsdescription", {
+      pageTitle: newsItem.headline,
+      newsItem,
+      cleanContent,
+      baseUrl: `${req.protocol}://${req.get('host')}`
+    });
+  } catch (err) {
+    console.error("Error fetching news:", err);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+exports.deleteNews = async (req, res) => {
+  try {
+    const newsId = req.params.id;
+    
+    const deletedNews = await newsModel.findByIdAndDelete(newsId);
+    
+    if (!deletedNews) {
+      return res.status(404).json({ error: "News not found" });
+    }
+
+    // Optionally delete the associated image files
+    if (deletedNews.image1Url) {
+      const fs = require('fs');
+      const path = require('path');
+      const imagePath = path.join(rootDir, 'uploads', path.basename(deletedNews.image1Url));
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+    
+    if (deletedNews.image2Url) {
+      const fs = require('fs');
+      const path = require('path');
+      const imagePath = path.join(rootDir, 'uploads', path.basename(deletedNews.image2Url));
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
+    res.redirect('/newsadmin');
+  } catch (err) {
+    console.error("Error deleting news:", err);
+    res.status(500).send("Internal Server Error");
   }
 };

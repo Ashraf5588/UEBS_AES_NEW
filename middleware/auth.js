@@ -79,6 +79,7 @@ console.log("Access granted for user:", user.username, "to subject:", subjectVal
 
   next();
 };
+
 const isAdmin = async (req, res, next) => {
   const user = req.user;
   if (user.role !== "ADMIN") {
@@ -86,7 +87,15 @@ const isAdmin = async (req, res, next) => {
   }
   next();
 };
+const isnewsAdmin = async (req, res, next) => {
+  const user = req.user;
+  if (user.role !== "NEWSADMIN") {
+    return res.render("block",{teacherName: user.teacherName, username: user.username, role: user.role, allowedSubjects: user.allowedSubjects || []}); // Render a block page or redirect
+  }
+  next();
+};
 
 
 
-module.exports = { generateToken, verifytoken, authorized, isAdmin };
+
+module.exports = { generateToken, verifytoken, authorized, isAdmin, isnewsAdmin };
