@@ -227,6 +227,9 @@ student.post(
 
 student.get('/news', newscontroller.getNewsJson);
 student.get('/newsdescription', newscontroller.getNewsPage);
+
+// Support both POST and DELETE for news deletion (AJAX prefers DELETE)
+student.delete('/newsadmin/delete/:id', verifytoken, authorized, isnewsAdmin, newscontroller.deleteNews);
 student.post('/newsadmin/delete/:id', verifytoken, authorized, isnewsAdmin, newscontroller.deleteNews);
 
 

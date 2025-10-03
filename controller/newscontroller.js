@@ -187,13 +187,10 @@ exports.getNewsPage = async (req, res) => {
 exports.deleteNews = async (req, res) => {
   try {
     const newsId = req.params.id;
-    
     const deletedNews = await newsModel.findByIdAndDelete(newsId);
-    
     if (!deletedNews) {
       return res.status(404).json({ error: "News not found" });
     }
-
     // Optionally delete the associated image files
     if (deletedNews.image1Url) {
       const fs = require('fs');
@@ -203,7 +200,6 @@ exports.deleteNews = async (req, res) => {
         fs.unlinkSync(imagePath);
       }
     }
-    
     if (deletedNews.image2Url) {
       const fs = require('fs');
       const path = require('path');
@@ -212,10 +208,10 @@ exports.deleteNews = async (req, res) => {
         fs.unlinkSync(imagePath);
       }
     }
-
-    res.redirect('/newsadmin');
+    // Respond with JSON for AJAX delete
+    return res.status(200).json({ success: true });
   } catch (err) {
     console.error("Error deleting news:", err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
