@@ -267,6 +267,7 @@
                     <input type="checkbox" name="absent" id="absent" class="form-check-input mt-1"> Absent
                 </h2>
             </section>
+            
 
             <section id="formDiv">
                
@@ -398,8 +399,9 @@
                 document.getElementById('totalmarks').value = 0;
                 
                 // Uncheck all radio buttons
-                document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+                document.querySelectorAll('input[type="radio"]').forEach(radio => {
                     radio.checked = false;
+                    radio.removeAttribute('required');
                 });
                 
                 // Remove selected styling
@@ -410,6 +412,9 @@
                 // If student is present, show the form
                 formDiv.style.display = 'block';
                 // Recalculate total (in case there were previously selected options)
+                  document.querySelectorAll('input[type="radio"]').forEach(radio => {
+      radio.setAttribute('required', true);
+    });
                 sum();
             }
         });
