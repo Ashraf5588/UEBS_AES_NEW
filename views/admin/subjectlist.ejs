@@ -111,31 +111,41 @@
     <!-- Creating form dynamically popup input fields -->  <script>
   const editing = "<%= editing ? 'true' : 'false' %>";
   const subjectedit = <%- editing ? JSON.stringify(subjectedit || {}) : '{}' %>;
+// Replace the DOMContentLoaded event listener with this corrected version:
 
-  document.addEventListener("DOMContentLoaded", () => {
-    // Add form validation on submit
-    const form = document.querySelector('.subject-form');
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM loaded. Edit mode:", editing);
+  console.log("Subject edit data:", subjectedit);
+  
+  // Add form validation on submit
+  const form = document.querySelector('.subject-form');
+  if (form) {
     form.addEventListener('submit', validateForm);
-    
-    // Add event listener for max questions field
-    const maxField = document.getElementById("max");
-    if (maxField) {
-      maxField.addEventListener('input', function() {
-        console.log("Max field changed:", this.value);
-        const value = parseInt(this.value);
-        if (value > 0) {
-          generateDynamicForm(value);
-        } else {
-          document.getElementById('subQuestionContainer').innerHTML = '<div style="color: red; margin-top: 10px;">Please enter a valid maximum question number</div>';
-        }
-      });
-      
-      // Initial generation if in edit mode or value exists
-      if (editing === 'true' || maxField.value) {
-        generateDynamicForm(parseInt(maxField.value));
+  }
+  
+  // Add event listener for max questions field
+  const maxField = document.getElementById("max");
+  if (maxField) {
+    maxField.addEventListener('input', function() {
+      console.log("Max field changed:", this.value);
+      const value = parseInt(this.value);
+      if (value > 0) {
+        generateDynamicForm(value);
+      } else {
+        document.getElementById('subQuestionContainer').innerHTML = '<div style="color: red; margin-top: 10px;">Please enter a valid maximum question number</div>';
       }
+    });
+    
+    // IMPORTANT: Auto-generate form if in edit mode
+    if (editing === 'true' && subjectedit && subjectedit.max) {
+      console.log("Auto-generating form for", subjectedit.max, "questions in edit mode");
+      // Make sure the max field shows the current value
+      maxField.value = subjectedit.max;
+      // Generate the dynamic form with existing data
+      generateDynamicForm(parseInt(subjectedit.max));
     }
-  });
+  }
+});
     // Form validation function
   // Function to generate sub-questions with their own sub-parts option
   function generateSubQuestions(questionNum, count, marksEach) {
@@ -560,7 +570,10 @@
 
     return true;
   }
-  function generateDynamicForm(number) {
+ // In the generateDynamicForm function, update the section that handles edit mode data:
+// Update the generateDynamicForm function to properly handle edit mode:
+
+function generateDynamicForm(number) {
     const subContainer = document.getElementById("subQuestionContainer");
     subContainer.innerHTML = "";
 
@@ -573,8 +586,6 @@
     console.log("Edit mode:", editing);
     if (editing === 'true') {
       console.log("Subject edit data:", subjectedit);
-    } else {
-      console.log("Not in edit mode, generating new fields");
     }
 
     for (let i = 1; i <= number; i++) {
@@ -613,15 +624,15 @@
 
       const input = document.createElement("input");
       input.type = "number";
-      input.name = `q${i}_subcount`; // Changed to format q1_subcount
+      input.name = `q${i}_subcount`;
       input.id = `subQuestion${i}`;
       input.required = true;
       input.placeholder = `Number of sub-questions`;
       input.className = "form-control sub-input";
       input.min = "1";
       input.dataset.questionNumber = i;
-      countFormGroup.appendChild(input);
       
+      countFormGroup.appendChild(input);
       countColumn.appendChild(countFormGroup);
 
       // Second column - mark per sub-question
@@ -639,14 +650,14 @@
 
       const markInput = document.createElement("input");
       markInput.type = "number";
-      markInput.name = `q${i}_marks_per_sub`; // Changed to format q1_marks_per_sub
+      markInput.name = `q${i}_marks_per_sub`;
       markInput.id = `markPerSubQ${i}`;
       markInput.placeholder = "Marks per sub-question";
       markInput.className = "form-control mark-per-sub-input";
       markInput.min = "0";
       markInput.step = "0.5";
-      markFormGroup.appendChild(markInput);
       
+      markFormGroup.appendChild(markInput);
       markColumn.appendChild(markFormGroup);
 
       // Add columns to the row
@@ -671,37 +682,128 @@
         }
       });
 
-      // Check for existing values in edit mode
-      if (editing === 'true' && typeof subjectedit !== 'undefined' && subjectedit[i]) {
-        // Set sub-question count
-        if (subjectedit[i].subcount) {
-          input.value = subjectedit[i].subcount;
+      // SET EXISTING VALUES IN EDIT MODE - AFTER CREATING THE ELEMENTS
+      if (editing === 'true' && typeof subjectedit !== 'undefined') {
+        console.log(`Checking edit data for Q${i}:`);
+        console.log(`q${i}_subcount:`, subjectedit[`q${i}_subcount`]);
+        console.log(`q${i}_marks_per_sub:`, subjectedit[`q${i}_marks_per_sub`]);
+        
+        // Set sub-question count if it exists
+        if (subjectedit[`q${i}_subcount`]) {
+          input.value = subjectedit[`q${i}_subcount`];
+          console.log(`Set subQuestion${i} to:`, subjectedit[`q${i}_subcount`]);
         }
         
-        // Set marks per sub-question
-        if (subjectedit[i].marks_per_sub) {
-          markInput.value = subjectedit[i].marks_per_sub;
+        // Set marks per sub-question if it exists
+        if (subjectedit[`q${i}_marks_per_sub`]) {
+          markInput.value = subjectedit[`q${i}_marks_per_sub`];
+          console.log(`Set markPerSubQ${i} to:`, subjectedit[`q${i}_marks_per_sub`]);
         }
         
-        // Set sub-parts if they exist
-        if (subjectedit[i].has_subparts) {
-          checkbox.checked = true;
-          subPartsDiv.style.display = 'block';
-          
-          if (subjectedit[i].subsub_count) {
-            subSubCountInput.value = subjectedit[i].subsub_count;
-          }
-          
-          if (subjectedit[i].marks_per_subpart) {
-            subSubMarksInput.value = subjectedit[i].marks_per_subpart;
-          }
+        // Generate sub-questions if both values exist
+        if (input.value && markInput.value) {
+          console.log(`Generating sub-questions for Q${i} with count: ${input.value}, marks: ${markInput.value}`);
+          // Use setTimeout to ensure the elements are fully rendered
+          setTimeout(() => {
+            generateSubQuestions(i, input.value, markInput.value);
+            // Populate additional sub-question data after generation
+            populateSubQuestionEditData(i, input.value);
+          }, 100);
         }
       }
 
       subContainer.appendChild(questionContainer);
     }
-  }
+}
 
+// Add this new function to populate edit data for sub-questions
+function populateSubQuestionEditData(questionNum, subCount) {
+  if (editing !== 'true' || !subjectedit) return;
+  
+  console.log(`Populating sub-question edit data for Q${questionNum}`);
+  
+  for (let j = 1; j <= subCount; j++) {
+    const letter = String.fromCharCode(96 + j); // a, b, c, etc.
+    const subQuestionKey = `q${questionNum}${letter}`;
+    
+    // Set the main marks for the sub-question
+    setTimeout(() => {
+      const marksInput = document.querySelector(`input[name="${subQuestionKey}"]`);
+      if (marksInput && subjectedit[subQuestionKey]) {
+        marksInput.value = subjectedit[subQuestionKey];
+        console.log(`Set ${subQuestionKey} marks to:`, subjectedit[subQuestionKey]);
+      }
+      
+      // Check if this sub-question has sub-parts
+      const hasSubPartsKey = `${subQuestionKey}_has_subparts`;
+      const subPartsCountKey = `${subQuestionKey}_subparts_count`;
+      const subPartsMarksKey = `${subQuestionKey}_marks_per_subpart`;
+      
+      if (subjectedit[hasSubPartsKey]) {
+        console.log(`Found sub-parts for ${subQuestionKey}`);
+        
+        // Check the "has sub-parts" checkbox
+        const checkbox = document.getElementById(`hasSubParts_${questionNum}_${letter}`);
+        if (checkbox) {
+          checkbox.checked = true;
+          checkbox.dispatchEvent(new Event('change'));
+          
+          // Set sub-parts count and marks
+          setTimeout(() => {
+            const subPartsCountInput = document.querySelector(`input[name="${subPartsCountKey}"]`);
+            const subPartsMarksInput = document.querySelector(`input[name="${subPartsMarksKey}"]`);
+            
+            if (subPartsCountInput && subjectedit[subPartsCountKey]) {
+              subPartsCountInput.value = subjectedit[subPartsCountKey];
+              console.log(`Set ${subPartsCountKey} to:`, subjectedit[subPartsCountKey]);
+            }
+            
+            if (subPartsMarksInput && subjectedit[subPartsMarksKey]) {
+              subPartsMarksInput.value = subjectedit[subPartsMarksKey];
+              console.log(`Set ${subPartsMarksKey} to:`, subjectedit[subPartsMarksKey]);
+              
+              // Generate sub-parts
+              if (subPartsCountInput && subPartsCountInput.value) {
+                subPartsCountInput.dispatchEvent(new Event('change'));
+                
+                // Populate individual sub-part marks
+                setTimeout(() => {
+                  populateSubPartEditMarks(questionNum, letter, parseInt(subPartsCountInput.value));
+                }, 200);
+              }
+            }
+          }, 150);
+        }
+      }
+    }, 150);
+  }
+}
+
+// Add this function to populate individual sub-part marks
+function populateSubPartEditMarks(questionNum, letter, subPartsCount) {
+  if (editing !== 'true' || !subjectedit) return;
+  
+  console.log(`Populating sub-part marks for Q${questionNum}${letter}`);
+  
+  const toRoman = (num) => {
+    const romanNumerals = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x', 'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii', 'xix', 'xx'];
+    return romanNumerals[num - 1] || num;
+  };
+  
+  for (let k = 1; k <= subPartsCount; k++) {
+    const romanNumeral = toRoman(k);
+    const subPartKey = `q${questionNum}${letter}_${romanNumeral}`;
+    
+    setTimeout(() => {
+      const subPartInput = document.querySelector(`input[name="q${questionNum}${letter}.${romanNumeral}"]`);
+      
+      if (subPartInput && subjectedit[subPartKey]) {
+        subPartInput.value = subjectedit[subPartKey];
+        console.log(`Set ${subPartKey} marks to:`, subjectedit[subPartKey]);
+      }
+    }, 100);
+  }
+}
 </script>
 
 <form action="<%= editing ? `/admin/subjectadd/${subId}` : '/admin/subjectadd' %>" method="post" class="subject-form" enctype="multipart/form-data">
