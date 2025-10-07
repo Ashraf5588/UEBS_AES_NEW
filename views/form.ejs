@@ -323,7 +323,7 @@
                                                     <% for (let m = 0; m <= parseFloat(markPerSubSub); m += 0.5) { %>
                                                         <label class="mark-option">
                                                             <% const fieldName = `${qKey}_${subPartLabel}`; %>
-                                                            <input type="radio" name="<%= fieldName %>" value="<%= m %>" onclick="sum()" required>
+                                                            <input type="radio" name="<%= fieldName %>" value="<%= m %>" onclick="sum()">
                                                             <span class="mark-value"><%= m %></span>
                                                         </label>
                                                     <% } %>
@@ -334,7 +334,7 @@
                                         <div class="marks-options-grid">
                                             <% for (let m = 0; m <= parseFloat(fullMark); m += 0.5) { %>
                                                 <label class="mark-option">
-                                                    <input type="radio" name="<%= qKey %>" value="<%= m %>" onclick="sum()" required>
+                                                    <input type="radio" name="<%= qKey %>" value="<%= m %>" onclick="sum()">
                                                     <span class="mark-value"><%= m %></span>
                                                 </label>
                                             <% } %>
@@ -350,7 +350,7 @@
 
             <div class="text-center">
                 <input type="number" name="totalMarks" id="totalmarks" class="form-control w-25 mx-auto" placeholder="Total Marks" step="0.01">
-                <button type="submit" id="submit" class="btn btn-primary mt-3">
+                <button type="submit" id="submit" class="btn btn-primary mt-3" onclick="return handleFormSubmit()">
                     <i class="fas fa-save me-2"></i> Save Assessment
                 </button>
             </div>
@@ -411,10 +411,13 @@
             } else {
                 // If student is present, show the form
                 formDiv.style.display = 'block';
-                // Recalculate total (in case there were previously selected options)
-                  document.querySelectorAll('input[type="radio"]').forEach(radio => {
-      radio.setAttribute('required', true);
-    });
+                
+                // Add required attribute back
+                document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    radio.setAttribute('required', true);
+                });
+                
+                // Recalculate total
                 sum();
             }
         });
@@ -519,6 +522,38 @@
             originalSum();
             updateQuestionProgress();
         };
+
+        // Function to handle form submission and set default values
+        function handleFormSubmit() {
+            // Get all unique radio button groups (by name attribute)
+            const radioGroups = {};
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                const name = radio.getAttribute('name');
+                if (!radioGroups[name]) {
+                    radioGroups[name] = [];
+                }
+                radioGroups[name].push(radio);
+            });
+            
+            // Check each group and set to 0 if no selection is made
+            Object.entries(radioGroups).forEach(([name, radios]) => {
+                const hasSelection = radios.some(radio => radio.checked);
+                if (!hasSelection) {
+                    // Find the radio button with value "0" and select it
+                    const zeroRadio = radios.find(radio => radio.value === '0');
+                    if (zeroRadio) {
+                        zeroRadio.checked = true;
+                        console.log(`Auto-selected 0 for ${name}`);
+                    }
+                }
+            });
+            
+            // Recalculate the total with the new selections
+            sum();
+            
+            // Allow form submission to continue
+            return true;
+        }
 
         // Initialize the form on load
         document.addEventListener('DOMContentLoaded', function() {
