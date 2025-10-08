@@ -108,10 +108,11 @@
 
   <div class="subject-container">
   <h1 class="subject-title">Welcome to <span>Subject Management,</span></h1>
-    <!-- Creating form dynamically popup input fields -->  <script>
+    <!-- Creating form dynamically popup input fields --><script>
   const editing = "<%= editing ? 'true' : 'false' %>";
   const subjectedit = <%- editing ? JSON.stringify(subjectedit || {}) : '{}' %>;
 // Replace the DOMContentLoaded event listener with this corrected version:
+// Cache-busting comment: v2.0 - Fixed generateInput error
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM loaded. Edit mode:", editing);
@@ -1183,36 +1184,39 @@ async function autofillFromClass(classNameParam) {
     let maxInput = document.querySelector('#max');
     maxInput.value = parseInt(data.max);
 
-    // Generate input fields based on the new max value
-    generateInput();
-
-    // Now populate the sub-question counts and marks
-    for (let i = 1; i <= data.max; i++) {
-      if (data[i] && Array.isArray(data[i]) && data[i].length > 0) {
-        // Get the count from the first element in the array
-        const subQCount = parseInt(data[i][0]);
-
-        // Find the sub-question input
-        const subQInput = document.getElementById(`subQuestion${i}`);
-        if (subQInput) {
-          subQInput.value = subQCount;
-
-          // Generate mark fields for this question
-          generateSubFullMarks(i, subQCount, i);
-
-          // Now populate the mark values
-          for (let j = 1; j <= subQCount; j++) {
-            if (data[i][j]) {
-              // Find the mark input and set its value
-              const markInputs = document.querySelectorAll(`#subFmContainer${i} input[type="number"].fm-input`);
-              if (markInputs && markInputs[j-1]) {
-                markInputs[j-1].value = data[i][j];
-              }
-            }
+    // Generate the dynamic form with the new max value
+    generateDynamicForm(parseInt(data.max));
+    
+    // Wait for form generation, then populate with the received data
+    setTimeout(() => {
+      // Populate each question's data
+      for (let i = 1; i <= data.max; i++) {
+        const subCountKey = `q${i}_subcount`;
+        const marksPerSubKey = `q${i}_marks_per_sub`;
+        
+        if (data[subCountKey] && data[marksPerSubKey]) {
+          // Set sub-question count
+          const subQInput = document.getElementById(`subQuestion${i}`);
+          if (subQInput) {
+            subQInput.value = data[subCountKey];
           }
+          
+          // Set marks per sub-question
+          const markInput = document.getElementById(`markPerSubQ${i}`);
+          if (markInput) {
+            markInput.value = data[marksPerSubKey];
+          }
+          
+          // Generate sub-questions for this question
+          generateSubQuestions(i, data[subCountKey], data[marksPerSubKey]);
+          
+          // Populate individual sub-question marks and sub-parts
+          setTimeout(() => {
+            populateSubQuestionData(i, data, data[subCountKey]);
+          }, 200);
         }
       }
-    }
+    }, 100);
 
     console.log("Autofill complete for Class", className);
 
@@ -1222,21 +1226,89 @@ async function autofillFromClass(classNameParam) {
   }
 }
 
-// Add event listener to the "Same as" button
+// Helper function to populate individual sub-question data
+function populateSubQuestionData(questionNum, data, subCount) {
+  for (let j = 1; j <= subCount; j++) {
+    const letter = String.fromCharCode(96 + j); // a, b, c, etc.
+    const subQuestionKey = `q${questionNum}${letter}`;
+    
+    // Set the main marks for the sub-question
+    const marksInput = document.querySelector(`input[name="${subQuestionKey}"]`);
+    if (marksInput && data[subQuestionKey]) {
+      marksInput.value = data[subQuestionKey];
+    }
+    
+    // Check if this sub-question has sub-parts
+    const hasSubPartsKey = `${subQuestionKey}_has_subparts`;
+    const subPartsCountKey = `${subQuestionKey}_subparts_count`;
+    const subPartsMarksKey = `${subQuestionKey}_marks_per_subpart`;
+    
+    if (data[hasSubPartsKey]) {
+      // Check the "has sub-parts" checkbox
+      const checkbox = document.getElementById(`hasSubParts_${questionNum}_${letter}`);
+      if (checkbox) {
+        checkbox.checked = true;
+        checkbox.dispatchEvent(new Event('change'));
+        
+        // Set sub-parts count and marks
+        setTimeout(() => {
+          const subPartsCountInput = document.querySelector(`input[name="${subPartsCountKey}"]`);
+          const subPartsMarksInput = document.querySelector(`input[name="${subPartsMarksKey}"]`);
+          
+          if (subPartsCountInput && data[subPartsCountKey]) {
+            subPartsCountInput.value = data[subPartsCountKey];
+          }
+          
+          if (subPartsMarksInput && data[subPartsMarksKey]) {
+            subPartsMarksInput.value = data[subPartsMarksKey];
+            
+            // Generate sub-parts
+            if (subPartsCountInput && subPartsCountInput.value) {
+              subPartsCountInput.dispatchEvent(new Event('change'));
+              
+              // Populate individual sub-part marks
+              setTimeout(() => {
+                populateSubPartMarks(questionNum, letter, parseInt(subPartsCountInput.value), data);
+              }, 200);
+            }
+          }
+        }, 150);
+      }
+    }
+  }
+}
+
+// Helper function to populate sub-part marks
+function populateSubPartMarks(questionNum, letter, subPartsCount, data) {
+  const toRoman = (num) => {
+    const romanNumerals = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x', 'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii', 'xix', 'xx'];
+    return romanNumerals[num - 1] || num;
+  };
+  
+  for (let k = 1; k <= subPartsCount; k++) {
+    const romanNumeral = toRoman(k);
+    const subPartKey = `q${questionNum}${letter}_${romanNumeral}`;
+    
+    const subPartInput = document.querySelector(`input[name="q${questionNum}${letter}.${romanNumeral}"]`);
+    if (subPartInput && data[subPartKey]) {
+      subPartInput.value = data[subPartKey];
+    }
+  }
+}
+
+// Add event listener to the "Same as" dropdown
 // This will trigger the autofill function when a class is selected
 document.getElementById('sameas').addEventListener('change', function() {
-  const selectedClass = parseInt(this.value);
-  this.style.backgroundColor = "#0d6efd"; // Change button color to indicate selection
+  const selectedClass = this.value; // Get the string value directly
+  console.log("Selected class from dropdown:", selectedClass);
 
-  console.log("Selected class from button:", selectedClass);
-
-  if (selectedClass) {
+  if (selectedClass && selectedClass !== '') {
     // Call the autofill function with the selected class value
     autofillFromClass(selectedClass);
   } else {
     console.warn("No class selected");
   }
-    });
+});
 
 // Add file selection feedback for editing mode
 if (editing === 'true') {

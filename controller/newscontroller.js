@@ -84,7 +84,6 @@ const getSidenavData = async (req) => {
       accessibleSubject = subjects;
       accessibleClass = studentClassdata;
     }
-    
     return {
       subjects: accessibleSubject,
       studentClassdata: accessibleClass,
