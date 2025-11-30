@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   <title>News Admin Dashboard</title>
-  
+
   <!-- Open Graph / Facebook Meta Tags -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="News Admin Dashboard - UEBS">
@@ -13,10 +14,10 @@
   <meta property="og:site_name" content="UEBS News Portal">
   <meta property="og:locale" content="en_US">
   <meta property="og:url" content="https://uebschool.edu.np/newsadmin">
-  
-  <!-- Facebook App ID (replace with your actual app ID when you get one) -->
-  <meta property="fb:app_id" content="your_facebook_app_id">
-  
+
+  <!-- Facebook App ID - Remove or replace with actual app ID when available -->
+  <!-- <meta property="fb:app_id" content="your_facebook_app_id"> -->
+
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
     * {
@@ -164,7 +165,8 @@
       transform: translateY(-1px);
     }
 
-    .toolbar-btn:active, .toolbar-btn.active {
+    .toolbar-btn:active,
+    .toolbar-btn.active {
       background: rgba(135, 206, 250, 0.4);
       border-color: #5a9fd4;
       transform: translateY(0);
@@ -213,7 +215,9 @@
       pointer-events: none;
     }
 
-    .rich-editor h1, .rich-editor h2, .rich-editor h3 {
+    .rich-editor h1,
+    .rich-editor h2,
+    .rich-editor h3 {
       margin: 15px 0 10px 0;
       color: #2c5aa0;
     }
@@ -222,7 +226,8 @@
       margin: 10px 0;
     }
 
-    .rich-editor ul, .rich-editor ol {
+    .rich-editor ul,
+    .rich-editor ol {
       margin: 10px 0;
       padding-left: 30px;
     }
@@ -338,16 +343,17 @@
       .container {
         padding: 10px;
       }
-      
-      .header, .form-container {
+
+      .header,
+      .form-container {
         padding: 20px;
         margin-bottom: 20px;
       }
-      
+
       .header h1 {
         font-size: 1.8rem;
       }
-      
+
       .form-group {
         margin-bottom: 20px;
       }
@@ -374,7 +380,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     /* News Table Styles */
@@ -719,6 +727,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="breadcrumb">
@@ -727,102 +736,139 @@
 
     <div class="header">
       <h1>
-        <i class="fas fa-newspaper"></i>
-        News Administration
+        <i class="fas fa-<%= editing ? 'edit' : 'newspaper' %>"></i>
+        <%= editing ? 'Edit News Article' : 'News Administration' %>
       </h1>
-      <p>Create and manage news articles for your platform</p>
+      <p>
+        <%= editing ? 'Update and modify existing news article' : 'Create and manage news articles for your platform' %>
+      </p>
+      <% if (editing) { %>
+        <a href="/newsadmin"
+          style="display: inline-block; margin-top: 10px; padding: 8px 16px; background: linear-gradient(135deg, #5a9fd4 0%, #4a8bc2 100%); color: white; text-decoration: none; border-radius: 8px; font-size: 0.9rem;">
+          <i class="fas fa-arrow-left"></i> Back to News List
+        </a>
+        <% } %>
     </div>
 
     <div class="form-container">
-      <form action="/newsadmin" method="POST" enctype="multipart/form-data" id="newsForm">
-        <div class="form-group">
-          <label for="title">
-            <i class="fas fa-heading"></i>
-            News Headline
-          </label>
-          <input type="text" id="title" name="headline" class="form-input" required 
-                 placeholder="Enter an engaging headline for your news article">
-        </div>
+      <form action="<%= editing ? '/newsadmin/update' : '/newsadmin' %>" method="POST" enctype="multipart/form-data"
+        id="newsForm">
+        <% if (editing) { %>
+          <input type="hidden" name="newsId" value="<%= newsItem._id %>">
+          <% } %>
 
-        <div class="form-group">
-          <label for="content">
-            <i class="fas fa-edit"></i>
-            Article Content
-          </label>
-          <div class="editor-container">
-            <div class="editor-toolbar">
-              <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="Bold">
-                <i class="fas fa-bold"></i>
-              </button>
-              <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="Italic">
-                <i class="fas fa-italic"></i>
-              </button>
-              <button type="button" class="toolbar-btn" onclick="formatText('underline')" title="Underline">
-                <i class="fas fa-underline"></i>
-              </button>
-              <div class="toolbar-separator"></div>
-              <button type="button" class="toolbar-btn" onclick="formatText('justifyLeft')" title="Align Left">
-                <i class="fas fa-align-left"></i>
-              </button>
-              <button type="button" class="toolbar-btn" onclick="formatText('justifyCenter')" title="Align Center">
-                <i class="fas fa-align-center"></i>
-              </button>
-              <button type="button" class="toolbar-btn" onclick="formatText('justifyRight')" title="Align Right">
-                <i class="fas fa-align-right"></i>
-              </button>
-              <div class="toolbar-separator"></div>
-              <button type="button" class="toolbar-btn" onclick="formatText('insertUnorderedList')" title="Bullet List">
-                <i class="fas fa-list-ul"></i>
-              </button>
-              <button type="button" class="toolbar-btn" onclick="formatText('insertOrderedList')" title="Numbered List">
-                <i class="fas fa-list-ol"></i>
-              </button>
-              <div class="toolbar-separator"></div>
-              <input type="color" id="textColor" class="color-picker" onchange="changeTextColor(this.value)" title="Text Color">
-              <button type="button" class="toolbar-btn" onclick="formatText('removeFormat')" title="Clear Formatting">
-                <i class="fas fa-eraser"></i>
-              </button>
+            <div class="form-group">
+              <label for="title">
+                <i class="fas fa-heading"></i>
+                News Headline
+              </label>
+              <input type="text" id="title" name="headline" class="form-input" required
+                value="<%= editing ? newsItem.headline : '' %>"
+                placeholder="Enter an engaging headline for your news article">
             </div>
-            <div id="editor" class="rich-editor" contenteditable="true" 
-                 placeholder="Write your news article content here..."></div>
-            <textarea id="content" name="content" style="display: none;" required></textarea>
-          </div>
-        </div>
 
-        <div class="form-group">
-          <label for="image1">
-            <i class="fas fa-image"></i>
-            Thumbnail Image
-          </label>
-          <div class="file-input-wrapper">
-            <input type="file" id="image1" name="image1" accept="image/*" class="file-input">
-            <label for="image1" class="file-input-label">
-              <i class="fas fa-cloud-upload-alt"></i>
-              Choose thumbnail image or drag and drop
-            </label>
-          </div>
-          <div class="file-preview" id="preview1"></div>
-        </div>
+            <div class="form-group">
+              <label for="content">
+                <i class="fas fa-edit"></i>
+                Article Content
+              </label>
+              <div class="editor-container">
+                <div class="editor-toolbar">
+                  <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="Bold">
+                    <i class="fas fa-bold"></i>
+                  </button>
+                  <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="Italic">
+                    <i class="fas fa-italic"></i>
+                  </button>
+                  <button type="button" class="toolbar-btn" onclick="formatText('underline')" title="Underline">
+                    <i class="fas fa-underline"></i>
+                  </button>
+                  <div class="toolbar-separator"></div>
+                  <button type="button" class="toolbar-btn" onclick="formatText('justifyLeft')" title="Align Left">
+                    <i class="fas fa-align-left"></i>
+                  </button>
+                  <button type="button" class="toolbar-btn" onclick="formatText('justifyCenter')" title="Align Center">
+                    <i class="fas fa-align-center"></i>
+                  </button>
+                  <button type="button" class="toolbar-btn" onclick="formatText('justifyRight')" title="Align Right">
+                    <i class="fas fa-align-right"></i>
+                  </button>
+                  <div class="toolbar-separator"></div>
+                  <button type="button" class="toolbar-btn" onclick="formatText('insertUnorderedList')"
+                    title="Bullet List">
+                    <i class="fas fa-list-ul"></i>
+                  </button>
+                  <button type="button" class="toolbar-btn" onclick="formatText('insertOrderedList')"
+                    title="Numbered List">
+                    <i class="fas fa-list-ol"></i>
+                  </button>
+                  <div class="toolbar-separator"></div>
+                  <input type="color" id="textColor" class="color-picker" onchange="changeTextColor(this.value)"
+                    title="Text Color">
+                  <button type="button" class="toolbar-btn" onclick="formatText('removeFormat')"
+                    title="Clear Formatting">
+                    <i class="fas fa-eraser"></i>
+                  </button>
+                </div>
+                <div id="editor" class="rich-editor" contenteditable="true"
+                  placeholder="Write your news article content here...">
+                  <% if (editing) { %><%- newsItem.content %>
+                      <% } %>
+                </div>
+                <textarea id="content" name="content" style="display: none;"
+                  required><% if (editing) { %><%- newsItem.content %><% } %></textarea>
+              </div>
+            </div>
 
-        <div class="form-group">
-          <label for="image2">
-            <i class="fas fa-images"></i>
-            Secondary Image (Optional)
-          </label>
-          <div class="file-input-wrapper">
-            <input type="file" id="image2" name="image2" accept="image/*" class="file-input">
-            <label for="image2" class="file-input-label">
-              <i class="fas fa-cloud-upload-alt"></i>
-              Choose secondary image or drag and drop
-            </label>
-          </div>
-          <div class="file-preview" id="preview2"></div>
-        </div>
+            <div class="form-group">
+              <label for="image1">
+                <i class="fas fa-image"></i>
+                Thumbnail Image<% if (editing && newsItem.image1Url) { %> (Current: <%=
+                    newsItem.image1Url.split('/').pop() %>)<% } %>
+              </label>
+              <div class="file-input-wrapper">
+                <input type="file" id="image1" name="image1" accept="image/*" class="file-input" <%=editing ? ''
+                  : 'required' %>>
+                <label for="image1" class="file-input-label">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                  <%= editing ? 'Change thumbnail image (optional)' : 'Choose thumbnail image or drag and drop' %>
+                </label>
+              </div>
+              <div class="file-preview" id="preview1"></div>
+              <% if (editing && newsItem.image1Url) { %>
+                <div style="margin-top: 10px;">
+                  <img src="<%= newsItem.image1Url %>" alt="Current thumbnail"
+                    style="max-width: 200px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                </div>
+                <% } %>
+            </div>
 
-        <button type="submit" class="submit-btn" id="submitBtn">
-          <i class="fas fa-paper-plane"></i>
-          Publish News Article
-        </button>
+            <div class="form-group">
+              <label for="image2">
+                <i class="fas fa-images"></i>
+                Secondary Image (Optional)<% if (editing && newsItem.image2Url) { %> (Current: <%=
+                    newsItem.image2Url.split('/').pop() %>)<% } %>
+              </label>
+              <div class="file-input-wrapper">
+                <input type="file" id="image2" name="image2" accept="image/*" class="file-input">
+                <label for="image2" class="file-input-label">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                  Choose secondary image or drag and drop
+                </label>
+              </div>
+              <div class="file-preview" id="preview2"></div>
+              <% if (editing && newsItem.image2Url) { %>
+                <div style="margin-top: 10px;">
+                  <img src="<%= newsItem.image2Url %>" alt="Current secondary image"
+                    style="max-width: 200px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                </div>
+                <% } %>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+              <i class="fas fa-<%= editing ? 'save' : 'paper-plane' %>"></i>
+              <%= editing ? 'Update News Article' : 'Publish News Article' %>
+            </button>
       </form>
     </div>
   </div>
@@ -841,7 +887,7 @@
         </div>
       </div>
 
-      <% if (news && news.length > 0) { %>
+      <% if (news && news.length> 0) { %>
         <table class="news-table">
           <thead>
             <tr>
@@ -856,60 +902,68 @@
           <tbody>
             <% news.forEach(function(article, index) { %>
               <tr>
-                <td class="date-cell"><%= index + 1 %></td>
-                <td class="date-cell"><%= new Date(article.date).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'short', 
-                  day: 'numeric' 
-                }) %></td>
-                <td class="headline-cell"><%= article.headline %></td>
+                <td class="date-cell">
+                  <%= index + 1 %>
+                </td>
+                <td class="date-cell">
+                  <%= new Date(article.date).toLocaleDateString('en-US', { year: 'numeric' , month: 'short' ,
+                    day: 'numeric' }) %>
+                </td>
+                <td class="headline-cell">
+                  <%= article.headline %>
+                </td>
                 <td>
                   <% if (article.image1Url) { %>
                     <img src="<%= article.image1Url %>" alt="Thumbnail" class="thumbnail-img">
-                  <% } else { %>
-                    <span style="color: #9bb5d6; font-style: italic;">No image</span>
-                  <% } %>
+                    <% } else { %>
+                      <span style="color: #9bb5d6; font-style: italic;">No image</span>
+                      <% } %>
                 </td>
                 <td class="content-preview">
                   <%= article.content.replace(/<[^>]+>/g, '').substring(0, 120) %>
-                  <% if (article.content.replace(/<[^>]+>/g, '').length > 120) { %>...
-                  <% } %>
+                    <% if (article.content.replace(/<[^>]+>/g, '').length > 120) { %>...
+                      <% } %>
                 </td>
                 <td>
                   <div class="action-buttons">
-                    <button class="action-btn edit-btn" onclick="editArticle('<%= article._id %>')" title="Edit Article">
+                    <button class="action-btn edit-btn" onclick="editArticle('<%= article._id %>')"
+                      title="Edit Article">
                       <i class="fas fa-edit"></i>
                       Edit
                     </button>
-                    <button class="action-btn delete-btn" 
-                            data-article-id="<%= article._id %>" 
-                            data-article-title="<%= article.headline %>" 
-                            onclick="showDeleteModal(this.dataset.articleId, this.dataset.articleTitle)" 
-                            title="Delete Article">
+                    <button class="action-btn delete-btn" data-article-id="<%= article._id %>"
+                      data-article-title="<%= article.headline %>"
+                      onclick="showDeleteModal(this.dataset.articleId, this.dataset.articleTitle)"
+                      title="Delete Article">
                       <i class="fas fa-trash"></i>
                       Delete
                     </button>
-                    <button class="action-btn share-btn" 
-                            data-article-id="<%= article._id %>" 
-                            data-article-title="<%= article.headline %>" 
-                            onclick="shareToFacebook(this.dataset.articleId, this.dataset.articleTitle)" 
-                            title="Share to Facebook">
+                    <button class="action-btn share-btn" data-article-id="<%= article._id %>"
+                      data-article-title="<%= article.headline %>"
+                      onclick="shareToFacebook(this.dataset.articleId, this.dataset.articleTitle)"
+                      title="Share to Facebook">
                       <i class="fab fa-facebook-f"></i>
                       Share
+                    </button>
+                    <button class="action-btn" style="background: linear-gradient(135deg, #FF6B35 0%, #FF4500 100%);"
+                      data-article-id="<%= article._id %>" onclick="debugFacebookShare(this.dataset.articleId)"
+                      title="Debug Facebook Share">
+                      <i class="fas fa-bug"></i>
+                      Debug
                     </button>
                   </div>
                 </td>
               </tr>
-            <% }); %>
+              <% }); %>
           </tbody>
         </table>
-      <% } else { %>
-        <div class="no-data">
-          <i class="fas fa-newspaper"></i>
-          <h3>No articles published yet</h3>
-          <p>Create your first news article using the form above.</p>
-        </div>
-      <% } %>
+        <% } else { %>
+          <div class="no-data">
+            <i class="fas fa-newspaper"></i>
+            <h3>No articles published yet</h3>
+            <p>Create your first news article using the form above.</p>
+          </div>
+          <% } %>
     </div>
   </div>
 
@@ -938,7 +992,7 @@
       </div>
     </div>
   </div>
-  
+
   <script>
     // File input handling
     function handleFileInput(inputId, previewId) {
@@ -1103,7 +1157,7 @@
         return;
       }
       // Redirect to edit page
-      window.location.href = '/newsadmin/edit/' + articleId;
+      window.location.href = '/newsadmin/edit?newsId=' + articleId;
     }
 
     function showDeleteModal(articleId, articleTitle) {
@@ -1172,38 +1226,81 @@
       });
     }
 
+    function debugFacebookShare(articleId) {
+      if (!articleId) {
+        console.error('No article ID provided for debugging');
+        return;
+      }
+
+      // Create the news URL to debug
+      const newsUrl = `${window.location.protocol}//${window.location.host}/newsdescription?newsId=${articleId}`;
+      
+      // Facebook's Sharing Debugger URL
+      const debugUrl = `https://developers.facebook.com/tools/debug/?q=${encodeURIComponent(newsUrl)}`;
+      
+      // Show debug info in console
+      console.log('=== Facebook Share Debug Info ===');
+      console.log('Article ID:', articleId);
+      console.log('News URL:', newsUrl);
+      console.log('Debug URL:', debugUrl);
+      console.log('================================');
+      
+      // Show alert with the URL being shared
+      const confirmDebug = confirm(`Debug Facebook sharing for this article?\n\nURL to be shared: ${newsUrl}\n\nThis will open Facebook's Sharing Debugger where you can:\n1. See how Facebook reads your page\n2. Refresh Facebook's cache\n3. View Open Graph tags\n\nClick OK to open the debugger.`);
+      
+      if (confirmDebug) {
+        // Open Facebook's Sharing Debugger
+        window.open(debugUrl, '_blank');
+      }
+    }
+
     function shareToFacebook(articleId, articleTitle) {
       if (!articleId) {
         console.error('No article ID provided for sharing');
         return;
       }
 
-      // Create the share URL with proper encoding
-      const shareUrl = encodeURIComponent(`https://uebschool.edu.np/newsdescription?newsId=${articleId}`);
-      const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+      // Create the proper news description URL
+      const newsUrl = `${window.location.protocol}//${window.location.host}/newsdescription?newsId=${articleId}`;
       
-      // Show success message
+      // Facebook share URL with additional parameters
+      const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(newsUrl)}&quote=${encodeURIComponent(articleTitle)}`;
+      
+      // Show loading state
       const shareButtons = document.querySelectorAll('.share-btn');
       shareButtons.forEach(btn => {
         if (btn.dataset.articleId === articleId) {
           const originalContent = btn.innerHTML;
-          btn.innerHTML = '<i class="fas fa-check"></i> Shared!';
-          btn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sharing...';
+          btn.disabled = true;
           
+          // Reset button after 3 seconds
           setTimeout(() => {
-            btn.innerHTML = originalContent;
-            btn.style.background = 'linear-gradient(135deg, #1877f2 0%, #166fe5 100%)';
-          }, 2000);
+            btn.innerHTML = '<i class="fas fa-check"></i> Shared!';
+            btn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+            btn.disabled = false;
+            
+            setTimeout(() => {
+              btn.innerHTML = originalContent;
+              btn.style.background = 'linear-gradient(135deg, #1877f2 0%, #166fe5 100%)';
+            }, 2000);
+          }, 1000);
         }
       });
       
-      // Open Facebook share dialog
+      // Open Facebook share dialog with proper dimensions
       try {
-        window.open(
+        const shareWindow = window.open(
           facebookShareUrl,
           'facebook-share-dialog',
-          'width=626,height=436,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,status=no,location=no'
+          'width=626,height=436,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,status=no,location=no,directories=no'
         );
+        
+        // Check if popup was blocked
+        if (!shareWindow || shareWindow.closed || typeof shareWindow.closed == 'undefined') {
+          // Fallback: direct navigation
+          window.open(facebookShareUrl, '_blank');
+        }
       } catch (error) {
         console.error('Failed to open share dialog:', error);
         // Fallback: navigate to the share URL
@@ -1232,6 +1329,7 @@
     window.closeDeleteModal = closeDeleteModal;
     window.confirmDelete = confirmDelete;
     window.shareToFacebook = shareToFacebook;
+    window.debugFacebookShare = debugFacebookShare;
 
     // Page load initialization
     document.addEventListener('DOMContentLoaded', function() {
@@ -1253,4 +1351,5 @@
 
 
 </body>
+
 </html>

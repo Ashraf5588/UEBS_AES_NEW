@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <center>Choose class,section and terminal for marks entry</center>
+  
+  <select name="classSection" id="classSection">
+    <option value="" selected disabled>choose class & section</option>
+<% studentClassdata.forEach((data)=>{%>
+  <option value="<%=data.studentClass%>-<%=data.section%>"><%=data.studentClass%>-<%=data.section%></option>
+<%})%>
+
+  </select>
+  <select name="terminals" id="terminal">
+    <option value="" selected disabled>Choose Terminal</option>
+    <%terminals.forEach((terminal)=>{%>
+      <option value="<%=terminal.terminal%>"><%=terminal.terminal%></option>
+   <% }) %>
+  </select>
+   <select name="academicYear" id="academicYear">
+    <option value="" selected disabled>Choose academicYear</option>
+    <%terminals.forEach((terminal)=>{%>
+      <option value=""><%=terminal.terminal%></option>
+   <% }) %>
+  </select>
+  <button onclick="loadform()">Load Form</button>
+  <input type="hidden" id="format" value="<%=format%>">
+
+
+
+
+  <script>
+    function loadform()
+    {
+        
+        const classSection = document.getElementById('classSection').value
+        const studentClass = classSection.split("-")[0];
+        const section = classSection.split("-")[1];
+        const academicYear = document.getElementById('academicYear').value;
+        const terminal = document.getElementById('terminal').value
+        const format = document.getElementById('format').value;
+
+        window.location.href=(`/generatemarksheet?studentClass=${studentClass}&section=${section}&&terminal=${terminal}&academicYear=${academicYear}&format=${format}`)
+      
+    }
+  </script>
+
+  <!-- marksheet format from here -->
+   <%studentWisedata.forEach((data)=>{ %>
+    <div>
+      <h3><%=data.name%> - <%=studentClass%>-<%=section%> - Roll No: <%=data.roll%></h3>
+      <table border="1">
+        <thead>
+          <tr><th>SN</th>
+            <th>Credit Hours</th>
+            <th>Subject</th>
+            <th>Theory Marks</th>
+            <th>Th Grade Point</th>
+            <th>Theory Grade</th>
+            <th>Practical Marks</th>
+            <th>Pr Grade Point</th>
+            <th>Practical Grade</th>
+            <th>Total Grade Point</th>
+            <th>Final Grade</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%let totalCredithour=0 %>
+          <% let gpa = 0 %>
+          <% data.subjects.forEach((mark, index)=>{ %>
+            <tr>
+              <td><%=index + 1%></td>
+              <td><%=mark.creditHour%></td>
+              <td><%=mark.subject%></td>
+              <td><%=mark.theorymarks%></td>
+              <td>
+                <% percent= (mark.theorymarks/mark.theoryfullmarks)*100; 
+                function getGradePoint(percentage)
+                {
+  if (percentage >= 90 && percentage<=100) return 4.0;
+  else if (percentage >= 80 && percentage<=89) return 3.6;
+  else if (percentage >= 70 && percentage<=79) return 3.2;
+  else if (percentage >= 60 && percentage<=69) return 2.8;
+  else if (percentage >= 50 && percentage<=59) return 2.4;
+  else if (percentage >= 40 && percentage<=49) return 2.0;
+  else if (percentage >= 35 && percentage<=39) return 1.6;
+  else if (percentage <= 34 ) return 0;
+  
+                }
+                %><%= getGradePoint(percent) %>
+              </td>
+              <td> <%
+function getLetterGrade(gp) {
+  if (gp === 4.0) return "A+";
+  if (gp >= 3.6) return "A";
+  if (gp >= 3.2) return "B+";
+  if (gp >= 2.8) return "B";
+  if (gp >= 2.4) return "C+";
+  if (gp >= 2.0) return "C";
+  if (gp >= 1.6) return "D";
+  return "NG";
+} %>
+<% let gp = getGradePoint(percent); %>
+<%= getLetterGrade(gp) %>
+              </td>
+              <td><%=mark.practicalmarks%></td>
+              <td>  <% percentpr= (mark.practicalmarks/mark.practicalfullmarks)*100; %>
+                 <%= getGradePoint(percentpr) %></td>
+              <td> <% let gppr = getGradePoint(percentpr); %> <%= getLetterGrade(gppr) %> </td>
+              </td>
+              <td><%totalpercent= (mark.theorymarks + mark.practicalmarks)/(mark.theoryfullmarks+mark.practicalfullmarks)*100; %>
+                <%= getGradePoint(totalpercent) %></td>
+              <td><%=getLetterGrade(getGradePoint(totalpercent)) %></td>
+             
+            </tr>
+            <% totalCredithour = totalCredithour + mark.creditHour %>
+            <% gpa = gpa + (getGradePoint(totalpercent) * mark.creditHour) %>
+         
+            
+          <% }) %>
+              GPA: <%= (gpa/totalCredithour).toFixed(2) %>
+        </tbody>
+      </table>
+    </div>
+   <% }) %>
+</body>
+</html>

@@ -2,8 +2,9 @@ const express = require('express');
 const student = express.Router();
 const controller = require('../controller/controller')
 const newscontroller = require('../controller/newscontroller')
+const examcontroller = require('../controller/examconntroller')
 const multer  = require('multer')
-
+const examdashboardcontroller = require('../controller/examdashboardcontroller')
 
 const {verifytoken,authorized,isAdmin,isnewsAdmin}=require('../middleware/auth')
 
@@ -232,5 +233,19 @@ student.get('/newsdescription', newscontroller.getNewsPage);
 student.delete('/newsadmin/delete/:id', verifytoken, authorized, isnewsAdmin, newscontroller.deleteNews);
 student.post('/newsadmin/delete/:id', verifytoken, authorized, isnewsAdmin, newscontroller.deleteNews);
 
+student.get('/newsadmin/edit', verifytoken, authorized, isnewsAdmin, newscontroller.editNewsPage);
+student.post('/newsadmin/update', verifytoken, authorized, isnewsAdmin, upload.fields([
+  { name: 'image1', maxCount: 1 },
+  { name: 'image2', maxCount: 1 }
+]), newscontroller.updateNews);
 
+//exam part started here
+student.get('/examform',verifytoken,authorized,examcontroller.loadForm)
+student.get('/entryform',verifytoken,authorized,examcontroller.entryform)
+student.post('/entryform',verifytoken,authorized,examcontroller.saveEntryform)
+student.get('/getPreviousmarks',verifytoken,authorized,examcontroller.getPreviousmarks)
+student.get('/getAttendanceData',verifytoken,authorized,examcontroller.getAttendanceData)
+student.get('/exammanagement',verifytoken,authorized,isAdmin,examdashboardcontroller.examManagement)
+student.get('/formatchoose',verifytoken,authorized,isAdmin,examdashboardcontroller.formatChoose)
+student.get('/generatemarksheet',verifytoken,authorized,isAdmin,examdashboardcontroller.generateMarksheet)
 module.exports = student;

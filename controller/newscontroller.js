@@ -7,7 +7,7 @@ const bs = require("bikram-sambat-js")
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const { rootDir } = require("../utils/path");
-const {marksheetSchema} = require("../model/masrksheetschema");
+
 const { classSchema, subjectSchema, terminalSchema,newsubjectSchema } = require("../model/adminschema");
 const { adminSchema,superadminSchema, teacherSchema} = require("../model/admin");
 const { studentSchema } = require("../model/schema");
@@ -108,8 +108,9 @@ exports.newsadmin = async (req, res) => {
       pageTitle: "News Admin",
       sidenavData,
       news,
-      user: req.user
-
+      user: req.user,
+      editing: false,
+      newsItem: null
     });
   } catch (error) { 
     console.error("Error rendering news admin page:", error);
@@ -212,5 +213,83 @@ exports.deleteNews = async (req, res) => {
   } catch (err) {
     console.error("Error deleting news:", err);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+exports.editNewsPage = async (req, res) => {
+  try {
+    const newsId = req.query.newsId;
+    if (!newsId) {
+      return res.redirect('/newsadmin');
+    }
+    
+    const newsItem = await newsModel.findById(newsId).lean();
+    if (!newsItem) {
+      return res.status(404).send("News not found");
+    }
+    
+    const sidenavData = await getSidenavData(req);
+    const news = await newsModel.find().sort({ date: -1 }).lean();
+    
+    res.render("news/newsadmin", {
+      pageTitle: "Edit News",
+      sidenavData,
+      news,
+      newsItem,
+      user: req.user,
+      editing: true
+    });
+  } catch (err) {
+    console.error("Error fetching news for edit:", err);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+exports.updateNews = async (req, res) => {
+  try {
+    const newsId = req.body.newsId;
+    if (!newsId) {
+      return res.status(400).send("News ID is required");
+    }
+
+    const { headline, content } = req.body;
+    
+    // Find the existing news item
+    const existingNews = await newsModel.findById(newsId);
+    if (!existingNews) {
+      return res.status(404).send("News not found");
+    }
+
+    // Update fields
+    existingNews.headline = headline;
+    existingNews.content = content;
+    
+    // Handle image updates
+    if (req.files && req.files['image1']) {
+      // Delete old image if exists
+      if (existingNews.image1Url) {
+        const oldImagePath = path.join(rootDir, 'uploads', path.basename(existingNews.image1Url));
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      existingNews.image1Url = `/uploads/${req.files['image1'][0].filename}`;
+    }
+    
+    if (req.files && req.files['image2']) {
+      // Delete old image if exists
+      if (existingNews.image2Url) {
+        const oldImagePath = path.join(rootDir, 'uploads', path.basename(existingNews.image2Url));
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      existingNews.image2Url = `/uploads/${req.files['image2'][0].filename}`;
+    }
+
+    await existingNews.save();
+    res.redirect('/newsadmin');
+  } catch (err) {
+    console.error("Error updating news:", err);
+    res.status(500).send("Internal Server Error");
   }
 };

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Class & terminal</title>
+</head>
+<body>
+  <center>Choose class,sectionn and terminal for marks entry</center>
+  <select name="subject" id="subject">
+    <option value="">Choose subject</option>
+    <% uniqueSubjects = new Set(subjects.map((subject)=>subject.newsubject)) %>
+    <%uniqueSubjects.forEach((subject)=>{%>
+      <option value="<%=subject%>"><%=subject%></option>
+    <%})%>
+    <option value=""></option>
+  </select>
+  <select name="classSection" id="classSection">
+    <option value="" selected disabled>choose class & section</option>
+<% studentClassdata.forEach((data)=>{%>
+  <option value="<%=data.studentClass%>-<%=data.section%>"><%=data.studentClass%>-<%=data.section%></option>
+<%})%>
+
+  </select>
+  <select name="terminals" id="terminal">
+    <option value="" selected disabled>Choose Terminal</option>
+    <%terminals.forEach((terminal)=>{%>
+      <option value="<%=terminal.terminal%>"><%=terminal.terminal%></option>
+   <% }) %>
+  </select>
+   <select name="academicYear" id="academicYear">
+    <option value="" selected disabled>Choose academicYear</option>
+    <%terminals.forEach((terminal)=>{%>
+      <option value=""><%=terminal.terminal%></option>
+   <% }) %>
+  </select>
+  <button onclick="loadform()">Load Form</button>
+
+
+
+
+  <script>
+    function loadform()
+    {
+        const selectedSubject = document.getElementById('subject').value;
+        const classSection = document.getElementById('classSection').value
+        const studentClass = classSection.split("-")[0];
+        const section = classSection.split("-")[1];
+        const academicYear = document.getElementById('academicYear').value;
+        const terminal = document.getElementById('terminal').value
+
+        window.location.href=(`/entryform?studentClass=${studentClass}&section=${section}&subject=${selectedSubject}&terminal=${terminal}&academicYear=${academicYear}`)
+      
+    }
+  </script>
+</body>
+</html>
