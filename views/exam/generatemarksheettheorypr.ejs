@@ -1,131 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+<meta charset="UTF-8">
+<title>Grade Sheet</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+    }
+
+    .sheet {
+        width: 800px;
+        margin: 25px auto;
+        background: white;
+        padding: 25px;
+        border: 3px double #000;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .header h2 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: bold;
+    }
+
+    .header h3 {
+        margin: 5px 0;
+    }
+
+    .grade-btn {
+        background: #1fb366;
+        color: #fff;
+        padding: 6px 20px;
+        display: inline-block;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+
+    .student-info {
+        margin-top: 15px;
+        font-size: 14px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 13px;
+    }
+
+    table th, table td {
+        border: 1px solid black;
+        padding: 6px;
+        text-align: center;
+    }
+
+    .box {
+        border: 1px solid black;
+        margin-top: 18px;
+        display: flex;
+        height: 40px;
+    }
+
+    .box div {
+        width: 50%;
+        border-right: 1px solid black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+
+    .remark-box {
+        border: 1px solid black;
+        height: 70px;
+        margin-top: 20px;
+        padding: 5px;
+        font-size: 14px;
+    }
+
+    .sign-row {
+        margin-top: 40px;
+        display: flex;
+        justify-content: space-between;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .sign-row div {
+        width: 30%;
+    }
+
+    .grading-scale {
+        margin-top: 30px;
+        font-size: 13px;
+    }
+
+    .grading-scale table {
+        width: 100%;
+        border: none;
+    }
+
+    .grading-scale td {
+        border: none;
+        padding: 3px;
+        font-size: 13px;
+    }
+</style>
+
 </head>
 <body>
-  <center>Choose class,section and terminal for marks entry</center>
-  
-  <select name="classSection" id="classSection">
-    <option value="" selected disabled>choose class & section</option>
-<% studentClassdata.forEach((data)=>{%>
-  <option value="<%=data.studentClass%>-<%=data.section%>"><%=data.studentClass%>-<%=data.section%></option>
-<%})%>
 
-  </select>
-  <select name="terminals" id="terminal">
-    <option value="" selected disabled>Choose Terminal</option>
-    <%terminals.forEach((terminal)=>{%>
-      <option value="<%=terminal.terminal%>"><%=terminal.terminal%></option>
-   <% }) %>
-  </select>
-   <select name="academicYear" id="academicYear">
-    <option value="" selected disabled>Choose academicYear</option>
-    <%terminals.forEach((terminal)=>{%>
-      <option value=""><%=terminal.terminal%></option>
-   <% }) %>
-  </select>
-  <button onclick="loadform()">Load Form</button>
-  <input type="hidden" id="format" value="<%=format%>">
+<% studentWisedata.forEach((data) => { %>
 
+<div class="sheet">
 
-
-
-  <script>
-    function loadform()
-    {
-        
-        const classSection = document.getElementById('classSection').value
-        const studentClass = classSection.split("-")[0];
-        const section = classSection.split("-")[1];
-        const academicYear = document.getElementById('academicYear').value;
-        const terminal = document.getElementById('terminal').value
-        const format = document.getElementById('format').value;
-
-        window.location.href=(`/generatemarksheet?studentClass=${studentClass}&section=${section}&&terminal=${terminal}&academicYear=${academicYear}&format=${format}`)
+    <!-- HEADER -->
+    <div class="header">
       
-    }
-  </script>
-
-  <!-- marksheet format from here -->
-   <%studentWisedata.forEach((data)=>{ %>
-    <div>
-      <h3><%=data.name%> - <%=studentClass%>-<%=section%> - Roll No: <%=data.roll%></h3>
-      <table border="1">
-        <thead>
-          <tr><th>SN</th>
-            <th>Credit Hours</th>
-            <th>Subject</th>
-            <th>Theory Marks</th>
-            <th>Th Grade Point</th>
-            <th>Theory Grade</th>
-            <th>Practical Marks</th>
-            <th>Pr Grade Point</th>
-            <th>Practical Grade</th>
-            <th>Total Grade Point</th>
-            <th>Final Grade</th>
-          </tr>
-        </thead>
-        <tbody>
-          <%let totalCredithour=0 %>
-          <% let gpa = 0 %>
-          <% data.subjects.forEach((mark, index)=>{ %>
-            <tr>
-              <td><%=index + 1%></td>
-              <td><%=mark.creditHour%></td>
-              <td><%=mark.subject%></td>
-              <td><%=mark.theorymarks%></td>
-              <td>
-                <% percent= (mark.theorymarks/mark.theoryfullmarks)*100; 
-                function getGradePoint(percentage)
-                {
-  if (percentage >= 90 && percentage<=100) return 4.0;
-  else if (percentage >= 80 && percentage<=89) return 3.6;
-  else if (percentage >= 70 && percentage<=79) return 3.2;
-  else if (percentage >= 60 && percentage<=69) return 2.8;
-  else if (percentage >= 50 && percentage<=59) return 2.4;
-  else if (percentage >= 40 && percentage<=49) return 2.0;
-  else if (percentage >= 35 && percentage<=39) return 1.6;
-  else if (percentage <= 34 ) return 0;
-  
-                }
-                %><%= getGradePoint(percent) %>
-              </td>
-              <td> <%
-function getLetterGrade(gp) {
-  if (gp === 4.0) return "A+";
-  if (gp >= 3.6) return "A";
-  if (gp >= 3.2) return "B+";
-  if (gp >= 2.8) return "B";
-  if (gp >= 2.4) return "C+";
-  if (gp >= 2.0) return "C";
-  if (gp >= 1.6) return "D";
-  return "NG";
-} %>
-<% let gp = getGradePoint(percent); %>
-<%= getLetterGrade(gp) %>
-              </td>
-              <td><%=mark.practicalmarks%></td>
-              <td>  <% percentpr= (mark.practicalmarks/mark.practicalfullmarks)*100; %>
-                 <%= getGradePoint(percentpr) %></td>
-              <td> <% let gppr = getGradePoint(percentpr); %> <%= getLetterGrade(gppr) %> </td>
-              </td>
-              <td><%totalpercent= (mark.theorymarks + mark.practicalmarks)/(mark.theoryfullmarks+mark.practicalfullmarks)*100; %>
-                <%= getGradePoint(totalpercent) %></td>
-              <td><%=getLetterGrade(getGradePoint(totalpercent)) %></td>
-             
-            </tr>
-            <% totalCredithour = totalCredithour + mark.creditHour %>
-            <% gpa = gpa + (getGradePoint(totalpercent) * mark.creditHour) %>
-         
-            
-          <% }) %>
-              GPA: <%= (gpa/totalCredithour).toFixed(2) %>
-        </tbody>
-      </table>
+        <h2>United English Boarding School</h2>
+        <img src="/image.png" alt="">
+        <p>Manahari-8, Simpani</p>
+        <h3><%= terminal %> Terminal Examination - <%= academicYear %></h3>
+        <div class="grade-btn">Grade Sheet</div>
     </div>
-   <% }) %>
+
+    <!-- Student Info -->
+    <div class="student-info">
+        <p><b>Student Name:</b> <%= data.name %></p>
+        <p>
+            <b>Class:</b> <%= studentClass %> &nbsp;&nbsp;
+            <b>Section:</b> <%= section %> &nbsp;&nbsp;
+            <b>Roll:</b> <%= data.roll %>
+        </p>
+    </div>
+
+    <!-- SUBJECT TABLE -->
+    <table>
+        <thead>
+            <tr>
+                <th>S.N</th>
+                <th>Subject</th>
+                <th>Credit Hour</th>
+                <th>Th GP</th>
+                <th>Pr GP</th>
+                <th>Final GP</th>
+                <th>Final Grade</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        <% 
+        let totalCredit = 0;
+        let totalGradePoints = 0;
+
+        function getGP(percent) {
+            if (percent >= 90) return 4.0;
+            if (percent >= 80) return 3.6;
+            if (percent >= 70) return 3.2;
+            if (percent >= 60) return 2.8;
+            if (percent >= 50) return 2.4;
+            if (percent >= 40) return 2.0;
+            if (percent >= 35) return 1.6;
+            return 0.0;
+        }
+
+        function getGrade(gp) {
+            if (gp === 4.0) return "A+";
+            if (gp >= 3.6) return "A";
+            if (gp >= 3.2) return "B+";
+            if (gp >= 2.8) return "B";
+            if (gp >= 2.4) return "C+";
+            if (gp >= 2.0) return "C";
+            if (gp >= 1.6) return "D";
+            return "NG";
+        }
+        %>
+
+        <% data.subjects.forEach((sub, index) => { %>
+
+        <% 
+        let thP = (sub.theorymarks / sub.theoryfullmarks) * 100;
+        let prP = (sub.practicalmarks / sub.practicalfullmarks) * 100;
+        let finalP = ((sub.theorymarks + sub.practicalmarks) /
+                      (sub.theoryfullmarks + sub.practicalfullmarks)) * 100;
+
+        let thGP = getGP(thP);
+        let prGP = getGP(prP);
+        let finalGP = getGP(finalP);
+
+        totalCredit += sub.creditHour;
+        totalGradePoints += finalGP * sub.creditHour;
+        %>
+
+        <tr>
+            <td><%= index + 1 %></td>
+            <td><%= sub.subject %></td>
+            <td><%= sub.creditHour %></td>
+            <td><%= thGP %></td>
+            <td><%= prGP %></td>
+            <td><%= finalGP %></td>
+            <td><%= getGrade(finalGP) %></td>
+            <td><% function getRemarks(finalgrade)
+            {
+                if (finalgrade === "NG") return "Needs Improvement";
+                else if(finalgrade === "D") return "Satisfactory";
+                else if(finalgrade === "C" || finalgrade === "C+") return "Good";
+                else if(finalgrade === "B" || finalgrade === "B+") return "Very Good";
+                else return "Excellent Performance";
+            }%><%= getRemarks(getGrade(finalGP)) %></td>
+        </tr>
+<% totalAttendance = sub.attendance %>
+        <% }) %>
+
+        </tbody>
+    </table>
+
+    <!-- ATTENDANCE + GPA -->
+    <div class="box">
+        <div>Attendance: <%= totalAttendance %> </div>
+        <div>GPA: <%= (totalGradePoints / totalCredit).toFixed(2) %></div>
+    </div>
+
+    <!-- REMARKS -->
+    <div class="remark-box">
+        <b>Remarks:</b><br>
+        <% let gpa = (totalGradePoints / totalCredit); %>
+        <% if (gpa >= 3.6) { %> Excellent Performance
+        <% } else if (gpa >= 3.2) { %> Very Good
+        <% } else if (gpa >= 2.4) { %> Good
+        <% } else if (gpa >= 2.0) { %> Satisfactory
+        <% } else { %> Needs Improvement <% } %>
+    </div>
+
+    <p><b>Issued Date:</b> <%= new Date().toLocaleDateString() %></p>
+
+    <!-- SIGNATURES -->
+    <div class="sign-row">
+        <div>
+            <br><br>_____________<br>
+            Class Teacher
+        </div>
+        <div>
+            <br><br>_____________<br>
+            Exam Coordinator
+        </div>
+        <div>
+            <br><br>_____________<br>
+            Principal
+        </div>
+    </div>
+    <hr>
+
+    <!-- GRADING SCALE -->
+    <div class="grading-scale">
+        <table>
+            <tr>
+                <td>90% and above : A+</td>
+                <td>50% and above: C+</td>
+            </tr>
+            <tr>
+                <td>80% and above : A</td>
+                <td>40% and above: C</td>
+            </tr>
+            <tr>
+                <td>70% and above : B+</td>
+                <td>35% and above: D</td>
+            </tr>
+            <tr>
+                <td>60% and above : B</td>
+                <td>Below 35% : NG</td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+
+<% }) %>
+
 </body>
 </html>

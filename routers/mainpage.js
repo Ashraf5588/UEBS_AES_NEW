@@ -248,4 +248,5 @@ student.get('/getAttendanceData',verifytoken,authorized,examcontroller.getAttend
 student.get('/exammanagement',verifytoken,authorized,isAdmin,examdashboardcontroller.examManagement)
 student.get('/formatchoose',verifytoken,authorized,isAdmin,examdashboardcontroller.formatChoose)
 student.get('/generatemarksheet',verifytoken,authorized,isAdmin,examdashboardcontroller.generateMarksheet)
+student.get('/marksheetsetup',verifytoken,authorized,isAdmin,examdashboardcontroller.marksheetSetup)
 module.exports = student;

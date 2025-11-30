@@ -136,3 +136,16 @@ console.log("grouped data",studentWisedata);
     res.status(500).send("Internal Server Error");
   }
 }
+
+exports.marksheetSetup = async (req, res, next) => {
+  try {
+    res.render("./exam/marksheetsetup", {
+      currentPage: "exammanagement",
+      user: req.user
+    });
+  }
+    catch (error) {
+    console.error("Error loading marksheet setup page:", error);
+    res.status(500).send("Internal Server Error");
+  }
+}
