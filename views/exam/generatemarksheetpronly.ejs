@@ -231,7 +231,7 @@
         const academicYear = document.getElementById('academicYear').value;
         const terminal = document.getElementById('terminal').value
 
-        window.location.href=(`/generatemarksheet?studentClass=${studentClass}&section=${section}&format=${"theorypractical"}&terminal=${terminal}&academicYear=${academicYear}`)
+        window.location.href=(`/generatemarksheet?studentClass=${studentClass}&section=${section}&format=${"practicalonly"}&terminal=${terminal}&academicYear=${academicYear}`)
       
     }
   </script>
@@ -282,8 +282,7 @@
                 <th>S.N</th>
                 <th>Subject</th>
                 <th>Credit Hour</th>
-                <th>Th Marks</th>
-                <th>Pr Marks</th>
+                
                 <th>Th GP</th>
                 <th>Pr GP</th>
                 <th>Final GP</th>
@@ -345,8 +344,7 @@
             <td><%= index + 1 %></td>
             <td><%= sub.subject %></td>
             <td><% m =  creditHourData.filter(ch => ch.newsubject === sub.subject)[0]?.theoryCreditHour + creditHourData.filter(ch => ch.newsubject === sub.subject)[0]?.practicalCreditHour  || 'N/A' %><%= m %></td>
-            <td><%= sub.theorymarks %> <%= sub.theorymarks<sub.passMarks?'*':'' %></td>
-            <td><%= sub.practicalmarks %> <%= sub.practicalmarks<sub.passMarks?'*':'' %></td>
+           
             <td><%= thGP %></td>
             <td><%= prGP %></td>
             <td><%= finalGP %></td>

@@ -21,19 +21,21 @@ const terminalModel = mongoose.model("terminal", terminalSchema, "terminal");
 app.set("view engine", "ejs");
 app.set("view", path.join(rootDir, "views"));
 const newsubject = mongoose.model("newsubject", newsubjectSchema, "newsubject");
-const getSlipModel = (studentClass, section,academicYear) => {
+const { marksheetsetupschemaForAdmin } = require("../model/marksheetschema");
+const marksheetSetup = mongoose.model("marksheetSetup", marksheetsetupschemaForAdmin, "marksheetSetup");
+const getSlipModel = () => {
   // to Check if model already exists
-  if (mongoose.models[`exam_${studentClass}_${section}_${academicYear}`]) {
-    return mongoose.models[`exam_${studentClass}_${section}_${academicYear}`];
+  if (mongoose.models[`exam_marks`]) {
+    return mongoose.models[`exam_marks`];
   }
-  return mongoose.model(`exam_${studentClass}_${section}_${academicYear}`, examSchema, `exam_${studentClass}_${section}_${academicYear}`);
+  return mongoose.model(`exam_marks`, examSchema, `exam_marks`);
 };
 
 exports.loadForm = async (req,res,next)=>
 {
     const subject = await newsubject.find({}).lean();
     const studentClassdata = await studentClass.find({}).lean();
-    const terminals = await terminal.find({}).lean();
+ 
     const user = req.user;
     let accessibleSubject =[];
     let accessibleClass=[];
@@ -55,12 +57,13 @@ exports.loadForm = async (req,res,next)=>
         )
       );
     }
-   
+   const marksheetSetups = await marksheetSetup.find({}).lean();
     res.render("./exam/formloader", { 
       currentPage: "home",
       subjects: accessibleSubject, 
       studentClassdata:accessibleClass,
-      terminals 
+  
+      marksheetSetups,
     });
 
 }
@@ -70,18 +73,19 @@ exports.entryform = async (req,res,next)=>
    const studentClassdata = await studentClassModel.find({}).lean();
   const {studentClass,section,subject,academicYear,terminal}= req.query;
   const studentData = await studentRecord.find({studentClass:studentClass,section:section})
+     const marksheetSetups = await marksheetSetup.find({}).lean();
   const subjectData = await newsubject.find({forClass:studentClass,newsubject:subject}).lean();
   console.log("Subject Data:", subjectData);
   const subjects = await newsubject.find({}).lean();
   const terminals = await terminalModel.find({}).lean();
  
-  res.render("./exam/entryform",{studentData,studentClass,section,subject,academicYear,terminal,subjectData,subjects,studentClassdata,terminals});
+  res.render("./exam/entryform",{studentData,studentClass,section,subject,academicYear,terminal,subjectData,subjects,studentClassdata,terminals, marksheetSetups});
 }
 exports.saveEntryform = async (req, res, next) => {
   try {
     const { studentClass, section, subject, academicYear, terminal } = req.query;
 
-    const model = getSlipModel( studentClass, section,  academicYear);
+    const model = getSlipModel();
 
     const bulkOps = [];
 
@@ -132,7 +136,7 @@ exports.getPreviousmarks= async (req,res,next)=>
 {
   try{
     const {subject,studentClass,section,academicYear,terminal}= req.query;
-    const model = getSlipModel(studentClass, section,academicYear);
+    const model = getSlipModel();
     const previousMarks = await model.find({subject:subject,terminal:terminal}).lean();
 
     res.json(previousMarks);
@@ -147,7 +151,7 @@ exports.getAttendanceData= async (req,res,next)=>
 {
   try{
     const {studentClass,section,academicYear,terminal}= req.query;
-    const attendanceModel = getSlipModel(studentClass, section,academicYear);
+    const attendanceModel = getSlipModel();
     const attendanceData = await attendanceModel.find({terminal:terminal}).lean();
     res.json(attendanceData);
   }

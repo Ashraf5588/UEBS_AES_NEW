@@ -231,7 +231,7 @@
         const academicYear = document.getElementById('academicYear').value;
         const terminal = document.getElementById('terminal').value
 
-        window.location.href=(`/generatemarksheet?studentClass=${studentClass}&section=${section}&format=${"theorypractical"}&terminal=${terminal}&academicYear=${academicYear}`)
+        window.location.href=(`/generatemarksheet?studentClass=${studentClass}&section=${section}&format=${"theoryonly"}&terminal=${terminal}&academicYear=${academicYear}`)
       
     }
   </script>
@@ -283,10 +283,10 @@
                 <th>Subject</th>
                 <th>Credit Hour</th>
                 <th>Th Marks</th>
-                <th>Pr Marks</th>
+                
                 <th>Th GP</th>
-                <th>Pr GP</th>
-                <th>Final GP</th>
+               
+                
                 <th>Final Grade</th>
                 <th>Remarks</th>
             </tr>
@@ -326,15 +326,15 @@
 
         <% 
         let thP = (sub.theorymarks / sub.theoryfullmarks) * 100;
-        let prP = (sub.practicalmarks / sub.practicalfullmarks) * 100;
-        let finalP = ((sub.theorymarks + sub.practicalmarks) /
-                      (sub.theoryfullmarks + sub.practicalfullmarks)) * 100;
+      
+        let finalP = ((sub.theorymarks ) /
+                      (sub.theoryfullmarks )) * 100;
 
         let thGP = getGP(thP);
-        let prGP = getGP(prP);
+        
         let theoryCreditHour = creditHourData.filter(ch => ch.newsubject === sub.subject)[0]?.theoryCreditHour || 0;
-        let practicalCreditHour = creditHourData.filter(ch => ch.newsubject === sub.subject)[0]?.practicalCreditHour || 0;
-        let finalGP = (thGP*theoryCreditHour + prGP*practicalCreditHour) / (theoryCreditHour + practicalCreditHour);
+       
+        let finalGP = (thGP*theoryCreditHour) / (theoryCreditHour);
 
    
        
@@ -344,14 +344,14 @@
           
             <td><%= index + 1 %></td>
             <td><%= sub.subject %></td>
-            <td><% m =  creditHourData.filter(ch => ch.newsubject === sub.subject)[0]?.theoryCreditHour + creditHourData.filter(ch => ch.newsubject === sub.subject)[0]?.practicalCreditHour  || 'N/A' %><%= m %></td>
+            <td><% m =  creditHourData.filter(ch => ch.newsubject === sub.subject)[0]?.theoryCreditHour || 'N/A' %><%= m %></td>
             <td><%= sub.theorymarks %> <%= sub.theorymarks<sub.passMarks?'*':'' %></td>
-            <td><%= sub.practicalmarks %> <%= sub.practicalmarks<sub.passMarks?'*':'' %></td>
+            
             <td><%= thGP %></td>
-            <td><%= prGP %></td>
-            <td><%= finalGP %></td>
+        
+        
                  <% totalCredit += m; 
-                  totalGradePoints += (thGP*theoryCreditHour + prGP*practicalCreditHour);%>
+                  totalGradePoints += (thGP*theoryCreditHour );%>
             <td><%= getGrade(finalGP) %></td>
             <td><% function getRemarks(finalgrade)
             {

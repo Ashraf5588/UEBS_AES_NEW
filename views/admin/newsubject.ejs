@@ -624,15 +624,24 @@
                   id="passingMarks"
                   min="0">
                   <div class="col-md-7">
-                <label for="creditHour" class="form-label">Credit Hour</label>
+                <label for="theoryCreditHour" class="form-label">Credit Hour</label>
                 <input 
                   type="number" 
                   class="form-control" 
-                  placeholder="Enter credit hour" 
-                  name="creditHour" 
-                  value="<%=editing?newsubjectData.creditHour:''%>" 
+                  placeholder="Theory credit hour" 
+                  name="theoryCreditHour" 
+                  value="<%=editing?newsubjectData.theoryCreditHour:''%>" 
                   required 
-                  id="creditHour"
+                  id="theoryCreditHour"
+                  min="0" step="0.01">
+                  <input 
+                  type="number" 
+                  class="form-control" 
+                  placeholder="Practical credit hour" 
+                  name="practicalCreditHour" 
+                  value="<%=editing?newsubjectData.practicalCreditHour:''%>" 
+                  required 
+                  id="practicalCreditHour"
                   min="0" step="0.01">
 <br> 
           </div><br> 
@@ -670,6 +679,8 @@ document.getElementById("subject").addEventListener("input", function() {
         document.querySelector("#practical").value = data.practical;
         document.querySelector("#total").value = data.total;
         document.querySelector("#passingMarks").value = data.passingMarks;
+        document.querySelector("#theoryCreditHour").value = data.theoryCreditHour;
+        document.querySelector("#practicalCreditHour").value = data.  practicalCreditHour;
       } 
     } else {
       alert("Please select a class and enter a subject name.");
@@ -717,7 +728,8 @@ document.getElementById("subject").addEventListener("input", function() {
                   
                   <th>Total Marks</th>
                   <th>Passing Marks</th>
-                   <th>Credit Hour</th>
+                   <th>TH Credit Hour</th>
+                   <th>PR Credit Hour</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -744,7 +756,10 @@ document.getElementById("subject").addEventListener("input", function() {
                           <%= subject.passingMarks %>
                         </td>
                     <td>
-                      <%= subject.creditHour %>
+                      <%= subject.theoryCreditHour %>
+                    </td>
+                    <td>
+                      <%= subject.practicalCreditHour %>
                     </td>
                     <td>
                       <a href="/admin/new/subject/<%= subject._id %>/edit?editing=true" 

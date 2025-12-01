@@ -50,7 +50,8 @@ const newsubjectSchema = new mongoose.Schema({
   "practical":{ type: Number,required: false},
   "total":{ type: Number,required: false},
   "passingMarks":{ type: Number,required: false},
-  "creditHour":{ type: Number,required: false},
+  "theoryCreditHour":{ type: Number,required: false},
+  "practicalCreditHour":{ type: Number,required: false},
 
 },{strict:false})
 module.exports = {subjectSchema,classSchema,terminalSchema,studentrecordschema,newsubjectSchema};

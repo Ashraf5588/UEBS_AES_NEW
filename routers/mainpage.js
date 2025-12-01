@@ -249,4 +249,10 @@ student.get('/exammanagement',verifytoken,authorized,isAdmin,examdashboardcontro
 student.get('/formatchoose',verifytoken,authorized,isAdmin,examdashboardcontroller.formatChoose)
 student.get('/generatemarksheet',verifytoken,authorized,isAdmin,examdashboardcontroller.generateMarksheet)
 student.get('/marksheetsetup',verifytoken,authorized,isAdmin,examdashboardcontroller.marksheetSetup)
+student.post('/marksheetsetup',verifytoken,authorized,isAdmin,examdashboardcontroller.saveMarksheetSetup)
+student.get('/admitcard',verifytoken,authorized,isAdmin,examdashboardcontroller.admitCard)
+student.get('/routineterminalchoose'  ,verifytoken,authorized,isAdmin,examdashboardcontroller.routineTerminalChoose)
+student.get('/examroutine',verifytoken,authorized,isAdmin,examdashboardcontroller.examRoutine)
+student.post('/examroutine',verifytoken,authorized,isAdmin,examdashboardcontroller.saveExamRoutine)
+student.get('/analytics',verifytoken,authorized,isAdmin,examdashboardcontroller.analytics)
 module.exports = student;
