@@ -140,9 +140,7 @@
     <div class="form-selector-container">
       <div class="form-selector-title">Choose Class, Section and Terminal</div>
       <div class="form-selector-grid">
-        <div class="search-box">
-            <input type="text" id="studentSearch" placeholder="Search Student Name..." onkeyup="filterStudents()">
-        </div>
+      
         <select name="classSection" id="classSection">
           <option value="" selected disabled>Choose Class</option>
           <% uniqueClasses = new Set(studentClassdata.map(data => data.studentClass)); %>
