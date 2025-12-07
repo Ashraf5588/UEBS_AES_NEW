@@ -253,6 +253,8 @@ student.post('/marksheetsetup',verifytoken,authorized,isAdmin,examdashboardcontr
 student.get('/admitcard',verifytoken,authorized,isAdmin,examdashboardcontroller.admitCard)
 student.get('/routineterminalchoose'  ,verifytoken,authorized,isAdmin,examdashboardcontroller.routineTerminalChoose)
 student.get('/examroutine',verifytoken,authorized,isAdmin,examdashboardcontroller.examRoutine)
-student.post('/examroutine',verifytoken,authorized,isAdmin,examdashboardcontroller.saveExamRoutine)
+student.post('/saveexamroutine',verifytoken,authorized,isAdmin,examdashboardcontroller.saveExamRoutine)
 student.get('/analytics',verifytoken,authorized,isAdmin,examdashboardcontroller.analytics)
+student.get('/editroutine',verifytoken,authorized,isAdmin,examdashboardcontroller.editRoutine)
+student.get('/deleteroutine',verifytoken,authorized,isAdmin,examdashboardcontroller.deleteRoutine)
 module.exports = student;

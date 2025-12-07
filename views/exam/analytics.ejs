@@ -3,9 +3,470 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analytics</title>
+  <title>Comprehensive Analytics Report</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#e5e7eb;padding:20px 0}
+    
+    .action-buttons{max-width:900px;margin:0 auto 15px;display:flex;gap:10px;justify-content:center;background:#fff;padding:15px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+    .action-buttons button{padding:10px 24px;border:0;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.5px}
+    .btn-print{background:linear-gradient(135deg,#1a3a52 0%,#2c5f8d 100%);color:#fff;box-shadow:0 3px 12px rgba(26,58,82,.3)}
+    .btn-print:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(26,58,82,.4)}
+    
+    .page{width:210mm;min-height:297mm;margin:0 auto 20mm;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15);padding:12mm;page-break-after:always}
+    .page:last-child{page-break-after:auto}
+    
+    .report-header{text-align:center;border-bottom:4px solid #ff8c42;padding-bottom:12px;margin-bottom:20px}
+    .report-title{font-size:26px;font-weight:800;color:#1a3a52;margin-bottom:6px;letter-spacing:.5px}
+    .report-subtitle{font-size:13px;color:#64748b;font-weight:600}
+    
+    .section-title{font-size:16px;font-weight:800;color:#fff;margin:20px 0 12px;padding:8px 12px;background:linear-gradient(135deg,#ff8c42 0%,#e67a2e 100%);border-radius:6px;text-transform:uppercase;letter-spacing:.8px}
+    
+    .table-wrapper{margin-bottom:20px;page-break-inside:avoid}
+    table{width:100%;border-collapse:collapse;font-size:10px}
+    thead{background:linear-gradient(135deg,#1a3a52 0%,#2c5f8d 100%)}
+
+    th{padding:8px 6px;text-align:center;font-weight:700;color:#ffffff;
+      background-color: #2c5f8d;
+      text-transform:uppercase;letter-spacing:.3px;border:1px solid #2c5f8d}
+    td{padding:7px 6px;text-align:center;border:1px solid #e1e8ed;font-weight:600;color:#1a3a52}
+    tbody tr:nth-child(even){background:#f8f9fa}
+    tbody tr:hover{background:#fff9f5}
+    
+    .pass{color:#10b981;font-weight:700}
+    .fail{color:#ef4444;font-weight:700}
+    .highlight{background:#fff3cd;font-weight:700}
+    
+    .trend-up{color:#10b981}
+    .trend-down{color:#ef4444}
+    .trend-neutral{color:#94a3b8}
+    
+    .comparison-box{background:#f8f9fa;border-left:4px solid #ff8c42;padding:10px;margin:10px 0;border-radius:4px;font-size:11px}
+    .comparison-title{font-weight:700;color:#1a3a52;margin-bottom:5px}
+    
+    @media print{
+      body{background:#fff;padding:0}
+      .action-buttons{display:none!important}
+      .page{box-shadow:none;margin:0;padding:12mm}
+    }
+    @page{size:A4 landscape;margin:0}
+  </style>
 </head>
 <body>
-  Detail Analysis Reports
+  <div class="action-buttons no-print">
+    <div class="selector-panel">
+  <div class="selector-title">Choose Class, Section and Terminal for Marks Entry</div>
+  <div class="selector-grid">
+     <div class="form-group">
+       
+        <select name="subject" id="subject">
+          <option value="">Choose subject</option>
+          <% uniqueSubjects = new Set(subjects.map((subject)=>subject.newsubject)) %>
+          <%uniqueSubjects.forEach((subject)=>{%>
+            <option value="<%=subject%>"><%=subject%></option>
+          <%})%>
+        </select>
+      </div>
+    <select name="classSection" id="classSection">
+      
+      <option value="" disabled>Choose Class</option>
+      <% studentClassdata.forEach((data)=>{%>
+        <option value="<%=data.studentClass%>"><%=data.studentClass%></option>
+      <%})%>
+    </select>
+    <select name="section" id="section">
+      <option value="" disabled>Choose Section</option>
+      <% studentClassdata.forEach((data)=>{ %>
+      
+          <option value="<%=data.section%>"><%=data.section%></option>
+        <% }) %>
+
+    </select>
+    <select name="terminals" id="terminal">
+      <option value="" selected disabled>Choose Terminal</option>
+      <%marksheetSetups[0].terminals.forEach((terminal)=>{%>
+        <option value="<%=terminal.name%>"><%=terminal.name%></option>
+      <% }) %>
+    </select>
+<select name="academicYear" id="academicYear">
+          <option value="" selected disabled>Choose Academic Year</option>
+          <% currentYear = Number(marksheetSetups[0].academicYear) %>;
+            <% for (let i = 0; i < 5; i++) { %>
+              <option value="<%= currentYear - i %>"><%= currentYear - i %></option>
+            <% } %>
+        </select>
+  </div>
+  <button class="load-btn" onclick="loadform()">Generate Report</button>
+</div>
+
+
+
+
+  <script>
+    function loadform()
+    {
+        const selectedSubject = document.getElementById('subject').value;
+        const classSection = document.getElementById('classSection').value
+        const studentClass = document.getElementById('classSection').value;
+        const section = document.getElementById('section').value;
+        const academicYear = document.getElementById('academicYear').value;
+        const terminal = document.getElementById('terminal').value
+
+        window.location.href=(`/analytics?studentClass=${studentClass}&section=${section}&subject=${selectedSubject}&terminal=${terminal}&academicYear=${academicYear}`)
+      
+    }
+  </script>
+    <button class="btn-print" onclick="window.print()">Print Report</button>
+  </div>
+  
+  <div class="page">
+    <div class="report-header">
+      <h1 class="report-title">Comprehensive Analytics Report</h1>
+      <p class="report-subtitle">Academic Year: <%= academicYear %></p>
+    </div>
+    <center>Class Wise Analysis Per Subject</center>
+<% const groupedByterminal = Object.groupBy(classSubjectAnalysis,item=>item._id.terminal); %>
+
+
+<% for (const terminal in groupedByterminal) { %>
+
+  <h2>Terminal: <%= terminal %></h2>
+
+  <% const data = groupedByterminal[terminal]; %>
+
+  <!-- Extract subjects dynamically -->
+  <% const subjectsArr = [...new Set(data.map(i => i._id.subject))]; %>
+
+  <!-- Group by class -->
+  <% const byClass = Object.groupBy(data, i => i._id.studentClass); %>
+
+  <table border="1" cellspacing="0" cellpadding="5">
+    <tr>
+      <th>Class</th>
+      <% subjectsArr.forEach(sub => { %>
+        <th colspan="3"><%= sub %></th>
+      <% }) %>
+    </tr>
+
+    <tr>
+      <td></td>
+      <% subjectsArr.forEach(sub => { %>
+        <td>Total</td>
+        <td>Pass</td>
+        <td>Fail</td>
+        <td>Average</td>
+      <% }) %>
+    </tr>
+
+    <% for (const classNo in byClass) { %>
+      <tr>
+        <td><%= classNo %></td>
+
+        <% 
+          // Group subjects inside this class
+          const subGroup = Object.groupBy(byClass[classNo], i => i._id.subject);
+        %>
+
+
+        <% subjectsArr.forEach(sub => { 
+             const row = subGroup[sub]?.[0]; 
+        %>
+
+            <% if (row) { %>
+                <td><%= row.totalStudents %></td>
+                <td><%= row.pass %></td>
+                <td><%= row.fail %></td>
+                <td><%= row.avgMarks.toFixed(2)  %></td>
+            <% } else { %>
+                <td>-</td><td>-</td><td>-</td>
+            <% } %>
+
+        <% }) %>
+
+      </tr>
+    <% } %>
+
+  </table>
+
+<% } %>
+
+  </div>
+
+
+  <div class="page">
+  <div class="report-header">
+    <h1 class="report-title">Section Wise Analysis Per Subject</h1>
+    <h4>१)तल दिएको data ले कुनै पनि section मा कुन विषयको अवस्था कस्तो छ भन्ने देखाउँछ। <br>
+      २) एउटा Section मा सबै भन्दा धेरै विद्यार्थी कुन विषयमा फेल भए र कति जना फेल भए भन्ने देखाउँछ।
+    </h4>
+    
+    <% Object.entries(finalStructureSectionAnalysis).forEach(([academicYear, yearData]) =>{
+      Object.entries(yearData).forEach(([terminal, terminalData])=>{
+    %>
+
+        <% Object.entries(terminalData).forEach(([classSection, records])=>{%>
+          <table cellspacing="0" border="1">
+            <thead>
+              <tr>
+                <th colspan="10">Academic Year: <%= academicYear %> | Terminal: <%= terminal %> | Class-Section: <%= classSection %></th>
+              </tr>
+              <tr>
+                <th>Subject</th>
+                <th>Total Students</th>
+                <th>Pass</th>
+                <th>Fail</th>
+              <th>Pass %</th>
+              <th>Fail %</th>
+                <th>Average Marks</th>
+                <th>Highest Marks</th>
+                <th>Lowest Marks</th>
+                <th>Median Marks</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% records.forEach((record) => { %>
+                <tr>
+                  <td><%= record._id.subject %></td>
+                  <td><%= record.totalStudents %></td>
+                  <td><%= record.pass %></td>
+                  <td><%= record.fail %></td>
+                  <td><%= ((record.pass / record.totalStudents) * 100).toFixed(2) %></td>
+                  <td><%= ((record.fail / record.totalStudents) * 100).toFixed(2) %></td>
+                  <td><%= record.avgMarks.toFixed(2) %></td>
+                  <td><%= record.highestMarks %></td>
+                  <td><%= record.lowestMarks %></td>
+                  <td><%= record.medianMarks %></td>
+                </tr>
+               
+              <% }) %>
+               <tr>Maximum Fail Subject: <%= records.reduce((max, rec) => rec.fail > max.fail ? rec : max, records[0])._id.subject %> (fail count: <%= records.reduce((max, rec) => rec.fail > max.fail ? rec : max, records[0]).fail %>) <br> 
+              Maximum Pass Subject:<%= records.reduce((acc,rec)=>
+              acc.pass>rec.pass?acc:rec,records[0])._id.subject %> (pass count: <%= records.reduce((acc,rec)=>
+              acc.pass>rec.pass?acc:rec,records[0]).pass %>) <br>
+
+              Highest Average Subject: <%= records.reduce((max, rec) => rec.avgMarks > max.avgMarks ? rec : max, records[0])._id.subject %> 
+              
+              (average marks: <%= records.reduce((max, rec) => rec.avgMarks > max.avgMarks ? rec : max, records[0]).avgMarks.toFixed(2) %>)
+            </tr>
+            </tbody>
+          </table>
+
+          <%})%>
+        <%})%>
+    
+    
+    
+    <%})%>
+  </div>
+  </div>
+  <br>
+   <div class="page">
+  <div class="report-header">
+    <h1 class="report-title">Subject Specific Analysis</h1>
+    <h4>1) तल दिएको data ले कुन विषय कुन कक्षामा राम्रो प्रदशन गरिरहेको छ र कुन कक्षा मा खराब प्रदर्शन गरिरहेको छ भन्ने देखाउँछ।
+      <br>
+      २) विद्यार्थीहरुको marks कुन range मा बढी परेको छ भन्ने देखाउँछ। 
+    </h4>
+    <% Object.entries(subjectAnalysisFinalStructure).forEach(([academicYear, yearData]) =>{
+      Object.entries(yearData).forEach(([terminal, terminalData])=>{
+    %>
+
+        <% Object.entries(terminalData).forEach(([subject, records])=>{%>
+          <table cellspacing="0" border="1">
+            <thead>
+              <tr>
+                <th colspan="11">Academic Year: <%= academicYear %> | Terminal: <%= terminal %> | Subject: <%= subject %></th>
+              </tr>
+              <tr>
+                <th>Class-Section</th>
+                <th>Total Students</th>
+                <th>Pass</th>
+                <th>Fail</th>
+              <th>Pass %</th>
+              <th>Fail %</th>
+                <th>Average Marks</th>
+                <th>Highest Marks</th>
+                <th>Lowest Marks</th>
+                <th>Median Marks</th>
+                <th>Range</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% records.forEach((record) => { %>
+                <tr>
+                  <td><%= record._id.studentClass %>-<%= record._id.section %></td>
+                  <td><%= record.totalStudents %></td>
+                  <td><%= record.pass %></td>
+                  <td><%= record.fail %></td>
+                  <td><%= ((record.pass / record.totalStudents) * 100).toFixed(2) %></td>
+                  <td><%= ((record.fail / record.totalStudents) * 100).toFixed(2) %></td>
+                  <td><%= record.avgTheory.toFixed(2) %></td>
+                  <td><%= record.highestMarkstheory %></td>
+                  <td><%= record.lowestMarkstheory %></td>
+                  <td><%= record.medianMarkstheory %></td>
+                  <td>0-<%=record.theroryFullMarks*0.2%> : <%=record.range1theory %><br>
+                   <%=record.theroryFullMarks*0.2+1%>-<%=record.theroryFullMarks*0.4 %>: <%=record.range2theory %>
+                   <br> 
+                    <%=record.theroryFullMarks*0.4+1%>-<%=record.theroryFullMarks*0.6 %> : <%= record.range3theory %> <br>
+                     <%=record.theroryFullMarks*0.6+1%>-<%=record.theroryFullMarks*0.8 %> : <%=record.range4theory %> <br>
+                     <%=record.theroryFullMarks*0.8+1%>-<%=record.theroryFullMarks %> : <%=record.range5theory %>
+                   </td>
+                </tr>
+               
+              <% }) %>
+               <tr>Maximum Fail Class: <%= records.reduce((max, rec) => rec.fail > max.fail ? rec : max, records[0])._id.studentClass %>-<%= records.reduce((max, rec) => rec.fail > max.fail ? rec : max, records[0])._id.section %> (fail count: <%= records.reduce((max, rec) => rec.fail > max.fail ? rec : max, records[0]).fail %>) <br> 
+              Maximum Pass Class:<%= records.reduce((acc,rec)=>
+              acc.pass>rec.pass?acc:rec,records[0])._id.studentClass %>-<%= records.reduce((acc,rec)=>
+              acc.pass>rec.pass?acc:rec,records[0])._id.section %> (pass count: <%= records.reduce((acc,rec)=>
+              acc.pass>rec.pass?acc:rec,records[0]).pass %>) <br>
+
+              Highest Average Class: <%= records.reduce((max, rec) => rec.avgTheory > max.avgTheory ? rec : max, records[0])._id.studentClass %> 
+              
+              (average marks: <%= records.reduce((max, rec) => rec.avgTheory > max.avgTheory ? rec : max, records[0]).avgTheory.toFixed(2) %>)
+            </tr>
+            </tbody>
+          </table>
+
+          <%})%>
+        <%})%>
+    
+    
+    
+    <%})%>
+  </div>
+  </div> <br>
+
+  <div class="page">
+  <div class="report-header">
+    <h1 class="report-title">Overall School Specific Analysis</h1>
+    
+    <% Object.entries(subjectAnalysisFinalStructure).forEach(([academicYear, yearData]) =>{
+      Object.entries(yearData).forEach(([terminal, terminalData])=>{
+    %>
+
+        <% Object.entries(terminalData).forEach(([subject, records])=>{%>
+          <table cellspacing="0" border="1">
+            <thead>
+              <tr>
+                <th colspan="11">Academic Year: <%= academicYear %> | Terminal: <%= terminal %> | Subject: <%= subject %></th>
+              </tr>
+              <tr>
+                <th>Class-Section</th>
+                <th>Total Students</th>
+                <th>Pass</th>
+                <th>Fail</th>
+              <th>Pass %</th>
+              <th>Fail %</th>
+                <th>Average Marks</th>
+                <th>Highest Marks</th>
+                <th>Lowest Marks</th>
+                <th>Median Marks</th>
+                <th>Range</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% records.forEach((record) => { %>
+                <tr>
+                  <td><%= record._id.studentClass %>-<%= record._id.section %></td>
+                  <td><%= record.totalStudents %></td>
+                  <td><%= record.pass %></td>
+                  <td><%= record.fail %></td>
+                  <td><%= ((record.pass / record.totalStudents) * 100).toFixed(2) %></td>
+                  <td><%= ((record.fail / record.totalStudents) * 100).toFixed(2) %></td>
+                  <td><%= record.avgTheory.toFixed(2) %></td>
+                  <td><%= record.highestMarkstheory %></td>
+                  <td><%= record.lowestMarkstheory %></td>
+                  <td><%= record.medianMarkstheory %></td>
+                  <td>0-<%=record.theroryFullMarks*0.2%> : <%=record.range1theory %><br>
+                   <%=record.theroryFullMarks*0.2+1%>-<%=record.theroryFullMarks*0.4 %>: <%=record.range2theory %>
+                   <br> 
+                    <%=record.theroryFullMarks*0.4+1%>-<%=record.theroryFullMarks*0.6 %> : <%= record.range3theory %> <br>
+                     <%=record.theroryFullMarks*0.6+1%>-<%=record.theroryFullMarks*0.8 %> : <%=record.range4theory %> <br>
+                     <%=record.theroryFullMarks*0.8+1%>-<%=record.theroryFullMarks %> : <%=record.range5theory %>
+                   </td>
+                </tr>
+               
+              <% }) %>
+               <tr>Maximum Fail Class: <%= records.reduce((max, rec) => rec.fail > max.fail ? rec : max, records[0])._id.studentClass %>-<%= records.reduce((max, rec) => rec.fail > max.fail ? rec : max, records[0])._id.section %> (fail count: <%= records.reduce((max, rec) => rec.fail > max.fail ? rec : max, records[0]).fail %>) <br> 
+              Maximum Pass Class:<%= records.reduce((acc,rec)=>
+              acc.pass>rec.pass?acc:rec,records[0])._id.studentClass %>-<%= records.reduce((acc,rec)=>
+              acc.pass>rec.pass?acc:rec,records[0])._id.section %> (pass count: <%= records.reduce((acc,rec)=>
+              acc.pass>rec.pass?acc:rec,records[0]).pass %>) <br>
+
+              Highest Average Class: <%= records.reduce((max, rec) => rec.avgTheory > max.avgTheory ? rec : max, records[0])._id.studentClass %> 
+              
+              (average marks: <%= records.reduce((max, rec) => rec.avgTheory > max.avgTheory ? rec : max, records[0]).avgTheory.toFixed(2) %>)
+            </tr>
+            </tbody>
+          </table>
+
+          <%})%>
+        <%})%>
+    
+    
+    
+    <%})%>
+  </div>
+  </div>
+  <br>
+   <div class="page">
+  <div class="report-header">
+    <h1 class="report-title">Terminal Wise Comparision</h1>
+  
+    <% Object.entries(terminalComparisonFinalStructure).forEach(([academicYear, yearData]) =>{
+      Object.entries(yearData).forEach(([subjectname, subjectData])=>{
+    %>
+
+        <% Object.entries(subjectData).forEach(([index,records])=>{%>
+          <table cellspacing="0" border="1">
+            <thead>
+              <tr>
+                <th colspan="11">Academic Year: <%= academicYear %> | Subject: <%= subjectname %></th>
+              </tr>
+              <tr>
+                <th></th>
+                <% const terminalName = new Set(subjectData.map(r=>r._id.terminal)); %>
+                <% terminalName.forEach(tname=>{ %>
+                  <th colspan="10"><%= tname %></th>
+                <% }) %>
+               <pre><%= JSON.stringify(records, null, 2) %></pre>
+              </tr>
+              <tr>
+                <th>Class-Section</th>
+                <th>Total Students</th>
+                <th>Pass</th>
+                <th>Fail</th>
+              <th>Pass %</th>
+              <th>Fail %</th>
+                <th>Average Marks</th>
+                <th>Highest Marks</th>
+                <th>Lowest Marks</th>
+                <th>Median Marks</th>
+                <th>Range</th>
+              </tr>
+            </thead>
+           <tr>
+            <td><%= records._id.studentClass %>-<%= records._id.section %></td>
+            <td><%= records.totalStudents %></td>
+            <td><%=records.passtheory %></td>
+            <td><%=records.failtheory %></td>
+            <td><%= (records.passtheory/records.totalStudents * 100).toFixed(2) %></td>
+            <td><%= (records.failtheory/records.totalStudents * 100).toFixed(2) %></td>
+            <td><%= records.avgMarks.toFixed(2) %></td>
+           </tr>
+            <%})%>
+             <%})%>
+          </table>
+
+         
+       
+    
+    
+    
+    <%})%>
+  </div>
+  </div>
+  <br>
+
 </body>
 </html>

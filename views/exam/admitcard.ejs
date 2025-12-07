@@ -86,9 +86,10 @@
       <div class="form-selector-grid">
         <select name="classSection" id="classSection">
           <option value="" selected disabled>Choose Class </option>
-          <% studentClassdata.forEach((data)=>{%>
-            <option value="<%=data.studentClass%>-<%=data.section%>"><%=data.studentClass%></option>
-          <%})%>
+          <% uniqueClasses = new Set(studentClassdata.map(data => data.studentClass)); %>
+          <% uniqueClasses.forEach((cls) => { %>
+            <option value="<%=cls%>"><%=cls%></option>
+          <% }) %>
         </select>
 
       <select name="terminals" id="terminal">

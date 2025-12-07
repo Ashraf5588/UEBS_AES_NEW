@@ -19,13 +19,14 @@ const bcrypt = require("bcrypt");
 const terminal = mongoose.model("terminal", terminalSchema, "terminal");
 const terminalModel = mongoose.model("terminal", terminalSchema, "terminal");
 const { marksheetsetupschemaForAdmin ,routineSchema} = require("../model/marksheetschema");
+const { fail } = require("assert");
 const routineModel = mongoose.model("routine", routineSchema, "routine");
 const marksheetSetup = mongoose.model("marksheetSetup", marksheetsetupschemaForAdmin, "marksheetSetup");
 app.set("view engine", "ejs");
 app.set("view", path.join(rootDir, "views"));
 const newsubject = mongoose.model("newsubject", newsubjectSchema, "newsubject");
 const getSlipModel = () => {
-  // to Check if model already exists
+ 
   if (mongoose.models[`exam_marks`]) {
     return mongoose.models[`exam_marks`];
   }
@@ -282,7 +283,8 @@ exports.examRoutine = async (req, res, next) => {
       academicYear,studentClass,section,
       subjectData,
       terminal,
-      examRoutines
+      examRoutines,
+      editing:false,
     });
        
   } catch (error) {
@@ -306,9 +308,19 @@ exports.routineTerminalChoose = async (req, res, next) => {
 }
 exports.saveExamRoutine = async (req, res, next) => {
   try {
-    const { studentClass, section, academicYear, terminal } = req.query;
+    const { studentClass, section, academicYear, terminal,routineId,editing } = req.query;
+    if(routineId && editing==="true")
+    {
+      await routineModel.findByIdAndUpdate(routineId, req.body);
+      return res.redirect(`/examroutine?studentClass=${studentClass}&academicYear=${academicYear}&terminal=${terminal}`);
+    }
+    else
+    {
+
+    
     await routineModel.create(req.body);
     res.redirect(`/examroutine?studentClass=${req.body.studentClass}&academicYear=${req.body.academicYear}&terminal=${req.body.terminal}`);
+    }
   } catch (error) {
     console.error("Error saving exam routine:", error);
     res.status(500).send("Internal Server Error");
@@ -316,31 +328,301 @@ exports.saveExamRoutine = async (req, res, next) => {
 }
 exports.analytics = async (req, res, next) => {
   try{
-    const {terminal,studentClass,section,academicYear} = req.query;
-    model = getSlipModel();
-    const analysisdata =await model.aggregate([
-  {
-    $group: {
-      _id: "$studentClass",
-      passCount: {
-        $sum: { $cond: [{ $gte: ["$total", "$passMarks"] }, 1, 0] }
-      },
-      failCount: {
-        $sum: { $cond: [{ $lt: ["$total", "$passMarks"] }, 1, 0] }
-      }
+
+    const {terminal,studentClass,section,academicYear,subject} = req.query;
+    const studentClassdata = await studentClassModel.find({}).lean();
+    const marksheetSetups = await marksheetSetup.find({}).lean();
+      const subjects = await newsubject.find({}).lean();
+    const model = getSlipModel();
+    const matchStage = {};
+    if (academicYear) {
+      matchStage.academicYear = academicYear;
     }
+    if (terminal) {
+      matchStage.terminal = terminal;
+    }
+    if (studentClass) {
+      matchStage.studentClass = studentClass;
+    }
+    if (section) {
+      matchStage.section = section;
+    }
+    if(subject)
+    {
+      matchStage.subject= subject;
+    }
+    
+    // 1. Class-wise Subject Analysis
+    const classSubjectAnalysis = await model.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: { studentClass: "$studentClass", subject: "$subject", terminal: "$terminal" },
+          totalStudents: { $sum: 1 },
+          pass: { $sum: { $cond: [{ $gte: [{ $add: ["$theorymarks", "$practicalmarks"] }, "$passMarks"] }, 1, 0] } },
+          fail: { $sum: { $cond: [{ $lt: [{ $add: ["$theorymarks", "$practicalmarks"] }, "$passMarks"] }, 1, 0] } },
+          avgMarks: { $avg: { $add: ["$theorymarks", "$practicalmarks"] } }
+        }
+      },
+      { $sort: { "_id.studentClass": 1, "_id.subject": 1 } }
+    ]);
+
+    // 2. Section-wise Analysis
+    const sectionAnalysis = await model.aggregate([
+
+      { $match: matchStage },
+      {
+        $group: {
+          _id: { studentClass: "$studentClass", section: "$section", subject: "$subject", terminal: "$terminal" , academicYear: "$academicYear"},
+          totalStudents: { $sum: 1 },
+          pass: { $sum: { $cond: [{ $gte: [{ $add: ["$theorymarks", "$practicalmarks"] }, "$passMarks"] }, 1, 0] } },
+          fail: { $sum: { $cond: [{ $lt: [{ $add: ["$theorymarks", "$practicalmarks"] }, "$passMarks"] }, 1, 0] } },
+          avgMarks: { $avg: { $add: ["$theorymarks", "$practicalmarks"] } },
+          highestMarks: {$max: "$theorymarks"},
+          lowestMarks: {$min: "$theorymarks"},
+          medianMarks : {$median:{input:"$theorymarks",method:"approximate"}},
+
+        }
+      },
+  
+      { $sort: { "_id.studentClass": 1, "_id.section": 1 ,fail: -1} },
+      
+    ]);
+const finalStructureSectionAnalysis = {};
+ for (const item of sectionAnalysis) {
+  const studentClass= item._id.studentClass;
+  const section = item._id.section;
+  const subject = item._id.subject;
+  const studentClassSection = `${studentClass}-${section}`;
+  const terminal = item._id.terminal;
+  const academicYear = item._id.academicYear;
+  if (!finalStructureSectionAnalysis[academicYear]) {
+    finalStructureSectionAnalysis[academicYear] = {};
   }
-]);
-console.log("analysis data",analysisdata);
+  if (!finalStructureSectionAnalysis[academicYear][terminal]) {
+    finalStructureSectionAnalysis[academicYear][terminal] = {};
+  }
+   if (!finalStructureSectionAnalysis[academicYear][terminal][studentClassSection]) finalStructureSectionAnalysis[academicYear][terminal][studentClassSection] = [];
 
+    finalStructureSectionAnalysis[academicYear][terminal][studentClassSection].push(item);
+ 
+ }
+ 
+    // 3. Subject-wise Average across all classes
+    const subjectAnalysis = await model.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: { subject: "$subject", terminal: "$terminal", academicYear: "$academicYear",studentClass: "$studentClass" ,section: "$section" },
+          totalStudents: { $sum: 1 },
+          avgTheory: { $avg: "$theorymarks" },
+          avgPractical: { $avg: "$practicalmarks" },
+          avgTotal: { $avg: { $add: ["$theorymarks", "$practicalmarks"] } },
+          pass: { $sum: { $cond: [{ $gte: [{ $add: ["$theorymarks", "$practicalmarks"] }, "$passMarks"] }, 1, 0] } },
+          fail: { $sum: { $cond: [{ $lt: [{ $add: ["$theorymarks", "$practicalmarks"] }, "$passMarks"] }, 1, 0] } },
+          highestMarkstheory: {$max:"$theorymarks"},
+          lowestMarkstheory: {$min:"$theorymarks"},
+          medianMarkstheory : {$median:{input:"$theorymarks",method:"approximate"}},
+          highestMarkspractical: {$max:"$practicalmarks"},
+          lowestMarkspractical: {$min:"$practicalmarks"},
+          medianMarkspractical : {$median:{input:"$practicalmarks",method:"approximate"}},
+          highestMarkstotal: {$max: { $add: ["$theorymarks", "$practicalmarks"] }},
+          lowestMarkstotal: {$min: { $add: ["$theorymarks", "$practicalmarks"] }},
+          medianMarkstotal : {$median:{input: { $add: ["$theorymarks", "$practicalmarks"] },method:"approximate"}},
+          theroryFullMarks: {$first:"$theoryfullmarks"},
+          practicalFullMarks: {$first:"$practicalfullmarks"},
+          range1theory: { $sum:{
+            $cond: [{$and: [{$gte: ["$theorymarks",0]}, {$lte: ["$theorymarks", { $multiply: [0.2, "$theoryfullmarks"] }]}]}, 1, 0],
+          
+          }},
+          range2theory:{ $sum:{
+            $cond: [{$and: [{$gte: ["$theorymarks", { $add: [ { $multiply: [0.2, "$theoryfullmarks"] }, 1 ] }]}, {$lte: ["$theorymarks", { $multiply: [0.4, "$theoryfullmarks"] }]}]}, 1, 0],
+          }},
+          range3theory: {$sum:{
+            $cond: [{$and: [{$gte: ["$theorymarks", { $add: [ { $multiply: [0.4, "$theoryfullmarks"] }, 1 ] }]}, {$lte: ["$theorymarks", { $multiply: [0.6, "$theoryfullmarks"] }]}]}, 1, 0],
+          }},
+          range4theory: {$sum:{
+            $cond: [{$and: [{$gte: ["$theorymarks", { $add: [ { $multiply: [0.6, "$theoryfullmarks"] }, 1 ] }]}, {$lte: ["$theorymarks", { $multiply: [0.8, "$theoryfullmarks"] }]}]}, 1, 0],
+          }},
+          range5theory: {$sum:{
+            $cond: [{$and: [{$gte: ["$theorymarks", { $add: [ { $multiply: [0.8, "$theoryfullmarks"] }, 1 ] }]}, {$lte: ["$theorymarks", "$theoryfullmarks"]}]}, 1, 0],
+          }},
 
-res.render("./exam/analytics", {
+        }
+      },
+      { $sort: { "_id.subject": 1 } }
+    ]);
+const subjectAnalysisFinalStructure = {};
+  for (const item of subjectAnalysis) {
+    const subject = item._id.subject;
+    const terminal = item._id.terminal;
+    const academicYear = item._id.academicYear;
+    const studentClass = item._id.studentClass;
+    const section = item._id.section;
+    if (!subjectAnalysisFinalStructure[academicYear]) {
+      subjectAnalysisFinalStructure[academicYear] = {};
+    }
+    if (!subjectAnalysisFinalStructure[academicYear][terminal]) {
+      subjectAnalysisFinalStructure[academicYear][terminal] = {};
+    }
+    if (!subjectAnalysisFinalStructure[academicYear][terminal][subject]) {
+      subjectAnalysisFinalStructure[academicYear][terminal][subject] = [];
+    }
+    subjectAnalysisFinalStructure[academicYear][terminal][subject].push(item);
+  }
+
+    // 4. Whole School Overview
+    const schoolOverview = await model.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: { terminal: "$terminal" ,academicYear:"$academicYear",studentClass:"$studentClass",subject:"$subject"},
+          totalStudents: { $sum: 1 },
+          passtheory: { $sum: { $cond: [{ $gte: ["$theorymarks", "$passMarks"] }, 1, 0] } },
+          failtheory: { $sum: { $cond: [{ $lt: ["$theorymarks", "$passMarks"] }, 1, 0] } },
+          passpractical: { $sum: { $cond: [{ $gte: ["$practicalmarks", "$passMarks"] }, 1, 0] } },
+          failpractical: { $sum: { $cond: [{ $lt: ["$practicalmarks", "$passMarks"] }, 1, 0] } },
+         
+        }
+      },
+      { $sort: { "_id.terminal": 1 } }
+    ]);
+
+const schoolOverviewFinalStructure = {};
+  for (const item of schoolOverview) {
+    const terminal = item._id.terminal;
+    const academicYear = item._id.academicYear;
+    const studentClass = item._id.studentClass;
+    const subject = item._id.subject;
+    if (!schoolOverviewFinalStructure[academicYear]) {
+      schoolOverviewFinalStructure[academicYear] = {};
+    }
+    if (!schoolOverviewFinalStructure[academicYear][terminal]) {
+      schoolOverviewFinalStructure[academicYear][terminal] = {};
+    }
+   if (!schoolOverviewFinalStructure[academicYear][terminal][studentClass]) {
+      schoolOverviewFinalStructure[academicYear][terminal][studentClass] = [];
+    }
+    schoolOverviewFinalStructure[academicYear][terminal][studentClass].push(item) ;
+  }
+
+    // 5. Terminal Comparison
+    const terminalComparison = await model.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: { subject: "$subject", terminal: "$terminal", academicYear: "$academicYear", studentClass: "$studentClass" , section: "$section" },
+          totalStudents: { $sum: 1 },
+          passtheory: { $sum: { $cond: [{ $gte: ["$theorymarks", "$passMarks"] }, 1, 0] } },
+          failtheory: { $sum: { $cond: [{ $lt: ["$theorymarks", "$passMarks"] }, 1, 0] } },
+          passpractical: { $sum: { $cond: [{ $gte: ["$practicalmarks", "$passMarks"] }, 1, 0] } },
+          failpractical: { $sum: { $cond: [{ $lt: ["$practicalmarks", "$passMarks"] }, 1, 0] } },
+          avgMarks: { $avg: { $add: ["$theorymarks", "$practicalmarks"] } }
+        }
+      },
+      { $sort: { "_id.subject": 1, "_id.terminal": 1,"_id.academicYear": 1 } }
+    ]);
+   const terminalComparisonFinalStructure = {};
+
+ for (const item of terminalComparison) {
+  const studentClass= item._id.studentClass;
+  const section = item._id.section;
+  const subject = item._id.subject;
+  const studentClassSection = `${studentClass}-${section}`;
+  const terminal = item._id.terminal;
+  const academicYear = item._id.academicYear;
+  if (!terminalComparisonFinalStructure[academicYear]) {
+    terminalComparisonFinalStructure[academicYear] = {};
+  }
+  if (!terminalComparisonFinalStructure[academicYear][terminal]) {
+    terminalComparisonFinalStructure[academicYear][terminal] = {};
+  }
+   if (!terminalComparisonFinalStructure[academicYear][terminal][studentClassSection]) terminalComparisonFinalStructure[academicYear][terminal][studentClassSection] = [];
+
+    terminalComparisonFinalStructure[academicYear][terminal][studentClassSection].push(item);
+ 
+ }
+ console.log("Terminal Comparison:", terminalComparisonFinalStructure);
+ 
+    // 6. Year-wise Trend (for multiple years)
+    const yearTrend = await model.aggregate([
+      {
+        $group: {
+          _id: { subject: "$subject", academicYear: "$academicYear", terminal: "$terminal" },
+          totalStudents: { $sum: 1 },
+          pass: { $sum: { $cond: [{ $gte: [{ $add: ["$theorymarks", "$practicalmarks"] }, "$passMarks"] }, 1, 0] } },
+          fail: { $sum: { $cond: [{ $lt: [{ $add: ["$theorymarks", "$practicalmarks"] }, "$passMarks"] }, 1, 0] } },
+          avgMarks: { $avg: { $add: ["$theorymarks", "$practicalmarks"] } }
+        }
+      },
+      { $sort: { "_id.academicYear": 1, "_id.subject": 1, "_id.terminal": 1 } }
+    ]);
+
+ 
+    console.log("School Overview:", schoolOverview);
+
+    res.render("./exam/analytics", {
       currentPage: "exammanagement",
-      user: req.user
+      user: req.user,
+      classSubjectAnalysis,
+      schoolOverview,
+      terminalComparison,
+      yearTrend,
+      academicYear: academicYear || 'All Years',
+      studentClassdata,
+      marksheetSetups,
+      subjects,
+      finalStructureSectionAnalysis,
+      subjectAnalysisFinalStructure,
+      terminalComparisonFinalStructure,
+    });
+  
+}catch(err)
+  {
+    res.status(500).send("Internal Server Error");
+    console.error("Error loading analytics page:", err);
+  }
+
+};
+exports.editRoutine = async (req, res, next) => {
+
+  try{
+const {editing,routineId,terminal,academicYear,subject} = req.query;
+  const routineData = await routineModel.findById(routineId).lean();
+  console.log("Routine Data to Edit:", routineData);
+  const studentClassdata = await studentClassModel.find({}).lean();
+    const subjectData = await newsubject.find({}).lean();
+       const marksheetSetups = await marksheetSetup.find({}).lean();
+       const examRoutines = await routineModel.find();
+    res.render("./exam/examroutine", {
+      currentPage: "exammanagement",
+      user: req.user,
+      editing,
+      routineData,
+      terminal,
+      academicYear,
+      studentClassdata,
+      marksheetSetups,
+      subjectData,
+      examRoutines,
+      subject,
     });
   }catch(err)
   {
     res.status(500).send("Internal Server Error");
-    console.error("Error loading analytics page:", err);
+    console.error("Error loading edit routine page:", err);
+
+  }
+}
+exports.deleteRoutine = async (req, res, next) => {
+
+  try{
+const {routineId,terminal,academicYear} = req.query;
+  await routineModel.findByIdAndDelete(routineId);
+  res.redirect(`/examroutine?studentClass=&academicYear=${academicYear}&terminal=${terminal}`);
+  }catch(err)
+  {
+    res.status(500).send("Internal Server Error");
+    console.error("Error deleting routine:", err);
   }
 }

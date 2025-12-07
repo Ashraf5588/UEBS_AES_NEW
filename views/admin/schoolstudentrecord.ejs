@@ -454,6 +454,10 @@
                         <label for="section"><i class="fas fa-users"></i> Section</label>
                         <input type="text" name="section" id="section" placeholder="Enter section" value="<%=editing?studentrecordData.section:''%>" required>
                     </div>
+                    <div class="form-group">
+                        <label for="section"><i class="fas fa-users"></i> gender</label>
+                        <input type="text" name="gender" id="section" placeholder="Enter section" value="<%=editing?studentrecordData.gender:''%>" required>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -520,6 +524,7 @@
             <th>Name</th>
             <th>Class</th>
             <th>Section</th>
+            <th>gender</th>
             <th>Action</th>
 
         </tr>
@@ -532,6 +537,7 @@
                 <td><%= record.name %></td>
                 <td><%= record.studentClass %></td>
                 <td><%= record.section %></td>
+                <td><%= record.gender %></td>
                 <td>
                     <a href="/studentrecord/edit/<%= record._id %>?editing=true" class="btn btn-secondary">
                         <i class="fas fa-edit"></i> Edit

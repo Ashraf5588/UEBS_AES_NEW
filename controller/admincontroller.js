@@ -14,6 +14,7 @@ const { studentSchema } = require("../model/schema");
 const student = require("../routers/mainpage");
 const terminal = mongoose.model("terminal", terminalSchema, "terminal");
 const newsubject = mongoose.model("newsubject", newsubjectSchema, "newsubject");
+const newsubjectModel = mongoose.model("newsubject", newsubjectSchema, "newsubject");
 const userlist = mongoose.model("userlist", teacherSchema, "users");
  const { studentrecordschema } = require("../model/adminschema");
 const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecord");
@@ -953,21 +954,43 @@ exports.addNewSubjectPost = async (req, res, next) => {
   try {
     const { subjectId } = req.params;
     const updatedNewSubject = req.body.newsubject.toUpperCase().trim();
-    const forClass = req.body.forClass ? parseInt(req.body.forClass) : 0;
-    const theory = req.body.theory ? parseFloat(req.body.theory) : 0;
-    const practical = req.body.practical ? parseFloat(req.body.practical) : 0
-    const total = theory + practical;
-    const passingMarks = req.body.passingMarks ? parseFloat(req.body.passingMarks) : 0;
-    const theoryCreditHour = req.body.theoryCreditHour ? parseFloat(req.body.theoryCreditHour) : 0;
-    const practicalCreditHour = req.body.practicalCreditHour ? parseFloat(req.body.practicalCreditHour) : 0;
+   const { newsubject, theory, practical, selectedClasses,total,passingMarks,theoryCreditHour, practicalCreditHour } = req.body;
+     const classes = JSON.parse(selectedClasses);
+console.log("Selected classes for new subject:", classes);
+
+
     if (subjectId) {
-      await newsubject.findByIdAndUpdate(
-        subjectId,
-        { newsubject: `${updatedNewSubject}`, forClass, theory, practical, total, passingMarks, theoryCreditHour, practicalCreditHour },
-        { new: true, runValidators: true }
-      );
+      await newsubjectModel.updateMany(
+        {
+            newsubject: newsubject,
+            forClass: { $in: classes }
+        },
+        {
+            $set: {
+                newsubject: updatedNewSubject,
+                theory,
+                practical,
+                total,
+                passingMarks,
+                theoryCreditHour,
+                practicalCreditHour
+            }
+        }
+    );
     } else {
-      await newsubject.create({ newsubject: updatedNewSubject, forClass, theory, practical, total, passingMarks, theoryCreditHour, practicalCreditHour  } );
+      
+  const dataToInsert = classes.map(cls => ({
+      newsubject,
+      theory,
+      practical,
+      total,
+      passingMarks,
+      theoryCreditHour,
+      practicalCreditHour,
+
+      forClass: cls
+  }));
+    await newsubjectModel.insertMany(dataToInsert);
     }
     res.redirect("/admin/new/subject");
   } catch (err) {
@@ -1347,10 +1370,10 @@ exports.studentrecordadd = async (req, res, next) => {
   try {
       const { studentrecordschema } = require("../model/adminschema");
 const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecord");
-    const { reg,roll, name,studentClass,section} = req.body;
+    const { reg,roll, name,studentClass,section,gender} = req.body;
 
     // Update student record based on regNo and column
-    const updated = await modal.create({ reg,roll, name,studentClass,section });  // Your update function here
+    const updated = await modal.create({ reg,roll, name,studentClass,section,gender});  // Your update function here
 
     if (updated) {
         return res.render("./partials/success", {

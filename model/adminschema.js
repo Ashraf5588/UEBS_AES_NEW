@@ -42,6 +42,7 @@ const studentrecordschema = new mongoose.Schema({
   "studentClass":{ type: String,required: false},
   "section":{ type: String,required: false},
   "roll":{ type: Number,required: false},
+  "gender": {type: String, required:false}
 })
 const newsubjectSchema = new mongoose.Schema({
   "subject":{ type: String,required: false},

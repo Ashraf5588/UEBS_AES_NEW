@@ -48,19 +48,9 @@
 <div class="selector-panel">
   <div class="selector-title">Choose Class, Section and Terminal for Marks Entry</div>
   <div class="selector-grid">
-     <div class="form-group">
-       
-        <select name="subject" id="subject">
-          <option value="">Choose subject</option>
-          <% uniqueSubjects = new Set(subjects.map((subject)=>subject.newsubject)) %>
-          <%uniqueSubjects.forEach((subject)=>{%>
-            <option value="<%=subject%>"><%=subject%></option>
-          <%})%>
-        </select>
-      </div>
+   
     <select name="classSection" id="classSection">
-      
-      <option value="" disabled>Choose Class & Section</option>
+      <option value="" selected disabled>Choose Class & Section</option>
       <% studentClassdata.forEach((data)=>{%>
         <option value="<%=data.studentClass%>-<%=data.section%>"><%=data.studentClass%>-<%=data.section%></option>
       <%})%>
@@ -83,12 +73,7 @@
 </div>
 
 
-<script>
-  document.getElementById('classSection').value = "<%= studentClass %>-<%= section %>";
-  document.getElementById('terminal').value = "<%= terminal %>";
-  document.getElementById('academicYear').value = "<%= academicYear %>";
-  document.getElementById('subject').value = "<%= subject %>";
-</script>
+
 
   <script>
     function loadform()
@@ -108,8 +93,7 @@
 
 <div class="entry-container">
   <div class="entry-title">Enter Marks Data</div>
-  <center><div style="font-weight: 800;">Class <%= studentClass %> - <%= section %> | <%= subject %> | <%= terminal %> Terminal- <%= academicYear %></div></center>
-
+<center> <input type="number" id="totalWorksheet"  value="" min="0" placeholder="Total Worksheet"></center>
   <form action="/entryform?<%= `studentClass=${studentClass}&section=${section}&subject=${subject}&academicYear=${academicYear}&terminal=${terminal}` %>" method="POST">
     
     <table>
@@ -119,6 +103,7 @@
         <th>Name</th>
         <th>Photo</th>
         <th>Th Marks (<%=subjectData[0].theory%>)</th>
+     
         <th>Pr marks(<%=subjectData[0].practical*0.72%>)</th>
         <th>Attendance</th>
         <th>Attendance Marks</th>
@@ -129,12 +114,13 @@
       <% studentData.forEach((student,idx)=>{%>
       
         <tr>
-          <input type="hidden" name="gender" value="gender[<%=student.reg%>]">
         <input type="hidden" name="reg[<%=student.reg%>]" value="<%=student.reg%>" readonly >
           <td><input type="text" name="roll[<%=student.reg%>]" value="<%=student.roll%>" readonly ></td>
-         <td><input type="text" name="name[<%=student.reg%>]" value="<%=student.name%>" readonly ></td>
+         <td><input type="text" name="name[<%=student.reg%>]" value="<%=student.name%> | Class: <%=studentClass%>-<%=section%> | <%=student.reg%>" readonly ></td>
           <td><img src="/student.png" alt="photo"></td>
           <td><input type="number" id="theorymarks" name="theorymarks[<%=student.reg%>]" value="" data-reg="<%= student.reg %>" min="0" max="<%=subjectData[0].theory%>"  oninput="this.value = Math.min(this.value, <%= subjectData[0].theory %>)"></td>
+        
+          <td class="worksheetmarks"></td>
            <td><input type="number" data-reg="<%= student.reg %>"  id="practicalmarks" name="practicalmarks[<%=student.reg%>]" value="" oninput="this.value = Math.min(this.value, <%= subjectData[0].practical*0.72 %> )" min="0"></td>
           <td><input type="number" id="attendance" name="attendance[<%=student.reg%>]" value="" data-reg="<%= student.reg %>"></td>
           <td><input type="number" id="attendancemarks_<%=student.reg%>" name="attendanceMarks[<%=student.reg%>]" readonly></td>
@@ -155,9 +141,7 @@
      <input type="hidden" name="theoryfullmarks" id="fullMarks" value="<%=subjectData[0].theory%>">
      <input type="hidden" name="passMarks" id="passMarks" value="<%=subjectData[0].passingMarks%>">
      <input type="hidden" name="practicalfullmarks" id="practicalfullmarks" value="<%=subjectData[0].practical%>">
-     
-     <input type="hidden" name="studentClass" id="studentClass" value="<%=studentClass %>">
-     <input type="hidden" name="section" id="section" value="<%=section %>">
+     <input type="hidden" name="creditHour" id="creditHour" value="<%=subjectData[0].creditHour %>">
 
   </form>
 </div>
@@ -291,7 +275,6 @@ async function populateData(subject,studentClass,section,academicYear,terminal)
 {
   const data = await fetch(`/getPreviousmarks?subject=${subject}&studentClass=${studentClass}&section=${section}&academicYear=${academicYear}&terminal=${terminal}`);
   const result = await data.json();
-  console.log("Fetched Previous Marks:", result);
 
   const attendanceData = await fetch(`/getAttendanceData?subject=${subject}&studentClass=${studentClass}&section=${section}&academicYear=${academicYear}&terminal=${terminal}`);
   const attendanceResult = await attendanceData.json();
@@ -329,6 +312,7 @@ else
   console.log("No attendance data found");
 }
 }
+
 
 
 
@@ -381,6 +365,7 @@ document.querySelectorAll('#practicalmarks').forEach((input) => {
 
 
 </script>
+
 
 </body>
 </html>

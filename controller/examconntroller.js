@@ -74,12 +74,21 @@ exports.entryform = async (req,res,next)=>
   const {studentClass,section,subject,academicYear,terminal}= req.query;
   const studentData = await studentRecord.find({studentClass:studentClass,section:section})
      const marksheetSetups = await marksheetSetup.find({}).lean();
+     console.log("studentData",studentData);
   const subjectData = await newsubject.find({forClass:studentClass,newsubject:subject}).lean();
-  console.log("Subject Data:", subjectData);
+ 
   const subjects = await newsubject.find({}).lean();
   const terminals = await terminalModel.find({}).lean();
- 
+  if(studentClass>3)
+  {
+
   res.render("./exam/entryform",{studentData,studentClass,section,subject,academicYear,terminal,subjectData,subjects,studentClassdata,terminals, marksheetSetups});
+  }
+  else if (studentClass<=3)
+  {
+    res.render("./exam/entryformprimary",{studentData,studentClass,section,subject,academicYear,terminal,subjectData,subjects,studentClassdata,terminals, marksheetSetups});
+  }
+ 
 }
 exports.saveEntryform = async (req, res, next) => {
   try {
@@ -113,7 +122,10 @@ exports.saveEntryform = async (req, res, next) => {
               theoryfullmarks: Number(req.body.theoryfullmarks) || 0,
               passMarks: Number(req.body.passMarks) || 0,
               practicalfullmarks: Number(req.body.practicalfullmarks) || 0,
-              creditHour: Number(req.body.creditHour) || 0,
+              studentClass: studentClass,
+              section: section,
+              academicYear: academicYear,
+              gender: req.body.gender[key] || "",
 
             }
           },
@@ -124,7 +136,7 @@ exports.saveEntryform = async (req, res, next) => {
 
     await model.bulkWrite(bulkOps);
 
-    res.send("All student marks saved successfully!");
+    res.redirect(`/entryform?studentClass=${studentClass}&section=${section}&subject=${subject}&academicYear=${academicYear}&terminal=${terminal}`);
   } 
   catch (err) {
     console.error("Error saving entry form:", err);
@@ -137,7 +149,7 @@ exports.getPreviousmarks= async (req,res,next)=>
   try{
     const {subject,studentClass,section,academicYear,terminal}= req.query;
     const model = getSlipModel();
-    const previousMarks = await model.find({subject:subject,terminal:terminal}).lean();
+    const previousMarks = await model.find({subject:subject,terminal:terminal,studentClass:studentClass,section:section,academicYear:academicYear}).lean();
 
     res.json(previousMarks);
   }
@@ -152,7 +164,7 @@ exports.getAttendanceData= async (req,res,next)=>
   try{
     const {studentClass,section,academicYear,terminal}= req.query;
     const attendanceModel = getSlipModel();
-    const attendanceData = await attendanceModel.find({terminal:terminal}).lean();
+    const attendanceData = await attendanceModel.find({terminal:terminal,studentClass:studentClass,section:section,academicYear:academicYear}).lean();
     res.json(attendanceData);
   }
   catch(err)

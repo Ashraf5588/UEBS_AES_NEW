@@ -543,7 +543,7 @@
                  
                   <% uniqueClass = new Set(studentClassdata.map(item => item.studentClass)); %>
                   <% uniqueClass.forEach(function(classData) { %>
-                    <input type="checkbox" name="forClass[]" id="forClass_<%= classData %>" value="<%= classData %>">
+                    <input type="checkbox" name="forClass" id="forClass" value="<%= classData %>"
                     
                       <%= classData %>
                 
@@ -552,7 +552,21 @@
               </div>
             </div>
 
-           
+            <!-- Copy From Class Selection centered -->
+            <div class="row mb-4">
+              <div class="col-md-6 mx-auto">
+                <label for="sameas" class="form-label text-center w-100">Copy Format of another Class</label>
+                <select name="sameas" id="sameas" class="form-control">
+                  <option value="" disabled selected>--Select Class--</option>
+                  <% uniqueClass = new Set(studentClassdata.map(item => item.studentClass)); %>
+                  <% uniqueClass.forEach(function(classData) { %>
+                    <option value="<%= classData %>" <%= editing && newsubjectData.forClass === classData ? 'selected' : '' %>>
+                      <%= classData %>
+                    </option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
 
             <!-- Marks Section -->
             <div class="row mb-4">
@@ -601,7 +615,6 @@
               </div>
               <div class="col-md-6">
                 <label for="passingMarks" class="form-label">Minimum Pass Marks</label>
-                <input type="hidden" id="selectedClassesHolder" name="selectedClasses">
                 <input 
                   type="number" 
                   class="form-control" 
@@ -644,17 +657,38 @@ document.getElementById("subject").addEventListener("input", function() {
             });
 
             document.querySelector("form").addEventListener("input", function() {
-              
+              const forClass = document.getElementById("forClass").value;
               const theory = parseFloat(document.querySelector("#theory").value);
               const practical = parseFloat(document.querySelector("#practical").value);
               const total = theory + practical;
               document.querySelector("#total").value = total;
-          
+              console.log(`For Class: ${forClass}, Theory: ${theory}, Practical: ${practical}, Total: ${total}`);
             });
           </script>
 
 
-
+<script>
+  document.querySelector("#sameas").addEventListener("change",async function() {
+    const selectedClass = this.value;
+    const subject = document.querySelector("#subject").value
+    console.log(`Selected Class: ${selectedClass}, Subject: ${subject}`);
+    if(selectedClass && subject) {
+      const response = await fetch(`/copytheory?studentClass=${selectedClass}&subject=${subject}`, )
+      const data = await response.json();
+      if(data) {
+        document.querySelector("#theory").value = data.theory;
+        document.querySelector("#practical").value = data.practical;
+        document.querySelector("#total").value = data.total;
+        document.querySelector("#passingMarks").value = data.passingMarks;
+        document.querySelector("#theoryCreditHour").value = data.theoryCreditHour;
+        document.querySelector("#practicalCreditHour").value = data.  practicalCreditHour;
+      } 
+    } else {
+      alert("Please select a class and enter a subject name.");
+      return;
+    }
+  });
+</script> 
 
           <button type="submit" class="btn btn-primary">
             <i class="fas fa-<%= editing ? 'save' : 'plus' %>"></i>
@@ -774,14 +808,6 @@ document.getElementById("subject").addEventListener("input", function() {
   <script>
     // Form validation with enhanced UX
     document.querySelector('form').addEventListener('submit', function(e) {
-       const selectedClasses = [...document.querySelectorAll("input[name='forClass[]']:checked")].map(c => c.value);
-
-          if (selectedClasses.length === 0) {
-        alert("Select at least one class");
-        e.preventDefault();
-        return;
-    }
-    document.querySelector("#selectedClassesHolder").value = JSON.stringify(selectedClasses);
       const input = document.querySelector('#subject');
       const value = input.value.trim();
       
