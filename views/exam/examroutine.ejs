@@ -71,7 +71,7 @@
       <h1 class="page-title">Exam Routine Management</h1>
       <p class="page-subtitle">Create and manage examination schedules for <%= terminal %> - <%= academicYear %></p>
     </div>
-    <form action="<%= editing ? `/saveexamroutine?routineId=${routineData._id}&editing=true` : '/saveexamroutine' %>" method="POST">
+    <form action="<%= editing ? `/saveexamroutine?routineId=${routineData._id}&editing=true&studentClass=${studentClass}&terminal=${terminal}&academicYear=${academicYear}` : `/saveexamroutine?studentClass=${studentClass}&terminal=${terminal}&academicYear=${academicYear}` %>" method="POST">
     <div class="form-container">
       <h2 class="form-title">Add New Exam Schedule</h2>
         <div class="form-grid">
