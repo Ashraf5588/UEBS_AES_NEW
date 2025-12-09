@@ -205,6 +205,9 @@ async function populateData(subject,studentClass,section,academicYear,terminal)
   const result = await data.json();
   console.log("Fetched Previous Marks:", result);
 
+  document.getElementById('totalWorksheet').value = result.length > 0 ? result[0].totalWorksheet : 0;
+ 
+
   const attendanceData = await fetch(`/getAttendanceData?subject=${subject}&studentClass=${studentClass}&section=${section}&academicYear=${academicYear}&terminal=${terminal}`);
   const attendanceResult = await attendanceData.json();
 if(result.length>0)
@@ -213,12 +216,23 @@ if(result.length>0)
   {
     const reg = item.reg;
     document.querySelector(`input[name="theorymarks[${reg}]"]`).value=item.theorymarks;
-    document.querySelector(`input[name="practicalmarks[${reg}]"]`).value=item.practicalmarks;
+  
     document.querySelector(`input[name="attendance[${reg}]"]`).value=item.attendance;
     
     // Trigger input events to recalculate marks
     document.querySelector(`input[name="theorymarks[${reg}]"]`).dispatchEvent(new Event('input'));
     document.querySelector(`input[name="attendance[${reg}]"]`).dispatchEvent(new Event('input'));
+     document.querySelector(`#totalWorksheet`).dispatchEvent(new Event('input'));
+     
+   
+     setTimeout(() => {
+         document.querySelectorAll(`select[name="worksheetGrades[${reg}][]"]`).forEach((select, index) => {
+          if (item.worksheetGrades && item.worksheetGrades[index]) {
+            select.value = item.worksheetGrades[index];
+           
+          }
+        });
+     }, 100);
   });
 }
 else
@@ -272,9 +286,9 @@ const academicYear = urlParams.get('academicYear');   // "" (empty string in you
      
     timer = setTimeout(async()=>{
       const reg = el.dataset.reg;
-      const theorymarks = document.querySelector(`input[name="theorymarks[${reg}]"]`).value;
-      const practicalmarks = document.querySelector(`input[name="practicalmarks[${reg}]"]`).value;
-      const attendance = document.querySelector(`input[name="attendance[${reg}]"]`).value;
+      const theorymarks = document.querySelector(`input[name="theorymarks[${reg}]"]`).value || 0;
+      
+      const attendance = document.querySelector(`input[name="attendance[${reg}]"]`).value || 0;
       const param = new URLSearchParams(window.location.search);
       const studentClass = param.get('studentClass');
       const section = param.get('section');
@@ -283,14 +297,20 @@ const academicYear = urlParams.get('academicYear');   // "" (empty string in you
       const terminal = param.get('terminal');
       const name = document.querySelector(`input[name="name[${reg}]"]`).value;
       const roll = document.querySelector(`input[name="roll[${reg}]"]`).value;
-      const academicYearHidden = "<%= academicYear %>";
-      const totalpracticalmarks = document.querySelector(`input[name="totalpracticalmarks[${reg}]"]`).value;
+
+   
       const gender = document.querySelector(`input[name="gender[${reg}]"]`).value;
       const passMarks = document.getElementById('passMarks').value;
       const practicalfullmarks = document.getElementById('practicalfullmarks').value;
       const theoryfullmarks = document.getElementById('fullMarks').value;
 
-    
+    const worksheekGrade = document.querySelectorAll(`select[name="worksheetGrades[${reg}][]"]`);
+    let worksheetGrades = [];
+    worksheekGrade.forEach((select)=>{
+      worksheetGrades.push(select.value);
+    });
+      const totalWorksheet = document.getElementById('totalWorksheet').value || 0;    
+      console.log(`Auto-saving data for reg: ${reg}, theorymarks: ${theorymarks}, attendance: ${attendance}, totalWorksheet: ${totalWorksheet}, worksheetGrades: ${worksheetGrades}, studentClass: ${studentClass}, section: ${section}, subject: ${subject}, academicYear: ${academicYear}, terminal: ${terminal}, name: ${name}, roll: ${roll}, gender: ${gender}, passMarks: ${passMarks}, practicalfullmarks: ${practicalfullmarks}, theoryfullmarks: ${theoryfullmarks}`);
       const response = await fetch(`/entryform?studentClass=${studentClass}&section=${section}&subject=${subject}&academicYear=${academicYear}&terminal=${terminal}`,{
         method: 'POST',
         headers: {
@@ -299,7 +319,7 @@ const academicYear = urlParams.get('academicYear');   // "" (empty string in you
         body: JSON.stringify({
           reg,
           theorymarks,
-          practicalmarks,
+         
           attendance,
           studentClass,
           section,
@@ -308,7 +328,8 @@ const academicYear = urlParams.get('academicYear');   // "" (empty string in you
           terminal,
           name,
           roll,
-          totalpracticalmarks,
+          totalWorksheet,
+          worksheetGrades,
           gender,
           passMarks,
           practicalfullmarks,
@@ -317,7 +338,7 @@ const academicYear = urlParams.get('academicYear');   // "" (empty string in you
 
         })
       });
-    },2000); // Delay of 2000 milliseconds
+    },1000); // Delay of 2000 milliseconds
     
   }
  </script>
@@ -338,30 +359,69 @@ const academicYear = urlParams.get('academicYear');   // "" (empty string in you
             const th = document.createElement('th');
             th.innerText = `Worksheet ${i+1} Marks`;
             headerRow.appendChild(th);
-
         }
-        for (const i in "<%=studentData%>".length){
-            console.log(i);
+        const studentData = <%- JSON.stringify(studentData) %>;
+        studentData.forEach((student)=>{
+            const reg = student.reg;
+            const row = document.querySelector(`input[name="roll[${reg}]"]`).parentElement.parentElement;
+            thToRemove = 7
+            while(row.children.length > thToRemove){
+                row.removeChild(row.lastChild);
+            }
+            for(j=0;j<totalWorksheets;j++){
+                const td = document.createElement('td');
+                const input = document.createElement('select');
+                const option1 = document.createElement('option');
+                option1.value = "Select Grade";
+                option1.text = "Select Grade";
+                option1.selected = true;
+                option1.disabled = true;
+                const option2 = document.createElement('option');
+                option2.value = "A+";
+                option2.text = "A+";
+                const option3 = document.createElement('option');
+                option3.value = "A";
+                option3.text = "A";
+                const option4 = document.createElement('option');
+                option4.value = "B+";
+                option4.text = "B+";
+                const option5 = document.createElement('option');
+
+                option5.value = "B";
+                option5.text = "B";
+                const option6 = document.createElement('option');
+                option6.value = "C+";
+                option6.text = "C+";
+                const option7 = document.createElement('option');
+                option7.value = "C";
+                option7.text = "C";
+                option8 = document.createElement('option');
+                option8.value = "D";
+                option8.text = "D";
+                option9 = document.createElement('option');
+                option9.value = "NG";
+                option9.text = "NG";
+
+                input.appendChild(option1);
+                input.appendChild(option2); 
+                input.appendChild(option3);
+                input.appendChild(option4);
+                input.appendChild(option5);
+                input.appendChild(option6);
+                input.appendChild(option7);
+                input.appendChild(option8);
+                input.appendChild(option9);
+
+                input.name = `worksheetGrades[${reg}][]`;
+                input.dataset.reg = reg;
+                input.addEventListener('change',function(){
+                    autoSave(input);
+                });
+                td.appendChild(input);
+                row.appendChild(td);
+            }
+        });
         
-        while(dataEntryRow.children.length > ThToRemove){
-            dataEntryRow.removeChild(dataEntryRow.lastChild);
-        }
-
-        for(i=0;i<totalWorksheets;i++){
-            const td = document.createElement('td');
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.name = `worksheetmarks[${dataEntryRow.querySelector('input[name^="reg"]').value}][${i}]`;
-            input.min = 0;
-            input.max = 10;
-            input.value = '';
-            input.addEventListener('input',function(){
-                autoSave(input);
-            });
-            td.appendChild(input);
-            dataEntryRow.appendChild(td);
-        }
-      }
     });
   </script>
 </body>

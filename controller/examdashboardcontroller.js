@@ -68,13 +68,23 @@ exports.generateMarksheet = async (req, res, next) => {
     const user = req.user;
 
     const model = getSlipModel();
+
   
   const studentWisedata = await model.aggregate([
   {
     $match: {
-      terminal: terminal   // ← filter by terminal
+      terminal: terminal, academicYear:academicYear, studentClass: studentClass, section: section  // ← filter by terminal
+    },
+  },
+  {
+    $setWindowFields:{
+      partitionBy: "$subject",
+      output:{
+        highestMarks: {$max:"$theorymarks"}
+      }
     }
   },
+  
   {
     $group: {
       _id: "$reg",
@@ -91,20 +101,46 @@ exports.generateMarksheet = async (req, res, next) => {
           passMarks: "$passMarks",
           practicalfullmarks: "$practicalfullmarks",
           creditHour: "$creditHour",
+          worksheetGrades: "$worksheetGrades",
+          highestmarks: "$highestMarks"
+         
         }
       }
     }
   },
   {
     $sort: { roll: 1 }  // optional: sort students by roll
-  }
+  },
+
 ])
 
-console.log("grouped data",studentWisedata);
+
+
    if(format=="theorypractical")
    {
-    res.render("./exam/generatemarksheettheorypr", {
-      currentPage: "exammanagement",
+    console.log("grouped data",studentWisedata);
+    if(studentClass<=3)
+    {
+res.render("./exam/primarytheorypr", {
+        currentPage: "exammanagement",
+
+            studentClassdata:studentClassdata,
+            terminals,
+            format,
+            studentWisedata,
+            studentClass,
+            section,
+            terminal,
+            academicYear,
+            creditHourData,
+            marksheetSetups,
+           
+      user: req.user
+    });
+    }
+    else
+    {  res.render("./exam/generatemarksheettheorypr", {
+        currentPage: "exammanagement",
 
             studentClassdata:studentClassdata,
             terminals,
@@ -120,6 +156,9 @@ console.log("grouped data",studentWisedata);
       user: req.user
     });
   }
+  }
+  
+
   else if(format=="practicalonly")
   {
     res.render("./exam/generatemarksheetpronly", {
@@ -171,6 +210,7 @@ console.log("grouped data",studentWisedata);
     res.status(500).send("Internal Server Error");
   }
 }
+
 
 exports.marksheetSetup = async (req, res, next) => {
   try {

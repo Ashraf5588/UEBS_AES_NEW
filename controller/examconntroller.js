@@ -174,6 +174,9 @@ await model.updateOne(
           section: section,
           academicYear: academicYear,
           gender: req.body.gender || "",
+          totalWorksheet: Number(req.body.totalWorksheet) || 0,
+          worksheetGrades: req.body.worksheetGrades || [],
+          
         },
       },
       { upsert: true }
