@@ -257,11 +257,24 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <% examRoutines.forEach((routine) => { %>
-                    <tr>
-                      <td><%= routine.nepalidate %></td>
-                      <td><%= routine.subject %></td>
-                    </tr>
+                  <% 
+                    const routineMap = new Map();
+                    if(examRoutines && examRoutines.length > 0) {
+                        examRoutines.forEach(r => {
+                            if (!routineMap.has(r.nepalidate)) routineMap.set(r.nepalidate, []);
+                            routineMap.get(r.nepalidate).push(r.subject);
+                        });
+                    }
+                  %>
+                  <% routineMap.forEach((subjects, date) => { %>
+                    <% subjects.forEach((subject, idx) => { %>
+                        <tr>
+                        <% if (idx === 0) { %>
+                            <td rowspan="<%= subjects.length %>" style="vertical-align: middle; background: #fff;"><%= date %></td>
+                        <% } %>
+                        <td><%= subject %></td>
+                        </tr>
+                    <% }) %>
                   <% }) %>
                 </tbody>
               </table>
