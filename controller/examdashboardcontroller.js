@@ -399,10 +399,13 @@ exports.analytics = async (req, res, next) => {
         $group: {
           _id: { studentClass: "$studentClass", subject: "$subject", terminal: "$terminal" },
           totalStudents: { $sum: 1 },
-          pass: { $sum: { $cond: [{ $gte: [{ $add: ["$theorymarks", "$practicalmarks"] }, "$passMarks"] }, 1, 0] } },
-          fail: { $sum: { $cond: [{ $lt: [{ $add: ["$theorymarks", "$practicalmarks"] }, "$passMarks"] }, 1, 0] } },
-          avgMarks: { $avg: { $add: ["$theorymarks", "$practicalmarks"] } }
-        }
+          pass: {
+            $sum: {$cond:[{$gte:["$theorymarks","$passMarks"]},1,0]}},
+          fail: {
+            $sum: {$cond:[{$lt:["$theorymarks","$passMarks"]},1,0]}},
+          avgMarks: { $avg: "$theorymarks" },
+        },
+        
       },
       { $sort: { "_id.studentClass": 1, "_id.subject": 1 } }
     ]);
@@ -422,7 +425,8 @@ exports.analytics = async (req, res, next) => {
           lowestMarks: {$min: "$theorymarks"},
           medianMarks : {$median:{input:"$theorymarks",method:"approximate"}},
 
-        }
+        },
+
       },
   
       { $sort: { "_id.studentClass": 1, "_id.section": 1 ,fail: -1} },
@@ -447,6 +451,71 @@ const finalStructureSectionAnalysis = {};
     finalStructureSectionAnalysis[academicYear][terminal][studentClassSection].push(item);
  
  }
+
+//  count fail no per section
+const failcountpersection =await  model.aggregate([
+  { $match: matchStage },
+  {
+    $group: {
+      _id: { studentClass: "$studentClass", section: "$section", terminal: "$terminal", academicYear: "$academicYear",reg:"$reg"},
+      section:{ $first:"$section" },
+      studentClass:{ $first:"$studentClass" },
+      subjects: { 
+      $push:{
+      subject:"$subject",
+      theorymarks:"$theorymarks",
+      practicalmarks:"$practicalmarks",
+      passMarks:"$passMarks",
+
+
+    },
+   
+
+     }
+      
+    },
+  },
+  {
+     $addFields:
+    {
+      failCount:{
+        $size:{
+          $filter:
+          {
+          input:"$subjects",
+          as:"sub",
+          cond:{$lt:["$$sub.theorymarks","$$sub.passMarks"]}
+        }
+      }
+      }
+    }
+  },
+    {
+      $group:{
+        _id:{failCount:"$failCount", studentClass:"$studentClass",section:"$section",terminal:"$terminal",academicYear:"$academicYear"},
+        terminal:{$first:"$terminal"},
+        academicYear:{$first:"$academicYear"},
+        section:{$first:"$section"},
+        studentClass:{$first:"$studentClass"},
+        totalFailCount:{$sum:1}
+    },
+    
+    
+  },
+  { $sort: { "_id.studentClass": 1, "_id.section": 1 ,"_id.failCount": 1} }
+]);
+console.log("Fail Count per Section Raw Data:", failcountpersection);
+failpersectionlookup={};
+failcountpersection.forEach((item)=>{
+  const key = `${item._id.studentClass}-${item._id.section}`
+   if (!failpersectionlookup[key]) {
+    failpersectionlookup[key] = [];
+  }
+
+  failpersectionlookup[key].push(item);
+
+});
+console.log("Fail Count per Section:", failpersectionlookup);
  
     // 3. Subject-wise Average across all classes
     const subjectAnalysis = await model.aggregate([
@@ -615,6 +684,7 @@ const schoolOverviewFinalStructure = {};
       finalStructureSectionAnalysis,
       subjectAnalysisFinalStructure,
       terminalComparisonFinalStructure,
+      failpersectionlookup,
     });
   
 }catch(err)
@@ -664,5 +734,187 @@ const {routineId,terminal,academicYear} = req.query;
   {
     res.status(500).send("Internal Server Error");
     console.error("Error deleting routine:", err);
+  }
+}
+
+exports.ledger = async (req, res, next) => {
+  try{
+    const {studentClass,section,academicYear,terminal} = req.query;
+    const studentClassdata = await studentClassModel.find({}).lean();
+    const marksheetSetups = await marksheetSetup.find({}).lean();
+
+    const model = getSlipModel();
+    const ledgerData = await model.aggregate([
+      {
+        $match: {
+          terminal: terminal, academicYear:academicYear, studentClass: studentClass, section: section  
+        },
+      },
+      {
+        $group: {
+          _id: "$reg",
+          
+          name: { $first: "$name" },
+          roll: { $first: "$roll" },
+             attendance: { $first: "$attendance" },
+          subjects: { 
+            $push: {
+              subject: "$subject",
+              theorymarks: "$theorymarks",
+              practicalmarks: "$practicalmarks",
+              theoryfullmarks: "$theoryfullmarks",
+              practicalfullmarks: "$practicalfullmarks",
+              passMarks: "$passMarks",
+              totalmarks: { $add: ["$theorymarks", "$practicalmarks"] },
+           
+            }
+          },
+          
+        
+        }
+      },
+      {
+          $addFields: {
+            failcount:{
+              $size: {
+                $filter: {
+                  input: "$subjects",
+                  as: "sub",
+                  cond: { $lt: [ "$$sub.theorymarks", "$$sub.passMarks" ] }
+                }
+              }
+
+            },
+            totalTh:{
+              $reduce: {
+                input: "$subjects",
+                initialValue: 0,
+                in: { $add: [ "$$value", "$$this.theorymarks" ] }
+              }
+            },
+
+            totalPr:{
+              $reduce: {
+                input: "$subjects",
+                initialValue: 0,
+                in: { $add: [ "$$value", "$$this.practicalmarks" ] }
+              }
+            },
+            theorypercentage:{
+              $multiply: [
+                { $divide: [
+                  { $reduce: {
+                    input: "$subjects",
+                    initialValue: 0,
+                    in: { $add: [ "$$value", "$$this.theorymarks" ] }
+                  } },
+                  { $reduce: {
+                    input: "$subjects",
+                    initialValue: 0,
+                    in: { $add: [ "$$value", "$$this.theoryfullmarks" ] }
+                  } }
+                ] },
+                100
+              ]
+            },
+
+          }
+      },
+      {
+        $setWindowFields:{
+          sortBy: { totalTh: -1 },
+          output:{
+            rank: {
+              $rank: {}
+            }
+          },
+        
+        }
+      },
+
+      { $sort: { roll: 1 } }
+    ]);
+    ledgerData.forEach((student) => {
+      lookupmap = {};
+      student.subjects.forEach((sub) => {
+        lookupmap[sub.subject] = sub;
+       
+      });
+       student.subjectmap = lookupmap;
+      });
+
+      const ledgerAnalysis = await model.aggregate([
+        {
+          $match: {
+            terminal: terminal, academicYear:academicYear, studentClass: studentClass, section: section} ,
+        },
+        {
+          $group: {
+            _id:{ subject: "$subject",studentClass: "$studentClass", section: "$section", terminal: "$terminal", academicYear: "$academicYear" },
+            highestMarks:{$max: "$theorymarks"},
+            lowestMarks:{$min: "$theorymarks"},
+            avgMarks:{$avg: "$theorymarks"},
+            maleavg:{
+              $avg: {
+                $cond: [
+                  { $eq: [ "$gender", "Male" ] },
+                  "$theorymarks",
+                  null
+                ]
+              }
+            },
+            femaleavg:{
+              $avg: {
+                $cond: [
+                  { $eq: [ "$gender", "Female" ] },
+                  "$theorymarks",
+                  null
+                ]
+              }
+            },
+            failCount: {
+              $sum: {
+                $cond: [{ $lt: [ "$theorymarks", "$passMarks" ] }, 1, 0]
+              }
+            },
+            totalStudents: { $sum: 1 },
+            passCount: {
+              $sum: {
+                $cond: [{ $gte: [ "$theorymarks", "$passMarks" ] }, 1, 0]
+              }
+            },
+          }
+        },
+    ]);
+
+    const ledgerAnalysisLookup = {};
+    ledgerAnalysis.forEach((item) => {
+      const subject = item._id.subject;
+      ledgerAnalysisLookup[subject] = item;
+    });
+
+    
+
+    console.log("Ledger Analysis:", ledgerAnalysis);
+    res.render("./exam/ledger", {
+      currentPage: "exammanagement",
+      studentClassdata,
+      user: req.user,
+      academicYear,studentClass,section,
+      terminal,
+      marksheetSetups,
+      ledgerData,
+      studentClass,
+      section,
+      academicYear,
+      terminal,
+      ledgerAnalysisLookup,
+    });
+    
+
+  }catch(err)
+  {
+    res.status(500).send("Internal Server Error" + err);
+    console.error("Error loading ledger page:", err);
   }
 }

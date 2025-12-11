@@ -257,4 +257,5 @@ student.post('/saveexamroutine',verifytoken,authorized,isAdmin,examdashboardcont
 student.get('/analytics',verifytoken,authorized,isAdmin,examdashboardcontroller.analytics)
 student.get('/editroutine',verifytoken,authorized,isAdmin,examdashboardcontroller.editRoutine)
 student.get('/deleteroutine',verifytoken,authorized,isAdmin,examdashboardcontroller.deleteRoutine)
+student.get('/ledger',verifytoken,authorized,isAdmin,examdashboardcontroller.ledger)
 module.exports = student;

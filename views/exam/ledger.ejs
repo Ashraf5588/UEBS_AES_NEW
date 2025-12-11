@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Ledger</title>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+  
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --secondary: #1e293b;
+      --bg-body: #f1f5f9;
+      --surface: #ffffff;
+      --text-main: #0f172a;
+      --border: #e2e8f0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      padding: 20px;
+      margin: 0;
+    }
+
+    /* Selector Panel */
+    .form-selector-panel {
+      background: var(--surface);
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+      border: 1px solid var(--border);
+    }
+
+    .form-selector-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 1rem;
+    }
+
+    .form-selector-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background-color: #fff;
+      font-size: 0.9rem;
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #4338ca; }
+
+    /* Ledger Container */
+    .ledger-container {
+      background: var(--surface);
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      overflow-x: auto;
+    }
+
+    .ledger-header-info {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ledger-header-info h2 { color: var(--primary); margin-bottom: 0.5rem; }
+    .ledger-header-info p { color: var(--secondary); font-weight: 500; margin: 0.25rem 0; }
+
+    /* Table Styling */
+    table.dataTable {
+      width: 100% !important;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    table.dataTable thead th {
+      background-color: #153b71; /* Slate 600 */
+      color: white;
+      font-weight: 600;
+      padding: 10px;
+      border: 1px solid #1d3d69;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    table.dataTable tbody td {
+      padding: 8px;
+      border: 1px solid var(--border);
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    /* Zebra Striping */
+    table.dataTable tbody tr:nth-child(odd) { background-color: #ffffff; }
+    table.dataTable tbody tr:nth-child(even) { background-color: #f1f5f9; /* Slate 100 */ }
+    table.dataTable tbody tr:hover { background-color: #e2e8f0 !important; /* Slate 200 */ }
+
+    /* Analysis Rows (Footer) */
+    table.dataTable tfoot th, table.dataTable tfoot td {
+      background-color: #f1f5f9;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      padding: 8px;
+      text-align: center;
+    }
+
+    /* Status Colors */
+    .status-fail { background-color: #fee2e2 !important; color: #991b1b; }
+    .status-pass { background-color: #dcfce7 !important; color: #166534; }
+    
+    /* DataTables Buttons */
+    .dt-buttons .dt-button {
+      background: white !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 6px !important;
+      color: var(--secondary) !important;
+      font-size: 0.85rem !important;
+      padding: 0.5rem 1rem !important;
+      margin-right: 0.5rem !important;
+    }
+    .dt-buttons .dt-button:hover { background: #f8fafc !important; border-color: var(--primary) !important; }
+
+    @media print {
+      .no-print { display: none; }
+      .ledger-container { box-shadow: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Selector Panel -->
+  <div class="form-selector-panel no-print">
+    <div class="form-selector-container">
+      <div class="form-selector-title">Marksheet Ledger Configuration</div>
+      <div class="form-selector-grid">
+        <select name="classSection" id="classSection">
+          <option value="" selected disabled>Choose Class & Section</option>
+          <% studentClassdata.forEach((data)=>{%>
+            <option value="<%=data.studentClass%>-<%=data.section%>"><%=data.studentClass%> - <%=data.section%></option>
+          <%})%>
+        </select>
+        <select name="terminals" id="terminal">
+          <option value="" selected disabled>Choose Terminal</option>
+          <% marksheetSetups[0].terminals.forEach((terminal)=>{%>
+            <option value="<%=terminal.name%>"><%=terminal.name%></option>
+          <% }) %>
+        </select>
+        <select name="academicYear" id="academicYear">
+          <option value="" selected disabled>Choose Academic Year</option>
+          <% currentYear = Number(marksheetSetups[0].academicYear) %>;
+            <% for (let i = 0; i < 5; i++) { %>
+              <option value="<%= currentYear - i %>"><%= currentYear - i %></option>
+            <% } %>
+        </select>
+      </div>
+      <button onclick="loadform()">Load Ledger</button>
+    </div>
+  </div>
+
+  <div class="ledger-container">
+    <div class="ledger-header-info">
+      <h2>Student Ledger</h2>
+      <p><strong>Class:</strong> <%= studentClass %> - <%= section %> &nbsp;|&nbsp; <strong>Terminal:</strong> <%= terminal %> &nbsp;|&nbsp; <strong>Year:</strong> <%= academicYear %></p>
+    </div>
+
+    <table id="ledgerTable" class="display nowrap" style="width:100%">
+      <thead>
+        <tr>
+          <th rowspan="2">Roll</th>
+          <th rowspan="2">Name</th>
+          <% uniqueSubjects = new Set(ledgerData.map(item => item.subjects.map(sub => sub.subject)).flat()); %>
+          <% uniqueSubjects.forEach((sub) => { %>
+            <th colspan="3"><%= sub %></th>
+          <% }) %>
+          <th rowspan="2">Total Th</th>
+          <th rowspan="2">Total Pr</th>
+          <th rowspan="2">Per%</th>
+          <th rowspan="2">Result</th>
+          <th rowspan="2">Rank</th>
+          <th rowspan="2">Att.</th>
+          <th rowspan="2">Fail Count</th>
+        </tr>
+        <tr>
+         <% for (let i = 0; i < uniqueSubjects.size; i++) { %>
+            <th>TH</th>
+            <th>PR</th>
+            <th>Tot</th>
+          <% } %>
+        </tr>
+      </thead>
+      
+      <tbody>
+        <% ledgerData.forEach((data)=> { %>
+          <tr>
+            <td><%= data.roll %></td>
+            <td><%= data.name %></td>
+            <% uniqueSubjects.forEach((sub) => { %>
+                <% const subjectData = data.subjectmap[sub]; %>
+            <% if(subjectData){ %>
+            <td class="<%= subjectData.theorymarks < subjectData.passMarks ? 'status-fail' : '' %>"><%= subjectData.theorymarks %></td>
+            <td><%= subjectData.practicalmarks %></td>
+            <td><%= subjectData.totalmarks %></td>
+            <% } else { %>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <% } %>
+           <% }) %>
+            <td><%= data.totalTh %></td>
+            <td><%= data.totalPr %></td>
+            <td><%= data.theorypercentage.toFixed(2) %></td>
+            <td class="<%= data.failcount > 0 ? 'status-fail' : 'status-pass' %>"><% if (data.failcount>0) { %>Fail<% } else { %>Pass<% } %></td>
+            <td><%= data.rank %></td>
+            <td><%=data.attendance%></td>
+            <td><%= data.failcount %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+
+     <tfoot>
+
+  <tr>
+    <th colspan="2" style="text-align:right; font-weight:bold;">Section Highest:</th>
+    <% uniqueSubjects.forEach(sub => { %>
+      <td colspan="3"><%= ledgerAnalysisLookup[sub]?.highestMarks ?? '-' %></td>
+    <% }) %>
+    <td colspan="7"></td>
+  </tr>
+
+  <tr>
+    <th colspan="2" style="text-align:right; font-weight:bold;">Section Lowest:</th>
+    <% uniqueSubjects.forEach(sub => { %>
+      <td colspan="3"><%= ledgerAnalysisLookup[sub]?.lowestMarks ?? '-' %></td>
+    <% }) %>
+    <td colspan="7"></td>
+  </tr>
+
+  <tr>
+    <th colspan="2" style="text-align:right; font-weight:bold;">Section Average:</th>
+    <% uniqueSubjects.forEach(sub => { 
+      const d = ledgerAnalysisLookup[sub];
+    %>
+      <td colspan="3"><%= d?.avgMarks !== undefined ? d.avgMarks.toFixed(2) : '-' %></td>
+    <% }) %>
+    <td colspan="7"></td>
+  </tr>
+
+  <tr>
+    <th colspan="2" style="text-align:right; font-weight:bold;">Male Average:</th>
+    <% uniqueSubjects.forEach(sub => {
+      const d = ledgerAnalysisLookup[sub];
+    %>
+      <td colspan="3"><%= d?.maleavg !== undefined ? d.maleavg.toFixed(2) : '-' %></td>
+    <% }) %>
+    <td colspan="7"></td>
+  </tr>
+
+  <tr>
+    <th colspan="2" style="text-align:right; font-weight:bold;">Female Average:</th>
+    <% uniqueSubjects.forEach(sub => {
+      const d = ledgerAnalysisLookup[sub];
+    %>
+      <td colspan="3"><%= d?.femaleavg !== undefined ? d.femaleavg.toFixed(2) : '-' %></td>
+    <% }) %>
+    <td colspan="7"></td>
+  </tr>
+
+  <tr>
+    <th colspan="2" style="text-align:right; font-weight:bold;">Fail Count:</th>
+    <% uniqueSubjects.forEach(sub => { %>
+      <td colspan="3"><%= ledgerAnalysisLookup[sub]?.failCount ?? '-' %></td>
+    <% }) %>
+    <td colspan="7"></td>
+  </tr>
+
+  <tr>
+    <th colspan="2" style="text-align:right; font-weight:bold;">Pass Count:</th>
+    <% uniqueSubjects.forEach(sub => { %>
+      <td colspan="3"><%= ledgerAnalysisLookup[sub]?.passCount ?? '-' %></td>
+    <% }) %>
+    <td colspan="7"></td>
+  </tr>
+
+  <tr>
+    <th colspan="2" style="text-align:right; font-weight:bold;">Pass %:</th>
+    <% uniqueSubjects.forEach(sub => {
+      const d = ledgerAnalysisLookup[sub];
+      const pct = d?.totalStudents > 0
+        ? ((d.passCount / d.totalStudents) * 100).toFixed(2)
+        : '-';
+    %>
+      <td colspan="3"><%= pct %>%</td>
+    <% }) %>
+    <td colspan="7"></td>
+  </tr>
+
+  <tr>
+    <th colspan="2" style="text-align:right; font-weight:bold;">Fail %:</th>
+    <% uniqueSubjects.forEach(sub => {
+      const d = ledgerAnalysisLookup[sub];
+      const pct = d?.totalStudents > 0
+        ? ((d.failCount / d.totalStudents) * 100).toFixed(2)
+        : '-';
+    %>
+      <td colspan="3"><%= pct %>%</td>
+    <% }) %>
+    <td colspan="7"></td>
+  </tr>
+
+</tfoot>
+
+    </table>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+  <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
+
+  <script>
+    $(document).ready(function() {
+      const fileName = "Class <%= studentClass %>-<%= section %> <%= terminal %> <%= academicYear %> Ledger";
+      const numSubjects = <%= uniqueSubjects.size %>;
+
+      $('#ledgerTable').DataTable({
+        dom: 'Bfrtip',
+        buttons: [
+            { extend: 'copy', footer: true },
+            { extend: 'csv', footer: true, filename: fileName },
+            { 
+                extend: 'excel', 
+                footer: true, 
+                filename: fileName, 
+                title: fileName,
+                customize: function(xlsx) {
+                    var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                    var mergeCells = $('mergeCells', sheet);
+                    if (mergeCells.length === 0) {
+                        mergeCells = $('<mergeCells/>');
+                        $('worksheet', sheet).append(mergeCells);
+                    }
+                    
+                    // Helper to convert index to Excel column letter (0 -> A)
+                    function toCol(n) {
+                        var s = "";
+                        while(n >= 0) {
+                            s = String.fromCharCode(n % 26 + 65) + s;
+                            n = Math.floor(n / 26) - 1;
+                        }
+                        return s;
+                    }
+
+                    // Calculate footer start row
+                    // Title (1) + Header (2) + Data Rows
+                    var table = $('#ledgerTable').DataTable();
+                    var dataRows = table.rows({ search: 'applied' }).count();
+                    var footerStartRow = 1 + 2 + dataRows + 1; 
+                    
+                    var footerRowsCount = 9; // 9 Analysis rows
+                    
+                    for (var r = 0; r < footerRowsCount; r++) {
+                        var rowIdx = footerStartRow + r;
+                        
+                        // 1. Label (Col 0-1)
+                        var mergeLabel = '<mergeCell ref="' + toCol(0) + rowIdx + ':' + toCol(1) + rowIdx + '"/>';
+                        mergeCells.append(mergeLabel);
+                        
+                        // 2. Subjects (Col 2 onwards, groups of 3)
+                        var colIdx = 2;
+                        for (var s = 0; s < numSubjects; s++) {
+                            var startCol = toCol(colIdx);
+                            var endCol = toCol(colIdx + 2);
+                            var mergeSub = '<mergeCell ref="' + startCol + rowIdx + ':' + endCol + rowIdx + '"/>';
+                            mergeCells.append(mergeSub);
+                            colIdx += 3;
+                        }
+                        
+                        // 3. Remaining Cols (Total Th ... Fail Count) -> 7 cols
+                        var lastStart = toCol(colIdx);
+                        var lastEnd = toCol(colIdx + 6);
+                        var mergeLast = '<mergeCell ref="' + lastStart + rowIdx + ':' + lastEnd + rowIdx + '"/>';
+                        mergeCells.append(mergeLast);
+                    }
+                    
+                    mergeCells.attr( 'count', mergeCells.children().length );
+                }
+            },
+            { extend: 'pdf', footer: true, filename: fileName, title: fileName, orientation: 'landscape', pageSize: 'A3' },
+            { extend: 'print', footer: true, title: fileName }
+        ],
+        scrollX: true,
+        paging: false,
+        fixedColumns: {
+            left: 2
+        },
+        ordering: false // Disable ordering to keep analysis rows at bottom if they were in tbody, but now they are in tfoot so it's fine. But complex headers might make ordering weird.
+      });
+    });
+
+    function loadform() {
+        const classSection = document.getElementById('classSection').value
+        if(!classSection) { alert("Please select Class & Section"); return; }
+        const studentClass = classSection.split("-")[0];
+        const section = classSection.split("-")[1];
+        const academicYear = document.getElementById('academicYear').value;
+        const terminal = document.getElementById('terminal').value
+
+        window.location.href=(`/ledger?studentClass=${studentClass}&section=${section}&terminal=${terminal}&academicYear=${academicYear}`)
+    }
+    
+    // Set initial values for selectors
+    document.getElementById('classSection').value = "<%= studentClass %>-<%= section %>";
+    document.getElementById('terminal').value = "<%= terminal %>";
+    document.getElementById('academicYear').value = "<%= academicYear %>";
+  </script>
+</body>
+</html>

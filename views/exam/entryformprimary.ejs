@@ -220,19 +220,21 @@ if(result.length>0)
     document.querySelector(`input[name="attendance[${reg}]"]`).value=item.attendance;
     
     // Trigger input events to recalculate marks
-    document.querySelector(`input[name="theorymarks[${reg}]"]`).dispatchEvent(new Event('input'));
-    document.querySelector(`input[name="attendance[${reg}]"]`).dispatchEvent(new Event('input'));
+    const theoryInput = document.querySelector(`input[name="theorymarks[${reg}]"]`);
+    const attendanceInput = document.querySelector(`input[name="attendance[${reg}]"]`);
+    
+    if(theoryInput) theoryInput.dispatchEvent(new Event('input'));
+    if(attendanceInput) attendanceInput.dispatchEvent(new Event('input'));
+    
      document.querySelector(`#totalWorksheet`).dispatchEvent(new Event('input'));
-     
-   
-     setTimeout(() => {
-         document.querySelectorAll(`select[name="worksheetGrades[${reg}][]"]`).forEach((select, index) => {
-          if (item.worksheetGrades && item.worksheetGrades[index]) {
+setTimeout(() => {
+   document.querySelectorAll(`select[name="worksheetGrades[${reg}][]"]`).forEach((select, index) => {
+        if(item.worksheetGrades && item.worksheetGrades[index]) {
             select.value = item.worksheetGrades[index];
-           
-          }
-        });
-     }, 100);
+        }
+      });
+}, 500);
+    
   });
 }
 else
@@ -338,7 +340,7 @@ const academicYear = urlParams.get('academicYear');   // "" (empty string in you
 
         })
       });
-    },1000); // Delay of 2000 milliseconds
+    },2000); // Delay of 2000 milliseconds
     
   }
  </script>

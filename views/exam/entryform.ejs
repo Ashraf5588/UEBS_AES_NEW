@@ -137,7 +137,7 @@
    <th>
   Pr Marks (
   <% if (subjectData && subjectData.length > 0) { %>
-      <%= subjectData[0].practical %>
+      <%= subjectData[0].practical*0.72 %>
   <% } else { %>
       <span style="color:red;">Practical marks not added. Contact admin.</span>
   <% } %>
@@ -145,6 +145,7 @@
 </th>
 
         <th>Attendance</th>
+        
         <th>Attendance Marks</th>
         <th>Terminal Marks</th>
         
@@ -161,6 +162,7 @@
           <td><input type="number" id="theorymarks" name="theorymarks[<%=student.reg%>]" value="" data-reg="<%= student.reg %>" min="0" max="<%=subjectData[0].theory%>" oninput="autoSave(this)"></td>
            <td><input type="number" data-reg="<%= student.reg %>"  id="practicalmarks" name="practicalmarks[<%=student.reg%>]" value="" oninput="autoSave(this)"></td>
           <td><input type="number" id="attendance" name="attendance[<%=student.reg%>]" value="" data-reg="<%= student.reg %>" oninput="autoSave(this)"></td>
+         
           <td><input type="number" id="attendancemarks_<%=student.reg%>" name="attendanceMarks[<%=student.reg%>]" readonly></td>
           <td><input type="number" id="terminalmarks_<%=student.reg%>" name="terminalmarks[<%=student.reg%>]" readonly></td>
             <td><input type="number" id="totalpractical" name="totalpracticalmarks[<%=student.reg%>]" data-reg="<%=student.reg%>" readonly></td>
@@ -327,13 +329,34 @@ if(result.length>0)
   result.forEach((item)=>
   {
     const reg = item.reg;
-    document.querySelector(`input[name="theorymarks[${reg}]"]`).value=item.theorymarks;
-    document.querySelector(`input[name="practicalmarks[${reg}]"]`).value=item.practicalmarks;
-    document.querySelector(`input[name="attendance[${reg}]"]`).value=item.attendance;
+    const theoryInput = document.querySelector(`input[name="theorymarks[${reg}]"]`);
+    const practicalInput = document.querySelector(`input[name="practicalmarks[${reg}]"]`);
+    const attendanceInput = document.querySelector(`input[name="attendance[${reg}]"]`);
+    const worksheetSelect = document.querySelector(`select[name="worksheetGrade[${reg}]"]`);
+
+    if(theoryInput) {
+        theoryInput.value = item.theorymarks || '';
+        // Trigger input events to recalculate marks
+        theoryInput.dispatchEvent(new Event('input'));
+    }
     
-    // Trigger input events to recalculate marks
-    document.querySelector(`input[name="theorymarks[${reg}]"]`).dispatchEvent(new Event('input'));
-    document.querySelector(`input[name="attendance[${reg}]"]`).dispatchEvent(new Event('input'));
+    if(practicalInput) {
+        practicalInput.value = item.practicalmarks || '';
+        // Trigger input events if needed for practicals
+        practicalInput.dispatchEvent(new Event('input'));
+    }
+
+    if(attendanceInput) {
+        attendanceInput.value = item.attendance || '';
+        // Trigger input events to recalculate marks
+        attendanceInput.dispatchEvent(new Event('input'));
+    }
+
+    if(worksheetSelect) {
+        setTimeout(()=>{
+             worksheetSelect.value = item.worksheetGrade;
+        },500);
+    }
   });
 }
 else
@@ -345,10 +368,12 @@ if(attendanceResult.length>0)
   attendanceResult.forEach((item)=>
   {
     const reg = item.reg;
-    document.querySelector(`input[name="attendance[${reg}]"]`).value=item.attendance;
-    
-    // Trigger input events to recalculate marks
-    document.querySelector(`input[name="attendance[${reg}]"]`).dispatchEvent(new Event('input'));
+    const attendanceInput = document.querySelector(`input[name="attendance[${reg}]"]`);
+    if(attendanceInput) {
+        attendanceInput.value=item.attendance;
+        // Trigger input events to recalculate marks
+        attendanceInput.dispatchEvent(new Event('input'));
+    }
   });
 }
 else
@@ -410,15 +435,24 @@ document.querySelectorAll('#practicalmarks').forEach((input) => {
 </script>
 <!-- script for autosave the data -->
  <script>
-  let timer;
+  const saveTimers = new Map();
+
   async function autoSave(el) {
-    clearTimeout(timer);
+    // Reset style while typing
+    el.style.backgroundColor = '';
+    el.style.borderColor = '';
+
+    // Clear existing timer for this element
+    if (saveTimers.has(el)) {
+        clearTimeout(saveTimers.get(el));
+    }
      
-    timer = setTimeout(async()=>{
+    const timer = setTimeout(async()=>{
       const reg = el.dataset.reg;
       const theorymarks = document.querySelector(`input[name="theorymarks[${reg}]"]`).value;
       const practicalmarks = document.querySelector(`input[name="practicalmarks[${reg}]"]`).value;
       const attendance = document.querySelector(`input[name="attendance[${reg}]"]`).value;
+      const worksheetGrade = document.querySelector(`select[name="worksheetGrade[${reg}]"]`)?.value || '';
       const param = new URLSearchParams(window.location.search);
       const studentClass = param.get('studentClass');
       const section = param.get('section');
@@ -435,34 +469,48 @@ document.querySelectorAll('#practicalmarks').forEach((input) => {
       const theoryfullmarks = document.getElementById('fullMarks').value;
 
     
-      const response = await fetch(`/entryform?studentClass=${studentClass}&section=${section}&subject=${subject}&academicYear=${academicYear}&terminal=${terminal}`,{
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          reg,
-          theorymarks,
-          practicalmarks,
-          attendance,
-          studentClass,
-          section,
-          subject,
-          academicYear,
-          terminal,
-          name,
-          roll,
-          totalpracticalmarks,
-          gender,
-          passMarks,
-          practicalfullmarks,
-          theoryfullmarks,
+      try {
+          const response = await fetch(`/entryform?studentClass=${studentClass}&section=${section}&subject=${subject}&academicYear=${academicYear}&terminal=${terminal}`,{
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              reg,
+              theorymarks,
+              practicalmarks,
+              attendance,
+              worksheetGrade,
+              studentClass,
+              section,
+              subject,
+              academicYear,
+              terminal,
+              name,
+              roll,
+              totalpracticalmarks,
+              gender,
+              passMarks,
+              practicalfullmarks,
+              theoryfullmarks,
+            })
+          });
 
+          if (response.ok) {
+             // Success: Transparent Light Blue
+             el.style.backgroundColor = '#e0f2fe'; // Light blue
+             el.style.borderColor = '#7dd3fc'; // Light blue border
+             el.style.transition = 'background-color 0.3s ease';
+          }
+      } catch (err) {
+          console.error(err);
+      }
+      
+      saveTimers.delete(el);
 
-        })
-      });
-    },1500); // Delay of 2000 milliseconds
+    },1000); // Delay of 1000 milliseconds
     
+    saveTimers.set(el, timer);
   }
  </script>
 </body>
