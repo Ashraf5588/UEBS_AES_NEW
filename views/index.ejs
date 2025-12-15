@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AES - Answersheet Analysis System</title>
+    <title>eAnalyst</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/nav.css">
     <link rel="stylesheet" href="/subject-selector.css">
@@ -18,14 +22,14 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Agbalumo&family=Alexandria:wght@100..900&family=Lexend:wght@100..900&family=Manrope:wght@200..800&display=swap');
           :root {
-            --primary: #0ea5e9;  /* skyblue */
-            --primary-dark: #0284c7;  /* darker skyblue */
-            --secondary: #8b5a2b;  /* brown */
-            --secondary-dark: #6b4423;  /* darker brown */
+            --primary: #1954a6;  /* skyblue */
+            --primary-dark: #0e2c5c;  /* darker skyblue */
+            --secondary: #f0841f;  /* brown */
+            --secondary-dark: #9d4a06;  /* darker brown */
             --light: #f8fafc;
             --dark: #1e293b;
-            --accent: #a16207;  /* amber brown for accent */
-            --gray: #64748b;
+            --accent: #e08d19;  /* amber brown for accent */
+            --gray: #db8025;
         }
         
         body {
@@ -388,9 +392,12 @@
         <div class="action-section">
             <div class="action-buttons">
                 <a href="/admin/subject"><button class="btn" style="background-color: green;color: white;"> <i class="fa-solid fa-clipboard-question" style="color: #ffffff;"></i>&ensp;Set Question Paper Format</button></a>
-                <a href="/examform"><button class="btn" style="background-color: rgb(255, 183, 0);color: white;"   ><i class="fa-solid fa-file-circle-question" style="color: #ffffff;"></i>Exam Marks Entry</button></a>
+                <a href="/examform"><button class="btn" style="background-color: rgb(255, 183, 0);color: white;"   ><i class="fa-solid fa-file-circle-question" style="color: #ffffff;"></i> Exam Marks Entry</button></a>
                 <a href="#subject-section" class="btn btn-primary action-btn">
-                    <i class="fas fa-pen-to-square"></i> Enter Data
+                    <i class="fas fa-pen-to-square"></i> Enter Analysis Data
+                </a>
+                 <a href="/class" class="btn btn-secondary action-btn">
+                    <i class="fas fa-pen-to-square"></i> Internal Evaluation
                 </a>
              
                

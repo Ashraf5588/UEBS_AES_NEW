@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marks Entry Form</title>
+  <title><%=studentClass%>-<%=section%>-<%=subject%></title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     :root{--primary:#ff8c42;--primary-dark:#e67a2e;--secondary:#1a3a52;--secondary-light:#2c5f8d;--bg:#f8f9fa;--card:#fff;--border:#e1e8ed;--text:#2d3748;--success:#48bb78;--hover:#fff5eb}
@@ -149,7 +153,7 @@
         <th>Attendance Marks</th>
         <th>Terminal Marks</th>
         
-        <th>Total</th>
+        <th>Total PR</th>
       </tr>
       <% studentData.forEach((student,idx)=>{%>
       
@@ -159,8 +163,8 @@
           <td><input type="text" name="roll[<%=student.reg%>]" value="<%=student.roll%>" readonly ></td>
          <td><input type="text" name="name[<%=student.reg%>]" value="<%=student.name%>" readonly ></td>
           <td><img src="/student.png" alt="photo"></td>
-          <td><input type="number" id="theorymarks" name="theorymarks[<%=student.reg%>]" value="" data-reg="<%= student.reg %>" min="0" max="<%=subjectData[0].theory%>" oninput="autoSave(this)"></td>
-           <td><input type="number" data-reg="<%= student.reg %>"  id="practicalmarks" name="practicalmarks[<%=student.reg%>]" value="" oninput="autoSave(this)"></td>
+          <td><input type="number" id="theorymarks" name="theorymarks[<%=student.reg%>]" value="" data-reg="<%= student.reg %>" min="0" max="<%=subjectData[0].theory%>" data-max="<%=subjectData[0].theory%>" oninput="checkMax(this)"></td>
+           <td><input type="number" data-reg="<%= student.reg %>"  id="practicalmarks" name="practicalmarks[<%=student.reg%>]" value="" data-max="<%=subjectData[0].practical*0.72%>" oninput="checkMax(this)"></td>
           <td><input type="number" id="attendance" name="attendance[<%=student.reg%>]" value="" data-reg="<%= student.reg %>" oninput="autoSave(this)"></td>
          
           <td><input type="number" id="attendancemarks_<%=student.reg%>" name="attendanceMarks[<%=student.reg%>]" readonly></td>
@@ -441,6 +445,16 @@ document.querySelectorAll('#practicalmarks').forEach((input) => {
     // Reset style while typing
     el.style.backgroundColor = '';
     el.style.borderColor = '';
+    const reg = el.dataset.reg;
+    const maxMarks = el.dataset.max;
+    
+    // Validate max marks
+    if (maxMarks && Number(el.value) > Number(maxMarks)) {
+      el.style.backgroundColor = '#fee2e2'; // Light red
+      el.style.borderColor = '#f87171'; // Red border
+      el.style.transition = 'background-color 0.3s ease';
+      return; // Exit if max marks exceeded
+    }
 
     // Clear existing timer for this element
     if (saveTimers.has(el)) {
@@ -495,8 +509,8 @@ document.querySelectorAll('#practicalmarks').forEach((input) => {
               theoryfullmarks,
             })
           });
-
-          if (response.ok) {
+ 
+         if (response.ok) {
              // Success: Transparent Light Blue
              el.style.backgroundColor = '#e0f2fe'; // Light blue
              el.style.borderColor = '#7dd3fc'; // Light blue border
@@ -511,6 +525,45 @@ document.querySelectorAll('#practicalmarks').forEach((input) => {
     },1000); // Delay of 1000 milliseconds
     
     saveTimers.set(el, timer);
+  }
+ </script>
+
+
+<!-- script to check max max exceeds -->
+ <script>
+  function checkMax(element)
+  {
+    const reg = element.dataset.reg;
+    const maxMarks = element.dataset.max;
+    if(Number(element.value) > Number (maxMarks))
+    {
+      const inputbox = element;
+      element.style.backgroundColor = '#fee2e2'; // Light red
+      element.style.borderColor = '#f87171'; // Red border
+      element.style.transition = 'background-color 0.3s ease';
+      element.focus();
+      element.placeholder = 'Max Marks Exceeded';
+      element.value = '';
+      
+      // Clear any pending autoSave timer
+      if (typeof saveTimers !== 'undefined' && saveTimers.has(element)) {
+          clearTimeout(saveTimers.get(element));
+          saveTimers.delete(element);
+      }
+
+      return; // Exit if max marks exceeded
+    }
+    else
+    {
+      element.style.backgroundColor = '';
+      element.style.borderColor = '';
+       autoSave(element);
+    }
+    
+
+   
+    
+    
   }
  </script>
 </body>

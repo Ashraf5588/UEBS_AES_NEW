@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Ledger</title>
@@ -160,7 +164,7 @@
       <div class="form-selector-title">Marksheet Ledger Configuration</div>
       <div class="form-selector-grid">
         <select name="classSection" id="classSection">
-          <option value="" selected disabled>Choose Class & Section</option>
+          <option  selected disabled>Choose Class & Section</option>
           <% studentClassdata.forEach((data)=>{%>
             <option value="<%=data.studentClass%>-<%=data.section%>"><%=data.studentClass%> - <%=data.section%></option>
           <%})%>
@@ -361,18 +365,19 @@
             { extend: 'csv', footer: true, filename: fileName },
             { 
                 extend: 'excel', 
-                footer: true, 
+                footer: false, 
+                header: false,
                 filename: fileName, 
                 title: fileName,
                 customize: function(xlsx) {
                     var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                    var sheetData = $('sheetData', sheet);
                     var mergeCells = $('mergeCells', sheet);
                     if (mergeCells.length === 0) {
                         mergeCells = $('<mergeCells/>');
                         $('worksheet', sheet).append(mergeCells);
                     }
                     
-                    // Helper to convert index to Excel column letter (0 -> A)
                     function toCol(n) {
                         var s = "";
                         while(n >= 0) {
@@ -382,43 +387,153 @@
                         return s;
                     }
 
-                    // Calculate footer start row
-                    // Title (1) + Header (2) + Data Rows
-                    var table = $('#ledgerTable').DataTable();
-                    var dataRows = table.rows({ search: 'applied' }).count();
-                    var footerStartRow = 1 + 2 + dataRows + 1; 
+                    // 1. Shift existing data rows down by 2 to make room for header
+                    var headerRowsCount = 2;
                     
-                    var footerRowsCount = 9; // 9 Analysis rows
-                    
-                    for (var r = 0; r < footerRowsCount; r++) {
-                        var rowIdx = footerStartRow + r;
-                        
-                        // 1. Label (Col 0-1)
-                        var mergeLabel = '<mergeCell ref="' + toCol(0) + rowIdx + ':' + toCol(1) + rowIdx + '"/>';
-                        mergeCells.append(mergeLabel);
-                        
-                        // 2. Subjects (Col 2 onwards, groups of 3)
-                        var colIdx = 2;
-                        for (var s = 0; s < numSubjects; s++) {
-                            var startCol = toCol(colIdx);
-                            var endCol = toCol(colIdx + 2);
-                            var mergeSub = '<mergeCell ref="' + startCol + rowIdx + ':' + endCol + rowIdx + '"/>';
-                            mergeCells.append(mergeSub);
-                            colIdx += 3;
+                    $('row', sheetData).each(function () {
+                        var row = $(this);
+                        var r = parseInt(row.attr('r'));
+                        if (r > 1) { // Skip title row (1)
+                            var newR = r + headerRowsCount;
+                            row.attr('r', newR);
+                            row.children('c').each(function() {
+                                var c = $(this);
+                                var ref = c.attr('r');
+                                var colPart = ref.replace(/\d+/, '');
+                                c.attr('r', colPart + newR);
+                            });
                         }
+                    });
+
+                    // 2. Insert Header Rows
+                    var thead = $('.dataTables_scrollHeadInner table thead').length > 0 
+                        ? $('.dataTables_scrollHeadInner table thead') 
+                        : $('#ledgerTable thead');
+                    
+                    var headerStartRow = 2;
+                    var titleRow = $('row[r="1"]', sheetData);
+                    
+                    thead.find('tr').each(function(trIdx, tr) {
+                        var currentRow = headerStartRow + trIdx;
+                        var rowXML = '<row r="' + currentRow + '">';
+                        var colIdx = 0;
                         
-                        // 3. Remaining Cols (Total Th ... Fail Count) -> 7 cols
-                        var lastStart = toCol(colIdx);
-                        var lastEnd = toCol(colIdx + 6);
-                        var mergeLast = '<mergeCell ref="' + lastStart + rowIdx + ':' + lastEnd + rowIdx + '"/>';
-                        mergeCells.append(mergeLast);
+                        $(tr).children('th, td').each(function(tdIdx, td) {
+                            var $td = $(td);
+                            var text = $td.text();
+                            var colspan = parseInt($td.attr('colspan')) || 1;
+                            var rowspan = parseInt($td.attr('rowspan')) || 1;
+                            
+                            rowXML += '<c t="inlineStr" r="' + toCol(colIdx) + currentRow + '" s="2">';
+                            rowXML += '<is><t>' + text + '</t></is>';
+                            rowXML += '</c>';
+                            
+                            if (colspan > 1 || rowspan > 1) {
+                                var startCol = toCol(colIdx);
+                                var endCol = toCol(colIdx + colspan - 1);
+                                var startRow = currentRow;
+                                var endRow = currentRow + rowspan - 1;
+                                var mergeEntry = '<mergeCell ref="' + startCol + startRow + ':' + endCol + endRow + '"/>';
+                                mergeCells.append(mergeEntry);
+                            }
+                            
+                            colIdx += colspan;
+                        });
+                        
+                        rowXML += '</row>';
+                        
+                        if (titleRow.length > 0 && trIdx === 0) {
+                            $(rowXML).insertAfter(titleRow);
+                            titleRow = $('row[r="' + currentRow + '"]', sheetData);
+                        } else if (trIdx > 0) {
+                             var prevRow = $('row[r="' + (currentRow - 1) + '"]', sheetData);
+                             $(rowXML).insertAfter(prevRow);
+                        } else {
+                            sheetData.prepend(rowXML);
+                            titleRow = $('row[r="' + currentRow + '"]', sheetData);
+                        }
+                    });
+
+                    // 3. Footer (Manual Injection)
+                    var table = $('#ledgerTable').DataTable();
+                    var dtDataCount = table.rows({ search: 'applied' }).count();
+                    var footerStartRow = 1 + headerRowsCount + dtDataCount + 1; 
+
+                    var tfoot = table.table().footer();
+                    var footerRows = $(tfoot).find('tr');
+                    if (footerRows.length === 0) {
+                         footerRows = $('.dataTables_scrollFootInner tfoot tr');
                     }
+
+                    footerRows.each(function(index, tr) {
+                        var $tr = $(tr);
+                        var currentRow = footerStartRow + index;
+                        var rowXML = '<row r="' + currentRow + '">';
+                        var colIdx = 0;
+
+                        $tr.children().each(function(i, td) {
+                            var $td = $(td);
+                            var text = $td.text();
+                            var colspan = parseInt($td.attr('colspan')) || 1;
+                            
+                            rowXML += '<c t="inlineStr" r="' + toCol(colIdx) + currentRow + '" s="2">';
+                            rowXML += '<is><t>' + text + '</t></is>';
+                            rowXML += '</c>';
+
+                            if (colspan > 1) {
+                                var startCol = toCol(colIdx);
+                                var endCol = toCol(colIdx + colspan - 1);
+                                var mergeEntry = '<mergeCell ref="' + startCol + currentRow + ':' + endCol + currentRow + '"/>';
+                                mergeCells.append(mergeEntry);
+                            }
+
+                            colIdx += colspan;
+                        });
+
+                        rowXML += '</row>';
+                        sheetData.append(rowXML);
+                    });
                     
                     mergeCells.attr( 'count', mergeCells.children().length );
                 }
             },
             { extend: 'pdf', footer: true, filename: fileName, title: fileName, orientation: 'landscape', pageSize: 'A3' },
-            { extend: 'print', footer: true, title: fileName }
+            { 
+                extend: 'print', 
+                footer: true, 
+                title: fileName,
+                customize: function(win) {
+                    // Force landscape mode
+                    var css = '@page { size: landscape; }',
+                        head = win.document.head || win.document.getElementsByTagName('head')[0],
+                        style = win.document.createElement('style');
+         
+                    style.type = 'text/css';
+                    style.media = 'print';
+         
+                    if (style.styleSheet) {
+                      style.styleSheet.cssText = css;
+                    } else {
+                      style.appendChild(win.document.createTextNode(css));
+                    }
+                    head.appendChild(style);
+
+                    // Header Fix
+                    var thead = $('.dataTables_scrollHeadInner table thead').length > 0 
+                        ? $('.dataTables_scrollHeadInner table thead').clone() 
+                        : $('#ledgerTable thead').clone();
+                    $(win.document.body).find('table thead').remove();
+                    $(win.document.body).find('table').prepend(thead);
+
+                    // Footer Fix
+                    var tfoot = $('.dataTables_scrollFootInner table tfoot').length > 0 
+                        ? $('.dataTables_scrollFootInner table tfoot').clone() 
+                        : $('#ledgerTable tfoot').clone();
+                    
+                    $(win.document.body).find('table tfoot').remove();
+                    $(win.document.body).find('table').append(tfoot);
+                }
+            }
         ],
         scrollX: true,
         paging: false,
@@ -440,10 +555,38 @@
         window.location.href=(`/ledger?studentClass=${studentClass}&section=${section}&terminal=${terminal}&academicYear=${academicYear}`)
     }
     
-    // Set initial values for selectors
-    document.getElementById('classSection').value = "<%= studentClass %>-<%= section %>";
-    document.getElementById('terminal').value = "<%= terminal %>";
-    document.getElementById('academicYear').value = "<%= academicYear %>";
+    // Set initial values for selectors safely
+    try {
+        const currentClass = "<%= typeof studentClass !== 'undefined' ? studentClass : '' %>";
+        const currentSection = "<%= typeof section !== 'undefined' ? section : '' %>";
+        const currentTerminal = "<%= typeof terminal !== 'undefined' ? terminal : '' %>";
+        const currentYear = "<%= typeof academicYear !== 'undefined' ? academicYear : '' %>";
+
+        if(currentClass && currentSection) {
+            const val = `${currentClass}-${currentSection}`;
+            const select = document.getElementById('classSection');
+            // Check if option exists before setting to avoid errors or empty selection
+            if(select && select.querySelector(`option[value="${val}"]`)) {
+                select.value = val;
+            }
+        }
+        
+        if(currentTerminal) {
+            const termSelect = document.getElementById('terminal');
+            if(termSelect && termSelect.querySelector(`option[value="${currentTerminal}"]`)) {
+                termSelect.value = currentTerminal;
+            }
+        }
+        
+        if(currentYear) {
+            const yearSelect = document.getElementById('academicYear');
+            if(yearSelect && yearSelect.querySelector(`option[value="${currentYear}"]`)) {
+                yearSelect.value = currentYear;
+            }
+        }
+    } catch(e) {
+        console.error("Error setting initial values:", e);
+    }
   </script>
 </body>
 </html>

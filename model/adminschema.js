@@ -55,4 +55,18 @@ const newsubjectSchema = new mongoose.Schema({
   "practicalCreditHour":{ type: Number,required: false},
 
 },{strict:false})
-module.exports = {subjectSchema,classSchema,terminalSchema,studentrecordschema,newsubjectSchema};
+const marksheetsetupSchema = new mongoose.Schema({
+  "schoolName": { type: String, required: false },
+  "address": { type: String, required: false },
+  "phone": { type: String, required: false },
+  "website": { type: String, required: false },
+  "academicYear": { type: String, required: false },
+  "totalTerminals": { type: Number, required: false },
+  terminals: [
+    {
+      name: { type: String, required: false },
+      workingDays: { type: Number, required: false }
+    }
+  ],
+})
+module.exports = {subjectSchema,classSchema,terminalSchema,studentrecordschema,newsubjectSchema,marksheetsetupSchema};

@@ -7,8 +7,8 @@ const bs = require("bikram-sambat-js")
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const { rootDir } = require("../utils/path");
-
-const { classSchema, subjectSchema, terminalSchema,newsubjectSchema } = require("../model/adminschema");
+const {marksheetSchema} = require("../model/masrksheetschema");
+const { classSchema, subjectSchema, terminalSchema,newsubjectSchema,marksheetsetupSchema } = require("../model/adminschema");
 const { adminSchema,superadminSchema, teacherSchema} = require("../model/admin");
 const { studentSchema } = require("../model/schema");
 const student = require("../routers/mainpage");
@@ -24,8 +24,8 @@ const {generateToken} = require("../middleware/auth");
 
 app.set("view engine", "ejs");
 app.set("view", path.join(rootDir, "views"));
-
-
+const {marksheetsetupschemaForAdmin} = require("../model/masrksheetschema");
+const marksheetSetup = mongoose.models.marksheetSetup || mongoose.model("marksheetSetup", marksheetsetupschemaForAdmin, "marksheetSetup");
 const multer = require('multer')
 const fs = require('fs')
 
@@ -2814,3 +2814,104 @@ reportofClass.push(
     res.status(500).send("Error generating report: " + err.message);
   }
 }
+exports.showmarksheetSetupForm = async (req, res) => {
+  try {
+    // Get sidenav data
+    const sidenavData = await getSidenavData(req);
+    
+    // Debug: Check the collection name and connection
+    console.log("=== MARKSHEET SETUP DEBUG ===");
+    console.log("Model collection name:", marksheetSetup.collection.name);
+    console.log("Database name:", mongoose.connection.db.databaseName);
+    
+    // Try to get collection directly
+    const db = mongoose.connection.db;
+    const collections = await db.listCollections().toArray();
+    console.log("Available collections:", collections.map(c => c.name));
+    
+    // Fetch all existing marksheet configurations
+    const marksheetData = await marksheetSetup.find({}).lean();
+    console.log("Number of records found:", marksheetData.length);
+    console.log("Marksheet data:", JSON.stringify(marksheetData, null, 2));
+    
+    // Also try querying the collection directly
+    const directQuery = await db.collection('marksheetSetting').find({}).toArray();
+    console.log("Direct query results:", directQuery.length);
+    console.log("Direct query data:", JSON.stringify(directQuery, null, 2));
+    
+    // Check if we're in edit mode
+    let editData = null;
+    if (req.query.edit === 'true' && req.query.id) {
+      editData = await marksheetSetup.findById(req.query.id).lean();
+      console.log("Edit data:", editData);
+    }
+    
+    res.render("admin/marksheetsetup", {
+      currentPage: 'marksheetsetup',
+      marksheetData: marksheetData,
+      editData: editData,
+      ...sidenavData
+    });
+  } catch (err) {
+    console.error("Error in showmarksheetSetupForm:", err);
+    res.status(500).send("Error loading marksheet setup: " + err.message);
+  }
+};
+exports.savemarksheetSetupForm = async (req, res) => {
+  try {
+    const total = req.body.totalTerminals;
+    const terminals = [];
+
+    for (let i = 1; i <= total; i++) {
+      const name = req.body[`name${i}`];
+      const workingDays = req.body[`workingDays${i}`];
+
+      if (name && workingDays) {
+        terminals.push({ name, workingDays });
+      }
+    }
+
+    // Check if we're updating an existing setup
+    if (req.query.edit === 'true' && req.query.id) {
+      // Update existing setup
+      await marksheetSetup.findByIdAndUpdate(req.query.id, {
+        schoolName: req.body.schoolName,
+        address: req.body.address,
+        phone: req.body.phone,
+        email: req.body.email,
+        website: req.body.website,
+        academicYear: req.body.academicYear,
+        totalTerminals: total,
+        terminals
+      });
+    } else {
+      // Create new setup
+      await marksheetSetup.create({
+        schoolName: req.body.schoolName,
+        address: req.body.address,
+        phone: req.body.phone,
+        email: req.body.email,
+        website: req.body.website,
+        academicYear: req.body.academicYear,
+        totalTerminals: total,
+        terminals
+      });
+    }
+
+    res.redirect('/marksheetsetup');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error saving marksheet setup");
+  }
+};
+
+exports.deletemarksheetSetup = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await marksheetSetup.findByIdAndDelete(id);
+    res.redirect('/marksheetsetup');
+  } catch (err) {
+    console.error("Error deleting marksheet setup:", err);
+    res.status(500).send("Error deleting marksheet setup: " + err.message);
+  }
+};

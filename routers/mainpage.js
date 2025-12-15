@@ -5,6 +5,8 @@ const newscontroller = require('../controller/newscontroller')
 const examcontroller = require('../controller/examconntroller')
 const multer  = require('multer')
 const examdashboardcontroller = require('../controller/examdashboardcontroller')
+const practical410controller = require('../controller/practical410controller')
+const themecontroller = require('../controller/themecontroller')
 
 const {verifytoken,authorized,isAdmin,isnewsAdmin}=require('../middleware/auth')
 
@@ -88,8 +90,7 @@ student.get('/findData/:subjectinput/:studentClass/:section/:termwise/:termwiser
 
 student.get('/student_data/:subjectinput/:studentClass/:section/:terminal', verifytoken,authorized,controller.studentrecord)
 student.post('/search/:subject/:studentClass/:section/:terminal',verifytoken,authorized,controller.search)
-student.get('/:controller/:subject',verifytoken,authorized,controller.studentclass)
-student.get('/:controller/:subject/:studentClass/:section',verifytoken,authorized,controller.terminal)
+
 student.get('/forms/:subjectinput/:studentClass/:section/:terminal?',verifytoken,authorized,controller.showForm)
 student.post('/forms/:subjectinput/:studentClass?/:section?/:terminal?',verifytoken,authorized,controller.saveForm)
 
@@ -248,8 +249,7 @@ student.get('/getAttendanceData',verifytoken,authorized,examcontroller.getAttend
 student.get('/exammanagement',verifytoken,authorized,isAdmin,examdashboardcontroller.examManagement)
 student.get('/formatchoose',verifytoken,authorized,isAdmin,examdashboardcontroller.formatChoose)
 student.get('/generatemarksheet',verifytoken,authorized,isAdmin,examdashboardcontroller.generateMarksheet)
-student.get('/marksheetsetup',verifytoken,authorized,isAdmin,examdashboardcontroller.marksheetSetup)
-student.post('/marksheetsetup',verifytoken,authorized,isAdmin,examdashboardcontroller.saveMarksheetSetup)
+
 student.get('/admitcard',verifytoken,authorized,isAdmin,examdashboardcontroller.admitCard)
 student.get('/routineterminalchoose'  ,verifytoken,authorized,isAdmin,examdashboardcontroller.routineTerminalChoose)
 student.get('/examroutine',verifytoken,authorized,isAdmin,examdashboardcontroller.examRoutine)
@@ -258,4 +258,86 @@ student.get('/analytics',verifytoken,authorized,isAdmin,examdashboardcontroller.
 student.get('/editroutine',verifytoken,authorized,isAdmin,examdashboardcontroller.editRoutine)
 student.get('/deleteroutine',verifytoken,authorized,isAdmin,examdashboardcontroller.deleteRoutine)
 student.get('/ledger',verifytoken,authorized,isAdmin,examdashboardcontroller.ledger)
+student.get('/myresult',examdashboardcontroller.myResult)
+
+student.get('/formatchoosestudent',examdashboardcontroller.formatChooseStudent)
+student.get('/student/generatemarksheet',examdashboardcontroller.generateMarksheetStudent)
+student.get('/studentportfolio',verifytoken,authorized,examdashboardcontroller.studentPortfolio)
+
+  
+
+
+
+// Theme Routes Start Here
+student.get('/theme', verifytoken, authorized, themecontroller.themeopener);
+student.get('/themeform', verifytoken, authorized, themecontroller.themeform);
+student.get('/themefillupform', verifytoken, authorized, themecontroller.themefillupform);
+student.post('/themefillupform', verifytoken, authorized, themecontroller.themefillupformsave);
+student.post('/themeform', verifytoken, authorized, themecontroller.themeformSave);
+student.get('/thememarks', verifytoken, authorized, themecontroller.themeformMarks);
+student.get('/thememarksofstudent', verifytoken, authorized, themecontroller.thememarksOfStudent);
+student.get('/themewisemarks', verifytoken, authorized, themecontroller.themewisemarks);
+student.get('/themeMarksheet', verifytoken, authorized, themecontroller.themeMarksheet);
+
+student.get('/themeslip', verifytoken, authorized, themecontroller.themeslip);
+student.get('/theme/previous-data', verifytoken, authorized, themecontroller.getPreviousThemeData);
+student.get('/theme/student-themes', verifytoken, authorized, themecontroller.getStudentThemes);
+student.get('/marksheetsetup',verifytoken,authorized,isAdmin,admincontrol.showmarksheetSetupForm);
+student.post('/marksheetsetup',verifytoken,authorized,isAdmin,admincontrol.savemarksheetSetupForm);
+student.get('/marksheetsetup/delete/:id',verifytoken,authorized,isAdmin,admincontrol.deletemarksheetSetup);
+
+
+student.get('/class',verifytoken,authorized,practical410controller.chooseClass);
+student.get('/evaluationform',verifytoken,authorized,practical410controller.evaluationForm);
+student.get('/practicaldetailform',verifytoken,authorized,practical410controller.showpracticalDetailForm);
+student.post('/practicaldetailform',verifytoken,authorized,practical410controller.savepracticalDetailForm);
+
+student.get('/practicalslip',verifytoken,authorized,practical410controller.showpracticalSlip);
+
+// Science Practical Form Routes
+student.get('/practicalform', verifytoken, authorized, practical410controller.sciencepracticalForm)
+
+student.post('/sciencepractical', verifytoken, authorized, practical410controller.saveSciencePractical);
+
+// Temporary test route to debug form data
+student.post('/test-form-data', (req, res) => {
+  console.log('=== TEST FORM DATA ===');
+  console.log('Raw body:', JSON.stringify(req.body, null, 2));
+  console.log('=== END TEST ===');
+  res.json({ received: req.body });
+});
+student.post('/scienceData', verifytoken, authorized, practical410controller.saveScienceData);
+student.post('/practicalprojectform', verifytoken, authorized, practical410controller.savepracticalprojectform);
+student.get('sciencepractical',verifytoken,authorized,practical410controller.sciencepracticalForm)
+student.post('/practicalslipsave', verifytoken, authorized, practical410controller.savepracticalslip);
+
+student.get('/choosesubject',verifytoken,authorized,practical410controller.choosesubject)
+
+student.get('/internalreport',verifytoken,authorized,practical410controller.internalReport)
+
+student.get('/getPracticalData', verifytoken, authorized, practical410controller.getPracticalData);
+
+student.get('/projectrubrikscreate', verifytoken, authorized, practical410controller.projectrubrikscreate);
+student.post('/projectrubrikscreatesave',verifytoken,authorized,practical410controller.projectrubrikscreatesave)
+
+student.get('/editprojectrubriks',verifytoken,authorized,practical410controller.editprojectrubriks)
+student.get('/deleteprojectrubriks',verifytoken,authorized,practical410controller.deleteprojectrubriks)
+student.get('/editpracticalrubriks',verifytoken,authorized,themecontroller.editpracticalrubriks)
+
+student.get('/deletepracticalrubriks',verifytoken,authorized,themecontroller.deletepracticalrubriks)
+student.get('/getThemeDataFromDB', verifytoken, authorized, themecontroller.getThemeDataFromDB);
+
+student.get('/editlessondata', verifytoken, authorized, practical410controller.editlessondata);
+student.get('/deletelessondata', verifytoken, authorized, practical410controller.deletelessondata);
+student.get('/attendance', verifytoken, authorized, practical410controller.attendance);
+student.post('/attendance', verifytoken, authorized, practical410controller.saveAttendance);
+
+student.get('/showrubriksforadmin', verifytoken, authorized,isAdmin, practical410controller.showrubriksforadmin);
+student.get('/seerubriks',verifytoken,authorized,isAdmin,practical410controller.seerubriks)
+student.get('/indicatorwisereport',verifytoken,authorized,practical410controller.indicatorwiserecord)
+
+// end Theme Routes
+
+student.get('/:controller/:subject',verifytoken,authorized,controller.studentclass)
+student.get('/:controller/:subject/:studentClass/:section',verifytoken,authorized,controller.terminal)
 module.exports = student;

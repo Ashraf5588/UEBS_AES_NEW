@@ -210,7 +210,164 @@ res.render("./exam/primarytheorypr", {
     res.status(500).send("Internal Server Error");
   }
 }
+exports.generateMarksheetStudent = async (req, res, next) => {
+  try {
+   const {studentClass,section,terminal,academicYear,format,reg} = req.query;
+   if(!reg)
+   {
+    return res.send("<center><h2>Please Provide Registration Number.</h2></center> <br> <center><a href='/myresult?studentClass="+studentClass+"&section="+section+"&terminal="+terminal+"&academicYear="+academicYear+"' style=\"border:2px solid gray;text-decoration:none;padding:10px 20px;background-color:orange;\">Go Back</a></center>");
+   }
+    const studentClassdata = await studentClassModel.find({}).lean();
+    const terminals = await terminalModel.find({}).lean();
+    const creditHourData = await newsubject.find({ forClass: studentClass }).lean();
+       const marksheetSetups = await marksheetSetup.find({}).lean();
+    console.log("credit hour data",creditHourData);
+   
+    const user = req.user;
 
+    const model = getSlipModel();
+
+  
+  const studentWisedata = await model.aggregate([
+  {
+    $match: {
+      terminal: terminal, academicYear:academicYear, studentClass: studentClass, section: section,reg:reg  // ← filter by terminal
+    },
+  },
+  {
+    $setWindowFields:{
+      partitionBy: "$subject",
+      output:{
+        highestMarks: {$max:"$theorymarks"}
+      }
+    }
+  },
+  
+  {
+    $group: {
+      _id: "$reg",
+      name: { $first: "$name" },
+      roll: { $first: "$roll" },
+      terminal: { $first: "$terminal" }, // optional
+      subjects: {
+        $push: {
+          subject: "$subject",
+          attendance: "$attendance",
+          theorymarks: "$theorymarks",
+          practicalmarks: "$totalpracticalmarks",
+          theoryfullmarks: "$theoryfullmarks",
+          passMarks: "$passMarks",
+          practicalfullmarks: "$practicalfullmarks",
+          creditHour: "$creditHour",
+          worksheetGrades: "$worksheetGrades",
+          highestmarks: "$highestMarks"
+         
+        }
+      }
+    }
+  },
+  {
+    $sort: { roll: 1 }  // optional: sort students by roll
+  },
+
+])
+
+
+
+   if(format=="theorypractical")
+   {
+    console.log("grouped data",studentWisedata);
+    if(studentClass<=3)
+    {
+res.render("./exam/primarytheorypr", {
+        currentPage: "exammanagement",
+
+            studentClassdata:studentClassdata,
+            terminals,
+            format,
+            studentWisedata,
+            studentClass,
+            section,
+            terminal,
+            academicYear,
+            creditHourData,
+            marksheetSetups,
+           
+      user: req.user
+    });
+    }
+    else
+    {  res.render("./exam/generatemarksheettheorypr", {
+        currentPage: "exammanagement",
+
+            studentClassdata:studentClassdata,
+            terminals,
+            format,
+            studentWisedata,
+            studentClass,
+            section,
+            terminal,
+            academicYear,
+            creditHourData,
+            marksheetSetups,
+           
+      user: req.user
+    });
+  }
+  }
+  
+
+  else if(format=="practicalonly")
+  {
+    res.render("./exam/generatemarksheetpronly", {
+      currentPage: "exammanagement",
+           studentClassdata:studentClassdata,
+            terminals,
+            format,
+            studentWisedata,
+            studentClass,
+            section,
+            terminal,
+            academicYear,
+            creditHourData,
+            marksheetSetups,
+    });
+  } 
+  else if(format=="internalexternal")
+  {
+    res.render("./exam/generatemarksheetinternalexternal", {
+      currentPage: "exammanagement",
+      studentClassdata:studentClassdata,
+      terminals,
+      format,
+      user: req.user
+    });
+  }
+  else if(format=="theoryonly")
+   {
+    res.render("./exam/generatemarksheettheoryonly", {
+      currentPage: "exammanagement",
+
+            studentClassdata:studentClassdata,
+            terminals,
+            format,
+            studentWisedata,
+            studentClass,
+            section,
+            terminal,
+            academicYear,
+            creditHourData,
+            marksheetSetups,
+           
+      user: req.user
+    });
+  }
+  }
+  catch (error) {
+    console.error("Error loading generate marksheet page:", error);
+    res.status(500).send("Internal Server Error");
+  }
+}
 
 exports.marksheetSetup = async (req, res, next) => {
   try {
@@ -460,13 +617,13 @@ const failcountpersection =await  model.aggregate([
       _id: { studentClass: "$studentClass", section: "$section", terminal: "$terminal", academicYear: "$academicYear",reg:"$reg"},
       section:{ $first:"$section" },
       studentClass:{ $first:"$studentClass" },
+      name:{ $first:"$name" },
       subjects: { 
       $push:{
       subject:"$subject",
       theorymarks:"$theorymarks",
       practicalmarks:"$practicalmarks",
       passMarks:"$passMarks",
-
 
     },
    
@@ -478,6 +635,13 @@ const failcountpersection =await  model.aggregate([
   {
      $addFields:
     {
+      failedSubjects: {
+        $filter: {
+          input: "$subjects",
+          as: "sub",
+          cond: { $lt: ["$$sub.theorymarks", "$$sub.passMarks"] }
+        }
+      },
       failCount:{
         $size:{
           $filter:
@@ -487,16 +651,19 @@ const failcountpersection =await  model.aggregate([
           cond:{$lt:["$$sub.theorymarks","$$sub.passMarks"]}
         }
       }
-      }
+      },
     }
   },
+  { $match: { failCount: { $gt: 0 } } },
     {
       $group:{
         _id:{failCount:"$failCount", studentClass:"$studentClass",section:"$section",terminal:"$terminal",academicYear:"$academicYear"},
-        terminal:{$first:"$terminal"},
-        academicYear:{$first:"$academicYear"},
+
+     
+        
         section:{$first:"$section"},
         studentClass:{$first:"$studentClass"},
+       name: { $push:{name:"$name",failedSubjects:"$failedSubjects"} },
         totalFailCount:{$sum:1}
     },
     
@@ -626,7 +793,7 @@ const schoolOverviewFinalStructure = {};
           failtheory: { $sum: { $cond: [{ $lt: ["$theorymarks", "$passMarks"] }, 1, 0] } },
           passpractical: { $sum: { $cond: [{ $gte: ["$practicalmarks", "$passMarks"] }, 1, 0] } },
           failpractical: { $sum: { $cond: [{ $lt: ["$practicalmarks", "$passMarks"] }, 1, 0] } },
-          avgMarks: { $avg: { $add: ["$theorymarks", "$practicalmarks"] } }
+          avgMarks: { $avg: "$theorymarks" },
         }
       },
       { $sort: { "_id.subject": 1, "_id.terminal": 1,"_id.academicYear": 1 } }
@@ -637,18 +804,20 @@ const schoolOverviewFinalStructure = {};
   const studentClass= item._id.studentClass;
   const section = item._id.section;
   const subject = item._id.subject;
-  const studentClassSection = `${studentClass}-${section}`;
+  const classSection = `${studentClass}-${section}`;
   const terminal = item._id.terminal;
   const academicYear = item._id.academicYear;
   if (!terminalComparisonFinalStructure[academicYear]) {
     terminalComparisonFinalStructure[academicYear] = {};
   }
-  if (!terminalComparisonFinalStructure[academicYear][terminal]) {
-    terminalComparisonFinalStructure[academicYear][terminal] = {};
+  if (!terminalComparisonFinalStructure[academicYear][subject]) {
+    terminalComparisonFinalStructure[academicYear][subject] = {};
   }
-   if (!terminalComparisonFinalStructure[academicYear][terminal][studentClassSection]) terminalComparisonFinalStructure[academicYear][terminal][studentClassSection] = [];
-
-    terminalComparisonFinalStructure[academicYear][terminal][studentClassSection].push(item);
+  if (!terminalComparisonFinalStructure[academicYear][subject][classSection]) {
+    terminalComparisonFinalStructure[academicYear][subject][classSection] = {};
+  }
+    if (!terminalComparisonFinalStructure[academicYear][subject][classSection][terminal]) terminalComparisonFinalStructure[academicYear][subject][classSection][terminal] = [];
+    terminalComparisonFinalStructure[academicYear][subject][classSection][terminal].push(item);
  
  }
  console.log("Terminal Comparison:", terminalComparisonFinalStructure);
@@ -670,6 +839,84 @@ const schoolOverviewFinalStructure = {};
  
     console.log("School Overview:", schoolOverview);
 
+const persubjectFailStudentName = await model.aggregate([
+  { $match: matchStage },
+
+  {
+    $group: {
+      _id: { subject: "$subject",terminal: "$terminal", academicYear: "$academicYear" },
+      students: { 
+        $push: {
+          $cond: [
+            { $lt: ["$theorymarks", "$passMarks"] },
+            { name: "$name", reg: "$reg", studentClass: "$studentClass", section: "$section", theorymarks: "$theorymarks", passMarks: "$passMarks" },
+            "$$REMOVE"
+          ]
+        }
+       },
+    },
+  },
+ 
+
+]);
+const persubjectFailStudentNameStructure = {};
+  for (const item of persubjectFailStudentName) {
+    const subject = item._id.subject;
+    const terminal = item._id.terminal;
+    const academicYear = item._id.academicYear;
+    if (!persubjectFailStudentNameStructure[academicYear]) {
+      persubjectFailStudentNameStructure[academicYear] = {};
+    }
+    if (!persubjectFailStudentNameStructure[academicYear][terminal]) {
+      persubjectFailStudentNameStructure[academicYear][terminal] = {};
+    }
+    if (!persubjectFailStudentNameStructure[academicYear][terminal][subject]) {
+      persubjectFailStudentNameStructure[academicYear][terminal][subject] = [];
+    }
+
+    persubjectFailStudentNameStructure[academicYear][terminal][subject].push(...item.students);
+  }
+
+const combinationsofFailStudentAccrossTerminals = await model.aggregate([
+  { $match: matchStage },
+  {
+    $group: {
+      _id: { reg: "$reg", name: "$name", subject: "$subject" },
+      terminalsFailed: {
+        $push: {
+          $cond: [
+            { $lt: ["$theorymarks", "$passMarks"] },
+            "$terminal",
+            "$$REMOVE"
+          ]
+        }
+      }
+    },
+  }
+]);
+console.log("Generated Combinations:", combinationsofFailStudentAccrossTerminals);
+
+const studenttracking = await model.aggregate([
+  { $match: matchStage },
+  {
+    $group: {
+      _id: { reg: "$reg", name: "$name", subject: "$subject" },
+      subjectsFailed: {
+        $push: {
+          $cond: [
+            { $lt: ["$theorymarks", "$passMarks"] },
+            { subject:"$subject", terminal: "$terminal", academicYear: "$academicYear",theorymarks: "$theorymarks", passMarks: "$passMarks",studentClass:"$studentClass",section:"$section"},
+
+            "$$REMOVE"
+          ]
+        }
+      }
+    },
+  },
+  {$sort:{"_id.reg":1,"_id.subject":1} }
+]);
+console.log("Generated Student Tracking Data:", studenttracking);
+
     res.render("./exam/analytics", {
       currentPage: "exammanagement",
       user: req.user,
@@ -685,8 +932,12 @@ const schoolOverviewFinalStructure = {};
       subjectAnalysisFinalStructure,
       terminalComparisonFinalStructure,
       failpersectionlookup,
+      persubjectFailStudentNameStructure,
+      combinationsofFailStudentAccrossTerminals,
+      studenttracking,
     });
   
+
 }catch(err)
   {
     res.status(500).send("Internal Server Error");
@@ -716,6 +967,7 @@ const {editing,routineId,terminal,academicYear,subject} = req.query;
       subjectData,
       examRoutines,
       subject,
+
     });
   }catch(err)
   {
@@ -916,5 +1168,131 @@ exports.ledger = async (req, res, next) => {
   {
     res.status(500).send("Internal Server Error" + err);
     console.error("Error loading ledger page:", err);
+  }
+}
+exports.myResult = async (req, res, next) => {
+ try
+ {
+  const studentClassdata = await studentClass.find({}).lean();
+   const marksheetSetups = await marksheetSetup.find({}).lean();
+  
+  res.render("./exam/myresult",{studentClassdata,marksheetSetups})
+ } catch(err)
+ {
+    res.status(500).send("Internal Server Error" + err);
+    console.error("Error loading my result page:", err);
+ }
+}
+
+exports.formatChooseStudent = async (req, res, next) => {
+  try {
+    const {studentClass,section,terminal,academicYear,reg} = req.query;
+    res.render("./exam/formatchoosestudent", {
+      currentPage: "exammanagement",
+      user: req.user,
+      studentClass,
+      section,
+      terminal,
+      academicYear,
+      reg,
+    });
+  } catch (error) {
+    console.error("Error loading format choose page:", error);
+    res.status(500).send("Internal Server Error");
+  }
+}
+exports.studentPortfolio = async (req, res, next) => {
+  try {
+    const {studentClass,section,terminal,academicYear,reg} = req.query;
+    const studentClassdata = await studentClassModel.find({}).lean();
+       const marksheetSetups = await marksheetSetup.find({}).lean();
+       const model = getSlipModel();
+        const studentWisedata = await model.aggregate([
+  {
+    $match: {
+      
+
+      studentClass: studentClass,
+      section: section,
+
+    }
+  },
+  {
+    $group: {
+      _id: { reg: "$reg", academicYear: "$academicYear", terminal: "$terminal",subject: "$subject" },
+      reg: { $first: "$reg" },
+      name: { $first: "$name" },
+      roll: { $first: "$roll" },
+      studentClass:{$first:"$studentClass"},
+      section:{$first:"$section"},
+      theorymarks: { $first: "$theorymarks" },
+      practicalmarks: { $first: "$practicalmarks" },
+      totalmarks: { $first: { $add: ["$theorymarks", "$practicalmarks"] } },
+      passMarks: { $first: "$passMarks"  },
+      terminal: { $first: "$terminal" }
+
+      
+    }
+  },
+  {$sort:{"roll":1,"_id.subject":1,"_id.terminal":1} }
+]);
+const studentWisedatastructured = {};
+
+for (const student of studentWisedata) {
+  const reg = student.reg;
+  const name = student.name;
+  const roll = student.roll;
+  const academicYear = student._id.academicYear;
+  const studentClass = student.studentClass;
+  const section = student.section;
+  const subject = student._id.subject;
+  const terminal = student._id.terminal; // IMPORTANT
+
+  // student base
+  if (!studentWisedatastructured[reg]) {
+    studentWisedatastructured[reg] = {
+      reg,
+      name,
+      roll,
+      studentClass,
+      section,
+      records: {}
+    };
+  }
+
+  // year
+  if (!studentWisedatastructured[reg].records[academicYear]) {
+    studentWisedatastructured[reg].records[academicYear] = {};
+  }
+
+  // subject
+  if (!studentWisedatastructured[reg].records[academicYear][subject]) {
+    studentWisedatastructured[reg].records[academicYear][subject] = {};
+  }
+
+  // terminal (THIS WAS MISSING)
+  studentWisedatastructured[reg].records[academicYear][subject][terminal] = {
+    theory: student.theorymarks,
+    practical: student.practicalmarks,
+    total: student.totalmarks,
+    passMarks: student.passMarks
+  };
+}
+
+
+       console.log("Student Wise Data:", studentWisedatastructured);
+       res.render("./exam/studentportfolio", {
+      currentPage: "exammanagement",
+      studentClassdata,
+      section,
+      terminal,
+      academicYear,
+      reg,
+      studentWisedatastructured,marksheetSetups,
+    });
+  }
+  catch (error) {
+    console.error("Error loading student portfolio page:", error);
+    res.status(500).send("Internal Server Error");
   }
 }
