@@ -707,24 +707,25 @@
       });
 
       // Auto-populate existing data if in edit mode
-      const editDataString = '<%= typeof editData !== "undefined" && editData ? JSON.stringify(editData) : "null" %>';
-      if (editDataString !== 'null') {
-        try {
-          const editData = JSON.parse(editDataString.replace(/&#x27;/g, "'").replace(/&quot;/g, '"'));
-          if (editData && editData.terminals) {
-            setTimeout(() => {
-              addMoreTerminals();
-              editData.terminals.forEach((terminal, index) => {
-                const nameInput = document.getElementById(`terminalName${index + 1}`);
-                const daysInput = document.getElementById(`workingDays${index + 1}`);
-                if (nameInput) nameInput.value = terminal.name;
-                if (daysInput) daysInput.value = terminal.workingDays;
-              });
-            }, 100);
+      const editData = <%- typeof editData !== "undefined" && editData ? JSON.stringify(editData) : "null" %>;
+      
+      if (editData && editData.terminals) {
+        setTimeout(() => {
+          // Ensure totalTerminals input matches data
+          const totalTerminalsInput = document.getElementById('totalTerminals');
+          if (totalTerminalsInput && totalTerminalsInput.value != editData.terminals.length) {
+             totalTerminalsInput.value = editData.terminals.length;
           }
-        } catch (e) {
-          console.log('Error parsing edit data:', e);
-        }
+          
+          addMoreTerminals();
+          
+          editData.terminals.forEach((terminal, index) => {
+            const nameInput = document.getElementById(`terminalName${index + 1}`);
+            const daysInput = document.getElementById(`workingDays${index + 1}`);
+            if (nameInput) nameInput.value = terminal.name;
+            if (daysInput) daysInput.value = terminal.workingDays;
+          });
+        }, 100);
       }
     });
 

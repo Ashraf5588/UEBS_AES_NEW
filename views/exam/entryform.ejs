@@ -477,6 +477,7 @@ document.querySelectorAll('#practicalmarks').forEach((input) => {
       const roll = document.querySelector(`input[name="roll[${reg}]"]`).value;
       const academicYearHidden = "<%= academicYear %>";
       const totalpracticalmarks = document.querySelector(`input[name="totalpracticalmarks[${reg}]"]`).value;
+      const terminalmarks = document.querySelector(`input[name="terminalmarks[${reg}]"]`).value;
       const gender = document.querySelector(`input[name="gender[${reg}]"]`).value;
       const passMarks = document.getElementById('passMarks').value;
       const practicalfullmarks = document.getElementById('practicalfullmarks').value;
@@ -503,6 +504,7 @@ document.querySelectorAll('#practicalmarks').forEach((input) => {
               name,
               roll,
               totalpracticalmarks,
+              terminalmarks,
               gender,
               passMarks,
               practicalfullmarks,

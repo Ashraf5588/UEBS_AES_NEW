@@ -102,51 +102,6 @@ exports.saveEntryform = async (req, res, next) => {
     if (!terminal) terminal = req.body.terminal;
 
     const model = getSlipModel();
-
-    // const bulkOps = [];
-
-    // for (let key of Object.keys(req.body.reg)) {
-    //   const reg = req.body.reg[key];
-
-    //   bulkOps.push({
-    //     updateOne: {
-    //       filter: {
-    //         reg: reg,
-    //         subject: subject,
-    //         terminal: terminal,
-            
-    //       },
-    //       update: {
-    //         $set: {
-    //           roll: req.body.roll[key],
-    //           name: req.body.name[key],
-    //           theorymarks: Number(req.body.theorymarks[key]) || 0,
-    //           practicalmarks: Number(req.body.practicalmarks[key]) || 0,
-    //           totalpracticalmarks: Number(req.body.totalpracticalmarks[key]) || 0,
-    //           attendance: Number(req.body.attendance[key]) || 0,
-    //           terminal: terminal,
-    //           subject: subject,
-    //           theoryfullmarks: Number(req.body.theoryfullmarks) || 0,
-    //           passMarks: Number(req.body.passMarks) || 0,
-    //           practicalfullmarks: Number(req.body.practicalfullmarks) || 0,
-    //           studentClass: studentClass,
-    //           section: section,
-    //           academicYear: academicYear,
-    //           gender: req.body.gender[key] || "",
-
-    //         }
-    //       },
-    //       upsert: true
-    //     }
-    //   });
-    // }
-
-    // await model.bulkWrite(bulkOps);
-
-    // res.redirect(`/entryform?studentClass=${studentClass}&section=${section}&subject=${subject}&academicYear=${academicYear}&terminal=${terminal}`);
-
-
-
 await model.updateOne(
       {
         reg: req.body.reg,
@@ -176,7 +131,7 @@ await model.updateOne(
           gender: req.body.gender || "",
           totalWorksheet: Number(req.body.totalWorksheet) || 0,
           worksheetGrades: req.body.worksheetGrades || [],
-          
+          terminalmarks: Number(req.body.terminalmarks) || 0,
         },
       },
       { upsert: true }

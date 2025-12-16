@@ -18,6 +18,7 @@ const examSchema = new mongoose.Schema({
   theoryfullmarks: {type: Number, required: false},
   passMarks: {type: Number, required: false},
   practicalfullmarks: {type: Number, required: false},
+  terminalmarks: {type: Number, required: false},
    totalWorksheet:{type: Number, required: false},
  worksheetGrades: [{ type: String }],
 

@@ -96,13 +96,14 @@ exports.generateMarksheet = async (req, res, next) => {
           subject: "$subject",
           attendance: "$attendance",
           theorymarks: "$theorymarks",
-          practicalmarks: "$totalpracticalmarks",
+          practicalmarks: "$practicalmarks",
           theoryfullmarks: "$theoryfullmarks",
           passMarks: "$passMarks",
           practicalfullmarks: "$practicalfullmarks",
           creditHour: "$creditHour",
           worksheetGrades: "$worksheetGrades",
-          highestmarks: "$highestMarks"
+          highestmarks: "$highestMarks",
+          terminalmarks: "$terminalmarks"
          
         }
       }

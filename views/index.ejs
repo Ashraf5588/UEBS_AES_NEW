@@ -143,42 +143,37 @@
             gap: 1rem;
             margin-bottom: 2rem;
             justify-content: center;
+            flex-wrap: wrap;
         }
         
-        .action-btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            min-width: 180px;
+        .action-card {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: white !important;
+            gap: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-width: 200px;
         }
-          .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border: none;
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+
+        .action-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
         }
-          .btn-outline {
-            background: transparent;
-            color: var(--secondary);
-            border: 2px solid var(--secondary);
+
+        .icon-wrapper {
+            font-size: 1.2rem;
         }
-        
-        .btn-outline:hover {
-            background-color: var(--secondary);
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
+
+        .card-blue { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); }
+        .card-orange { background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%); }
+        .card-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .card-yellow { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
         
         .subject-grid {
             display: grid;
@@ -307,6 +302,10 @@
         }
         
         @media (max-width: 768px) {
+            body {
+                background-color: #fff7ed;
+            }
+
             #firstheading {
                 font-size: 2rem;
             }
@@ -316,19 +315,63 @@
             }
             
             .action-buttons {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem 1rem;
+                padding: 1rem 0.5rem;
+                background-color: #e7e7e7;
+                backdrop-filter: var(--light);
+                opacity: 0.95;
+                border-radius: 12px;
+            }
+
+            .action-card {
                 flex-direction: column;
+                text-align: center;
+                padding: 0;
+                aspect-ratio: auto;
+                background: transparent !important;
+                border: none;
+                box-shadow: none !important;
+                color: var(--dark) !important;
+                min-width: auto;
+            }
+
+            .action-card .icon-wrapper {
+                font-size: 1.75rem;
+                margin-bottom: 0.5rem;
+                width: 65px;
+                height: 65px;
+                display: flex;
                 align-items: center;
+                justify-content: center;
+                border-radius: 18px;
+                margin: 0 auto 0.5rem auto;
+                color: white !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             }
-            
-            .action-btn {
-                width: 100%;
+
+            .action-card .text-wrapper {
+                font-size: 0.85rem;
+                line-height: 1.3;
+                font-weight: 600;
+                color: #334155;
             }
+
+            /* Mobile Color Scheme */
+            .card-blue .icon-wrapper { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); }
+            .card-orange .icon-wrapper { background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%); }
+            .card-green .icon-wrapper { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+            .card-yellow .icon-wrapper { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
             
             .action-section {
                 padding: 1.5rem 1rem;
                 margin: 1rem auto;
                 border-top-width: 2px;
                 border-bottom-width: 2px;
+                background: transparent;
+                box-shadow: none;
+                border: none;
             }
             
             .section-title {
@@ -391,16 +434,22 @@
     <div class="container">
         <div class="action-section">
             <div class="action-buttons">
-                <a href="/admin/subject"><button class="btn" style="background-color: green;color: white;"> <i class="fa-solid fa-clipboard-question" style="color: #ffffff;"></i>&ensp;Set Question Paper Format</button></a>
-                <a href="/examform"><button class="btn" style="background-color: rgb(255, 183, 0);color: white;"   ><i class="fa-solid fa-file-circle-question" style="color: #ffffff;"></i> Exam Marks Entry</button></a>
-                <a href="#subject-section" class="btn btn-primary action-btn">
-                    <i class="fas fa-pen-to-square"></i> Enter Analysis Data
+                <a href="/admin/subject" class="action-card card-green">
+                    <div class="icon-wrapper"><i class="fa-solid fa-clipboard-question"></i></div>
+                    <div class="text-wrapper">Set Question Paper Format</div>
                 </a>
-                 <a href="/class" class="btn btn-secondary action-btn">
-                    <i class="fas fa-pen-to-square"></i> Internal Evaluation
+                <a href="/examform" class="action-card card-yellow">
+                    <div class="icon-wrapper"><i class="fa-solid fa-file-circle-question"></i></div>
+                    <div class="text-wrapper">Exam Marks Entry</div>
                 </a>
-             
-               
+                <a href="#subject-section" class="action-card card-blue">
+                    <div class="icon-wrapper"><i class="fas fa-pen-to-square"></i></div>
+                    <div class="text-wrapper">Enter Analysis Data</div>
+                </a>
+                <a href="/class" class="action-card card-orange">
+                    <div class="icon-wrapper"><i class="fas fa-pen-to-square"></i></div>
+                    <div class="text-wrapper">Internal Evaluation</div>
+                </a>
             </div>
             
             <h2 class="section-title" id="subject-section">Select Subject to Enter Data</h2>
