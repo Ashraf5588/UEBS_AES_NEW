@@ -1127,6 +1127,66 @@
 
 </div><br>
 <div class="page">
+  <center><h1>Subject Wise Terminal Failure Combinations</h1></center>
+  <br>
+
+  <% 
+    const groupedBySubject = {};
+    const termOrder = { 'FIRST': 1, 'SECOND': 2, 'THIRD': 3, 'FINAL': 4 };
+    
+    if (typeof combinationsofFailStudentAccrossTerminals !== 'undefined' && combinationsofFailStudentAccrossTerminals) {
+      combinationsofFailStudentAccrossTerminals.forEach(item => {
+          const subject = item._id.subject;
+          // Sort terminals
+          const terminals = item.terminalsFailed ? item.terminalsFailed.sort((a, b) => (termOrder[a] || 99) - (termOrder[b] || 99)) : [];
+          
+          if (terminals.length === 0) return; 
+
+          const combinationKey = terminals.join(' & ');
+          const count = terminals.length;
+          const name = item._id.name;
+
+          if (!groupedBySubject[subject]) {
+              groupedBySubject[subject] = {};
+          }
+          if (!groupedBySubject[subject][count]) {
+              groupedBySubject[subject][count] = {};
+          }
+          if (!groupedBySubject[subject][count][combinationKey]) {
+              groupedBySubject[subject][count][combinationKey] = [];
+          }
+          groupedBySubject[subject][count][combinationKey].push(name);
+      });
+    }
+  %>
+
+  <% Object.keys(groupedBySubject).sort().forEach(subject => { %>
+    <div class="subject-block" style="margin-bottom: 3rem; page-break-inside: avoid;">
+      <h2 style="text-align: center; background: #e2e8f0; padding: 0.5rem; margin-bottom: 1rem; border-radius: 4px;"><%= subject %></h2>
+      
+      <% [1, 2, 3, 4].forEach(count => { %>
+        <% if (groupedBySubject[subject][count]) { %>
+          <div class="combination-row" style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-bottom: 1rem;">
+            <% Object.entries(groupedBySubject[subject][count]).forEach(([combo, names]) => { %>
+              <div class="combination-card" style="border: 1px solid #ccc; padding: 1rem; min-width: 250px; flex: 1; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h3 style="font-size: 1rem; border-bottom: 2px solid #2563eb; padding-bottom: 0.5rem; margin-bottom: 0.5rem; text-align: center; color: #1e293b;">
+                  <%= combo %>
+                </h3>
+                <ul style="list-style-type: none; padding: 0; margin: 0;">
+                  <% names.sort().forEach(name => { %>
+                    <li style="padding: 0.25rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; text-align: center;"><%= name %></li>
+                  <% }) %>
+                </ul>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #64748b; text-align: center; font-weight: bold;">
+                  Total: <%= names.length %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      <% }) %>
+    </div>
+  <% }) %>
 
  </div>
  </div> <!-- End Main Content -->

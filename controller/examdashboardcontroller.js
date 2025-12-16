@@ -683,6 +683,28 @@ failcountpersection.forEach((item)=>{
   failpersectionlookup[key].push(item);
 
 });
+
+ const compareTerminalWiseFailName = await model.aggregate([
+  { $match: matchStage },
+  {
+    $group: {
+      _id: { reg: "$reg", name: "$name", terminal: "$terminal",academicYear:"$academicYear" },
+      failedSubjects: {
+        $push: {
+          $cond: [
+            { $lt: ["$theorymarks", "$passMarks"] },
+            { subject: "$subject", theorymarks: "$theorymarks", passMarks: "$passMarks" },
+            "$$REMOVE"
+          ]
+        }
+      },
+    },
+  },
+  { $match: { "failedSubjects.0": { $exists: true } } },
+    
+
+ ]);
+console.log("Compare Terminal Wise Fail Name:", compareTerminalWiseFailName);
 console.log("Fail Count per Section:", failpersectionlookup);
  
     // 3. Subject-wise Average across all classes
@@ -936,6 +958,8 @@ console.log("Generated Student Tracking Data:", studenttracking);
       persubjectFailStudentNameStructure,
       combinationsofFailStudentAccrossTerminals,
       studenttracking,
+      
+      combinationsofFailStudentAccrossTerminals
     });
   
 
