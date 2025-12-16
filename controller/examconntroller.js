@@ -71,6 +71,7 @@ exports.entryform = async (req,res,next)=>
 
 {
    const studentClassdata = await studentClassModel.find({}).lean();
+   
   const {studentClass,section,subject,academicYear,terminal}= req.query;
   const studentData = await studentRecord.find({studentClass:studentClass,section:section})
      const marksheetSetups = await marksheetSetup.find({}).lean();
@@ -79,14 +80,35 @@ exports.entryform = async (req,res,next)=>
  
   const subjects = await newsubject.find({}).lean();
   const terminals = await terminalModel.find({}).lean();
+   const user = req.user;
+    let accessibleSubject =[];
+    let accessibleClass=[];
+    if(user.role==="ADMIN")
+    {
+      accessibleSubject = subjects;
+      accessibleClass = studentClassdata;
+    }
+    else
+    {
+     accessibleSubject = subjects.filter(subject =>
+        user.allowedSubjects.some(allowed =>
+          allowed.subject === subject.newsubject
+        )
+      );
+      accessibleClass = studentClassdata.filter(studentclass =>
+        user.allowedSubjects.some(allowed =>
+          allowed.studentClass === studentclass.studentClass &  allowed.section === studentclass.section
+        )
+      );
+    }
   if(studentClass>3)
   {
 
-  res.render("./exam/entryform",{studentData,studentClass,section,subject,academicYear,terminal,subjectData,subjects,studentClassdata,terminals, marksheetSetups});
+  res.render("./exam/entryform",{studentData,studentClass,section,subject,academicYear,terminal,subjectData,subjects:accessibleSubject,studentClassdata:accessibleClass,terminals, marksheetSetups});
   }
   else if (studentClass<=3)
   {
-    res.render("./exam/entryformprimary",{studentData,studentClass,section,subject,academicYear,terminal,subjectData,subjects,studentClassdata,terminals, marksheetSetups});
+    res.render("./exam/entryformprimary",{studentData,studentClass:studentClass,section,subject,academicYear,terminal,subjectData,subjects:accessibleSubject,studentClassdata:accessibleClass,terminals, marksheetSetups});
   }
  
 }

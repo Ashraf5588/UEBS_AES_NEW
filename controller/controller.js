@@ -391,7 +391,7 @@ exports.terminal = async (req, res, next) => {
 
 
 exports.showForm = async (req, res, next) => {
-  const { subjectinput,studentClass, section, terminal } = req.params;
+  let { subjectinput,studentClass, section, terminal } = req.params;
   const user = req.user
 
 const subjects = await subjectlist.find({ forClass: `${studentClass}`, subject: `${subjectinput}` })

@@ -61,11 +61,32 @@ exports.generateMarksheet = async (req, res, next) => {
    const {studentClass,section,terminal,academicYear,format} = req.query;
     const studentClassdata = await studentClassModel.find({}).lean();
     const terminals = await terminalModel.find({}).lean();
+     const user = req.user;
+    let accessibleSubject =[];
+    let accessibleClass=[];
+    if(user.role==="ADMIN")
+    {
+      accessibleSubject = subject;
+      accessibleClass = studentClassdata;
+    }
+    else
+    {
+     accessibleSubject = subject.filter(subject =>
+        user.allowedSubjects.some(allowed =>
+          allowed.subject === subject.newsubject
+        )
+      );
+      accessibleClass = studentClassdata.filter(studentclass =>
+        user.allowedSubjects.some(allowed =>
+          allowed.studentClass === studentclass.studentClass &  allowed.section === studentclass.section
+        )
+      );
+    }
     const creditHourData = await newsubject.find({ forClass: studentClass }).lean();
        const marksheetSetups = await marksheetSetup.find({}).lean();
     console.log("credit hour data",creditHourData);
    
-    const user = req.user;
+   
 
     const model = getSlipModel();
 
@@ -147,7 +168,7 @@ res.render("./exam/primarytheorypr", {
             terminals,
             format,
             studentWisedata,
-            studentClass,
+            studentClass:studentClass,
             section,
             terminal,
             academicYear,
@@ -1230,6 +1251,27 @@ exports.studentPortfolio = async (req, res, next) => {
   try {
     const {studentClass,section,terminal,academicYear,reg} = req.query;
     const studentClassdata = await studentClassModel.find({}).lean();
+     const user = req.user;
+    let accessibleSubject =[];
+    let accessibleClass=[];
+    if(user.role==="ADMIN")
+    {
+      accessibleSubject = subject;
+      accessibleClass = studentClassdata;
+    }
+    else
+    {
+     accessibleSubject = subject.filter(subject =>
+        user.allowedSubjects.some(allowed =>
+          allowed.subject === subject.newsubject
+        )
+      );
+      accessibleClass = studentClassdata.filter(studentclass =>
+        user.allowedSubjects.some(allowed =>
+          allowed.studentClass === studentclass.studentClass &  allowed.section === studentclass.section
+        )
+      );
+    }
        const marksheetSetups = await marksheetSetup.find({}).lean();
        const model = getSlipModel();
         const studentWisedata = await model.aggregate([

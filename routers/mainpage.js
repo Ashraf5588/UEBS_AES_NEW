@@ -91,8 +91,7 @@ student.get('/findData/:subjectinput/:studentClass/:section/:termwise/:termwiser
 student.get('/student_data/:subjectinput/:studentClass/:section/:terminal', verifytoken,authorized,controller.studentrecord)
 student.post('/search/:subject/:studentClass/:section/:terminal',verifytoken,authorized,controller.search)
 
-student.get('/forms/:subjectinput/:studentClass/:section/:terminal?',verifytoken,authorized,controller.showForm)
-student.post('/forms/:subjectinput/:studentClass?/:section?/:terminal?',verifytoken,authorized,controller.saveForm)
+
 
 // Temporary debug route
 student.get('/debug/:subjectinput/:studentClass/:section/:terminal',verifytoken,authorized, (req, res) => {
@@ -340,4 +339,6 @@ student.get('/indicatorwisereport',verifytoken,authorized,practical410controller
 
 student.get('/:controller/:subject',verifytoken,authorized,controller.studentclass)
 student.get('/:controller/:subject/:studentClass/:section',verifytoken,authorized,controller.terminal)
+student.get('/forms/:subjectinput/:studentClass/:section/:terminal?',verifytoken,authorized,controller.showForm)
+student.post('/forms/:subjectinput/:studentClass?/:section?/:terminal?',verifytoken,authorized,controller.saveForm)
 module.exports = student;
