@@ -276,8 +276,8 @@
                     allTerminals.add(terminal);
                     subjectPerformance[subject][terminal] = data.theory;
                     
-                    // Assuming < 35 is fail for visual indication if no pass mark provided
-                    if(data.theory < 35) failedSubjects++; 
+                    // Assuming < passMark is fail for visual indication
+                    if(data.theory < data.passMarks) failedSubjects++; 
                     totalSubjects++;
                     
                     yearTotal += data.theory;
@@ -378,6 +378,77 @@
                             </tbody>
                          </table>
                       </div>
+                   <% }) %>
+                <% }) %>
+             </div>
+
+             <div class="section-title" style="margin-top: 40px;">
+                <span>🔮</span> Prediction Marks
+             </div>
+
+             <div class="prediction-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+                <% Object.entries(student.records).forEach(([year, record]) => { %>
+                   <% Object.entries(record).forEach(([subject, termdata]) => { 
+                        // Logic to extract marks
+                        const findMark = (tName) => {
+                            const key = Object.keys(termdata).find(k => k.toLowerCase().includes(tName.toLowerCase()));
+                            return key ? parseFloat(termdata[key].theory) : null;
+                        };
+
+                        const first = findMark('first');
+                        const second = findMark('second');
+                        const third = findMark('third');
+                        
+                        let prediction = null;
+                        let predictionLabel = '';
+
+                        // Linear Regression Helper
+                        const predictNext = (values) => {
+                            const n = values.length;
+                            if (n < 2) return null;
+                            
+                            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+                            for (let i = 0; i < n; i++) {
+                                const x = i + 1;
+                                const y = values[i];
+                                sumX += x;
+                                sumY += y;
+                                sumXY += x * y;
+                                sumXX += x * x;
+                            }
+                            
+                            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+                            const intercept = (sumY - slope * sumX) / n;
+                            
+                            return slope * (n + 1) + intercept;
+                        };
+
+                        // Prediction Logic
+                        if (first !== null && second !== null && third !== null) {
+                            // Predict Final based on First, Second, Third
+                            prediction = predictNext([first, second, third]);
+                            predictionLabel = 'Final Term';
+                        } else if (first !== null && second !== null) {
+                            // Predict Third based on First, Second
+                            prediction = predictNext([first, second]);
+                            predictionLabel = 'Third Term';
+                        }
+
+                        if (prediction !== null) {
+                            // Cap prediction at 100 and floor at 0
+                            prediction = Math.min(100, Math.max(0, prediction));
+                   %>
+                      <div class="prediction-card" style="background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--secondary);">
+                         <div style="font-weight: 600; color: var(--text);">
+                            <%= subject %>
+                            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;"><%= year %></div>
+                         </div>
+                         <div style="text-align: right;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);"><%= Math.round(prediction) %></div>
+                            <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;"><%= predictionLabel %></div>
+                         </div>
+                      </div>
+                   <% } %>
                    <% }) %>
                 <% }) %>
              </div>
