@@ -53,9 +53,14 @@ const verifytoken = async (req, res, next) => {
 const authorized = (req, res, next) => {
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
   const user = req.user;
-const subjectValue = req.params.subject || req.params.subjectinput;
-const studentClass = req.params.studentClass;
-const section = req.params.section;
+  
+  console.log("Middleware Debug - URL:", req.originalUrl);
+  console.log("Middleware Debug - Params:", req.params);
+  console.log("Middleware Debug - Query:", req.query);
+
+const subjectValue = req.params.subject || req.params.subjectinput || req.query.subject || req.query.subjectinput || req.body.subject || req.body.subjectinput;
+const studentClass = req.params.studentClass || req.query.studentClass || req.body.studentClass;
+const section = req.params.section || req.query.section || req.body.section;
 
     if (user.role === "ADMIN") return next();
     if (!subjectValue && !studentClass && !section) return next();

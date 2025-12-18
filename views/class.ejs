@@ -287,50 +287,17 @@
           </div>
           <select id="classSelector" class="form-select form-select-lg mb-4">
             <option value="" selected disabled>-- Select a class and section --</option>
-            <% 
-              // Sort studentClassdata by class number
-              const sortedClassData = [...studentClassdata].sort((a, b) => {
-                // Convert class to number for proper numeric sorting
-                const classA = parseInt(a.studentClass);
-                const classB = parseInt(b.studentClass);
-                
-                // First sort by class number
-                if (classA !== classB) {
-                  return classA - classB;
-                }
-                
-                // If same class, sort by section
-                return a.section.localeCompare(b.section);
-              });
-              
-              // Group by class for optgroup
-              const classGroups = {};
-              sortedClassData.forEach(item => {
-                const classNum = item.studentClass;
-                if (!classGroups[classNum]) {
-                  classGroups[classNum] = [];
-                }
-                classGroups[classNum].push(item);
-              });
-              
-              // Get sorted class numbers
-              const sortedClassNumbers = Object.keys(classGroups).sort((a, b) => parseInt(a) - parseInt(b));
-              
-              // Loop through each class group
-              sortedClassNumbers.forEach(classNum => {
-                const sections = classGroups[classNum];
-            %>
-              <optgroup label="Class <%= classNum %> 📚">
-              <% sections.forEach(studentclass => { %>
+          
+              <% studentClassdata.forEach(studentclass => { %>
                 <option 
                   value="<%=controller.trim()%>/<%=subject.trim()%>/<%=studentclass.studentClass.trim()%>/<%=studentclass.section.trim()%>"
                   data-class="<%=studentclass.studentClass%>"
                   data-section="<%=studentclass.section%>">
-                  <%= studentclass.section %>
+                  <%=studentclass.studentClass%>-<%= studentclass.section %>
                 </option>
               <% }); %>
               </optgroup>
-            <% }); %>
+          
           </select>
           
           

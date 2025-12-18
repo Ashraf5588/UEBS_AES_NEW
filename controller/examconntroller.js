@@ -37,6 +37,10 @@ exports.loadForm = async (req,res,next)=>
     const studentClassdata = await studentClass.find({}).lean();
  
     const user = req.user;
+    
+    // Debug logging
+ 
+
     let accessibleSubject =[];
     let accessibleClass=[];
     if(user.role==="ADMIN")
@@ -47,9 +51,18 @@ exports.loadForm = async (req,res,next)=>
     else
     {
      accessibleSubject = subject.filter(subject =>
-        user.allowedSubjects.some(allowed =>
-          allowed.subject === subject.newsubject
-        )
+        user.allowedSubjects.some(allowed => {
+          const allowedName = allowed.subject.trim().toUpperCase();
+          const dbName = subject.newsubject.trim().toUpperCase();
+          
+          // Handle exact match
+          if (allowedName === dbName) return true;
+          
+          // Handle specific typo (MATHEMATICES -> MATHEMATICS)
+          if (allowedName === 'MATHEMATICES' && dbName === 'MATHEMATICS') return true;
+          
+          return false;
+        })
       );
       accessibleClass = studentClassdata.filter(studentclass =>
         user.allowedSubjects.some(allowed =>
@@ -57,6 +70,7 @@ exports.loadForm = async (req,res,next)=>
         )
       );
     }
+    console.log("Accessible Subjects:", accessibleSubject);
    const marksheetSetups = await marksheetSetup.find({}).lean();
     res.render("./exam/formloader", { 
       currentPage: "home",
@@ -64,6 +78,7 @@ exports.loadForm = async (req,res,next)=>
       studentClassdata:accessibleClass,
   
       marksheetSetups,
+      user,
     });
 
 }
@@ -108,7 +123,7 @@ exports.entryform = async (req,res,next)=>
   }
   else if (studentClass<=3)
   {
-    res.render("./exam/entryformprimary",{studentData,studentClass:studentClass,section,subject,academicYear,terminal,subjectData,subjects:accessibleSubject,studentClassdata:accessibleClass,terminals, marksheetSetups});
+    res.render("./exam/entryformprimary",{studentData,studentClass:studentClass,section,subject,academicYear,terminal,subjectData,subjects:accessibleSubject,studentClassdata:accessibleClass,terminals, marksheetSetups,user});
   }
  
 }

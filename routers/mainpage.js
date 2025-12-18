@@ -337,8 +337,9 @@ student.get('/indicatorwisereport',verifytoken,authorized,practical410controller
 
 // end Theme Routes
 
+student.get('/forms/:subjectinput/:studentClass/:section/:terminal',verifytoken,authorized,controller.showForm)
+student.post('/forms/:subjectinput/:studentClass?/:section?/:terminal?',verifytoken,authorized,controller.saveForm)
+
 student.get('/:controller/:subject',verifytoken,authorized,controller.studentclass)
 student.get('/:controller/:subject/:studentClass/:section',verifytoken,authorized,controller.terminal)
-student.get('/forms/:subjectinput/:studentClass/:section/:terminal?',verifytoken,authorized,controller.showForm)
-student.post('/forms/:subjectinput/:studentClass?/:section?/:terminal?',verifytoken,authorized,controller.saveForm)
 module.exports = student;

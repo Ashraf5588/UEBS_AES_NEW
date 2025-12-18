@@ -342,6 +342,7 @@ exports.teacherPage = async (req, res, next) => {
 
 exports.studentclass = async (req, res, next) => {
   const studentClassdata = await studentClass.find({});
+  console.log("All available classes in DB:", studentClassdata.map(c => `${c.studentClass}-${c.section}`));
 
   const { subject, controller } = req.params;
 
@@ -357,18 +358,36 @@ exports.studentclass = async (req, res, next) => {
   }
   else
   {
-   
-    accessibleClass = studentClassdata.filter(studentclass =>
-      user.allowedSubjects.some(allowed =>
-        allowed.studentClass === studentclass.studentClass  && allowed.section === studentclass.section
-      )
-    );
+    console.log("Filtering classes for subject:", subject);
+    console.log("User allowed subjects:", JSON.stringify(user.allowedSubjects, null, 2));
+    
+    accessibleClass = studentClassdata.filter(studentclass => {
+      const isAllowed = user.allowedSubjects.some(allowed => {
+        const subjectMatch = allowed.subject === subject;
+        // Use loose equality or string conversion for class comparison to handle number/string differences
+        const classMatch = String(allowed.studentClass).trim() === String(studentclass.studentClass).trim();
+        // Case-insensitive comparison for section
+        const allowedSection = String(allowed.section).trim().toLowerCase();
+        const dbSection = String(studentclass.section).trim().toLowerCase();
+        // Allow if exact match OR if allowed section is 'x' (treating as wildcard/default)
+        const sectionMatch = allowedSection === dbSection || allowedSection === 'x';
+        
+        return subjectMatch && classMatch && sectionMatch;
+      });
+      
+      if (isAllowed) {
+        console.log(`Including class: ${studentclass.studentClass}-${studentclass.section}`);
+      }
+      return isAllowed;
+    });
+    console.log("Accessible classes count:", accessibleClass.length);
   }
 
   res.render("class", { 
     subject, 
     controller, 
     studentClassdata: accessibleClass,
+     
     ...sidenavData 
   });
 };
@@ -393,6 +412,8 @@ exports.terminal = async (req, res, next) => {
 exports.showForm = async (req, res, next) => {
   let { subjectinput,studentClass, section, terminal } = req.params;
   const user = req.user
+  const studentrecord = await studentRecord.find({studentClass:studentClass,section:section}).lean();
+  console.log("studentrecord",studentrecord); 
 
 const subjects = await subjectlist.find({ forClass: `${studentClass}`, subject: `${subjectinput}` })
 
@@ -452,6 +473,7 @@ const subjects = await subjectlist.find({ forClass: `${studentClass}`, subject: 
       totalEntries,
       forClass: studentClass,
       totalcountmarks,
+      studentrecord,
       ...(await getSidenavData(req))
     });
   }

@@ -143,6 +143,71 @@
         .question-progress {
             transition: width 0.3s ease;
         }
+        
+        /* Student List Styles */
+        .student-list-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 10px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            margin-bottom: 20px;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Custom scrollbar for student list */
+        .student-list-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .student-list-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .student-list-scroll::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .student-list-scroll::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        .student-btn {
+            padding: 10px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 50px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+            color: #475569;
+            white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+        
+        .student-btn:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .student-btn.active {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3);
+        }
+
          @media (max-width: 768px) {
             #formDiv{
                 width: 80%;
@@ -159,13 +224,9 @@
     </style>
 </head>
 <body>
-    <%- include('./partials/nav',{currentPage:'home'}) %>
+    <%- include('./partials/nav',{currentPage:'home'}) %> <br>
 
-    <div class="hero-section">
-        <h1 id="firstheading">Answer Evaluation <span id="firstspan">System</span></h1>
-        <span class="subheading">A professional system designed to analyze and evaluate student performance</span>
-    </div>
-
+  
     <%- include('partials/sidenav', { 
         subjects: subjects, 
         studentClassdata: studentClassdata,
@@ -209,6 +270,7 @@
     <td><%=marks.roll %></td>
     <td><%=marks.name %></td>
     <td><%=marks.totalMarks %></td> 
+
     <td>
      <a href="/edit-student/<%= marks._id %>/<%= marks.subject %>/<%= marks.studentClass %>/<%= marks.section %>/<%=terminal %>?controller=forms" class="action-btn edit-btn">
                         <i class="fas fa-pencil-alt"></i>
@@ -218,6 +280,7 @@
                          class="action-btn delete-btn">
                         <i class="fas fa-trash-alt"></i>
                       </a></td>
+        
    <% }) %>
    </tr>
 
@@ -236,6 +299,26 @@
         <form action="/forms/<%=subjectname%>/<%=studentClass%>/<%=section%>/<%=terminal%>" method="POST" enctype="application/x-www-form-urlencoded">
             <section class="mb-5">
                 <h2 class="section-title">Student Information</h2>
+                <center style="color: rgb(231, 135, 1);">Click on student name to autofill the form</center>
+                <div class="student-list-scroll">
+                    <% 
+                        // Create a Set of rolls that have marks for efficient lookup
+                        const submittedRolls = new Set(totalcountmarks.map(m => String(m.roll)));
+                    %>
+                    <% studentrecord.forEach(record => { 
+                        const isSubmitted = submittedRolls.has(String(record.roll));
+                    %>
+                        <button type="button" class="student-btn" 
+                                data-roll="<%=record.roll%>" 
+                                data-name="<%=record.name %>" 
+                                data-reg="<%=record.reg%>"
+                                style="<%= isSubmitted ? 'background-color: #e0f2fe; color: #0369a1; border-color: #0ea5e9;pointer-events: none;opacity: 0.4;box-shadow:2px 2px 5px rgba(0,0,0,0.1);' : ''  %>">
+                            <%=record.roll%> - <%=record.name %>
+                            <% if(isSubmitted) { %> <i class="fas fa-check-circle ms-1" style="color: #0ee9b6;"></i> <% } %>
+                        </button>
+                    <%})%>
+                </div>
+                
                 <div class="row g-3">
                     <div class="col-md-6">
                         <input type="hidden" name="reg" id="reg">
@@ -246,22 +329,20 @@
                         <label for="name" class="form-label">Student Name</label>
                         <input type="text" name="name" id="name" placeholder="Enter student name" class="form-control" required>
                     </div>
-                    <div class="col-md-3">
-                        <label for="studentClass" class="form-label">Class</label>
-                        <input type="text" name="studentClass" id="studentClass" value="<%=studentClass%>" class="form-control" readonly required>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="section" class="form-label">Section</label>
-                        <input type="text" name="section" id="section" value="<%=section%>" class="form-control" readonly>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="subject" class="form-label">Subject</label>
-                        <input type="text" name="subject" id="subject" value="<%= subjectname %>" class="form-control" readonly required>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="terminal" class="form-label">Term</label>
-                        <input type="text" name="terminal" id="terminal" value="<%= terminal %>" class="form-control" <%= terminal ? 'readonly' : '' %>>
-                    </div>
+                   
+                            
+                        <input type="hidden" name="studentClass" id="studentClass" value="<%=studentClass%>" class="form-control" readonly required>
+                
+                          <input type="hidden" name="section" id="section" value="<%=section%>" class="form-control" readonly>
+                  
+                   
+                       
+                        <input type="hidden" name="subject" id="subject" value="<%= subjectname %>" class="form-control" readonly required>
+              
+                   
+                      
+                        <input type="hidden" name="terminal" id="terminal" value="<%= terminal %>" class="form-control" <%= terminal ? 'readonly' : '' %>>
+                
                 </div>
                 <h2 class="text-center">
                     <input type="checkbox" name="absent" id="absent" class="form-check-input mt-1"> Absent
@@ -378,7 +459,10 @@
             document.getElementById('totalmarks').value = formattedTotal;
             
             // Update the running total display as well
-            document.getElementById('running-total').textContent = formattedTotal;
+            const runningTotalElement = document.getElementById('running-total');
+            if (runningTotalElement) {
+                runningTotalElement.textContent = formattedTotal;
+            }
             
             // Visual feedback by highlighting the selected options
             document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
@@ -596,64 +680,6 @@
     </script>
 
        <!-- script for autofill name -->
-     <script>
-        const subject = document.getElementById('subject').value.trim();
-const studentClass = document.getElementById('studentClass').value.trim();
-const section = document.getElementById('section').value.trim();
-const terminal = document.getElementById('terminal').value.trim();
-let debounceTimeout;
-
-        const rollInput = document.getElementById('roll');
-        rollInput.addEventListener('input',async function() {
-            clearTimeout(debounceTimeout);
-
-    debounceTimeout = setTimeout(async () => {
-      const rollValue = rollInput.value.trim();
-      if (!rollValue) return;
-        
-            
-          // Debounce to avoid too many requests
-
-            // logic to check if the input roll number already exist in the database;
-            const responseBack = await fetch(`/checkroll/${encodeURIComponent(subject)}/${studentClass}/${encodeURIComponent(section)}/${terminal}?roll=${encodeURIComponent(rollInput.value)}`);
-            if (!responseBack.ok) {
-                console.error('Error checking roll number:', responseBack.statusText);
-                return;
-            }
-            const rollExists = await responseBack.json();
-            console.log(rollExists);
-            
-            if (rollExists) {
-                alert(`Roll number  ${rollExists.roll} with Name ${rollExists.studentName} with Total Marks ${rollExists.totalMarks} already exists for ${rollExists.studentClass}-${rollExists.section} for ${rollExists.terminal} Terminal. Please enter a different roll number or delete previous one.`);
-                rollInput.value = ''; // Clear the input
-                document.getElementById('name').value = ''; // Clear the name field
-                return;
-                
-            }
-            
-                // Fetch student data based on the roll number
-                // Only fetch if the roll number is valid and does not already exist
-             const res = await fetch(`/student_data/${encodeURIComponent(subject)}/${studentClass}/${encodeURIComponent(section)}/${terminal}?roll=${encodeURIComponent(rollInput.value)}`);
-            if (!res.ok) {
-                console.error('Error fetching student data:', res.statusText);
-                return;
-            }
-
-            const data = await res.json();
-            console.log(data)
-            if (data && data.length > 0) {
-                // Autofill the other fields with the retrieved data
-
-                
-               document.getElementById('name').value = data[0].name || '';
-                document.getElementById('roll').value = data[0].roll || '';
-                document.getElementById('reg').value = data[0].reg || '';
-            }
-        
-            // Do something with the data
-        }, 600); // Adjust the debounce time as needed
-        });
-    </script>
     
     <script>
       // Form page loader handling
@@ -688,5 +714,28 @@ let debounceTimeout;
 
     <script src="https://kit.fontawesome.com/368eb67b69.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function setupStudentButtons() {
+        const buttons = document.querySelectorAll('.student-btn');
+        buttons.forEach(button => {
+          button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Fill form fields
+            document.getElementById('roll').value = this.getAttribute('data-roll');
+            document.getElementById('name').value = this.getAttribute('data-name');
+            document.getElementById('reg').value = this.getAttribute('data-reg');
+          });
+        });
+      }
+      
+      // Initialize when DOM is ready
+      document.addEventListener('DOMContentLoaded', setupStudentButtons);
+
+    </script>
 </body>
 </html>
