@@ -62,27 +62,7 @@ exports.generateMarksheet = async (req, res, next) => {
     const studentClassdata = await studentClassModel.find({}).lean();
     const terminals = await terminalModel.find({}).lean();
      const user = req.user;
-    let accessibleSubject =[];
-    let accessibleClass=[];
-    if(user.role==="ADMIN")
-    {
-      accessibleSubject = subject;
-      accessibleClass = studentClassdata;
-    }
-    else
-    {
-     accessibleSubject = subject.filter(subject =>
-        user.allowedSubjects.some(allowed =>
-          allowed.subject === subject.newsubject
-        )
-      );
-      accessibleClass = studentClassdata.filter(studentclass =>
-        user.allowedSubjects.some(allowed =>
-          allowed.studentClass === studentclass.studentClass &  allowed.section === studentclass.section
-        )
-      );
-    }
-    const creditHourData = await newsubject.find({ forClass: studentClass }).lean();
+    creditHourData = await newsubject.find({ forClass: studentClass }).lean();
        const marksheetSetups = await marksheetSetup.find({}).lean();
     console.log("credit hour data",creditHourData);
    
@@ -1195,6 +1175,7 @@ exports.ledger = async (req, res, next) => {
 
     console.log("Ledger Analysis:", ledgerAnalysis);
     res.render("./exam/ledger", {
+      fullUrl: req.protocol + '://' + req.get('host') + req.originalUrl,
       currentPage: "exammanagement",
       studentClassdata,
       user: req.user,

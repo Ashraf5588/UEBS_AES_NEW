@@ -110,6 +110,16 @@
             margin-bottom: 10px;
         }
         
+        /* Fix ansradio layout for sub-questions */
+        .ansradio {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            width: 100% !important;
+            margin: 0 0 15px 0 !important;
+            height: auto !important;
+        }
+
         /* Improve option container layout */
         .option-container {
             background-color: #f8f9fa;
@@ -149,7 +159,10 @@
             overflow-x: auto;
             overflow-y: hidden;
             display: flex;
-            flex-wrap: nowrap;
+            flex-direction: column;
+            flex-wrap: wrap;
+            height: 240px; /* Height for approx 4 rows of buttons */
+            align-content: flex-start;
             gap: 10px;
             padding: 15px;
             border: 1px solid #dee2e6;
@@ -312,7 +325,7 @@
                                 data-roll="<%=record.roll%>" 
                                 data-name="<%=record.name %>" 
                                 data-reg="<%=record.reg%>"
-                                style="<%= isSubmitted ? 'background-color: #e0f2fe; color: #0369a1; border-color: #0ea5e9;pointer-events: none;opacity: 0.4;box-shadow:2px 2px 5px rgba(0,0,0,0.1);' : ''  %>">
+                                style="<%= isSubmitted ? 'background-color: #e0f2fe; color: #0369a1; border-color: #0ea5e9;pointer-events: none;opacity: 0.4;box-shadow:2px 2px 5px rgba(0,0,0,0.1);display:none;' : ''  %>">
                             <%=record.roll%> - <%=record.name %>
                             <% if(isSubmitted) { %> <i class="fas fa-check-circle ms-1" style="color: #0ee9b6;"></i> <% } %>
                         </button>
@@ -345,7 +358,7 @@
                 
                 </div>
                 <h2 class="text-center">
-                    <input type="checkbox" name="absent" id="absent" class="form-check-input mt-1"> Absent
+                    <input type="checkbox" name="absent" id="absent" class="form-check-input mt-1" style="opacity: 0.8;border: 2px solid #0ea5e9;"> Absent
                 </h2>
             </section>
             

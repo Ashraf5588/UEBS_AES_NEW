@@ -7,6 +7,16 @@
 <link rel="manifest" href="/site.webmanifest">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="Result Published : <%=studentClass%>-<%=section%>-<%=terminal%>-<%=academicYear%>">
+<meta property="og:description" content="Click here to open see result...">
+<meta property="og:url" content="<%= fullUrl %>">
+<meta property="og:image" content="/result.webp">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Result">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Result">
+<meta name="twitter:description" content="Click here to open see result...">
+<meta name="twitter:image" content="https://example.com/png">
   <title>Student Ledger</title>
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -188,6 +198,9 @@
   </div>
 
   <div class="ledger-container">
+    <button type="button" onclick="shareToWhatsapp()">Share To Whatsapp</button>
+    <center><img src="/image.png" height="200rem" width="200rem" alt="logo"><h1><%=marksheetSetups[0].schoolName %></h1><h3><%= marksheetSetups[0].address %> | <%= marksheetSetups[0].phone %> | <%= marksheetSetups[0].email %></h3></center><hr>
+    
     <div class="ledger-header-info">
       <h2>Student Ledger</h2>
       <p><strong>Class:</strong> <%= studentClass %> - <%= section %> &nbsp;|&nbsp; <strong>Terminal:</strong> <%= terminal %> &nbsp;|&nbsp; <strong>Year:</strong> <%= academicYear %></p>
@@ -588,5 +601,16 @@
         console.error("Error setting initial values:", e);
     }
   </script>
+  <script>
+function shareToWhatsapp() {
+  const url = window.location.href;
+  const message = `📘 Result Published\nClass: <%= studentClass %>-<%= section %>\nTerminal: <%= terminal %>\nYear: <%= academicYear %>\n\n👉 View Result:\n${url}`;
+
+  const whatsappUrl =
+    "https://wa.me/?text=" + encodeURIComponent(message);
+
+  window.open(whatsappUrl, "_blank");
+}
+</script>
 </body>
 </html>

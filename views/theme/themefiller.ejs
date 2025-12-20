@@ -793,7 +793,10 @@
 <body>
   <div class="container">
     <div class="header-card">
-      <h2>Theme Configuration</h2>
+      <h2><% if (studentClass<3) { %>Theme Configuration<% } else { %>
+        
+        Evaluation Criteria Configuration
+        <% } %></h2>
       <p>Set up themes, learning outcomes, and indicators for evaluation</p>
       <% if (typeof studentClass !== 'undefined') { %>
         <div style="background-color: #e8f4f8; padding: 10px; margin-top: 15px; border-radius: 8px; font-weight: bold; color: #2980b9;">
@@ -818,7 +821,7 @@
 
           <div class="form-group">
             <label for="credit">Credit Hour</label>
-            <input type="text" name="credit" id="credit" placeholder="Enter credit hour" required value="<%= editing ? existingData.credit : '' %>">
+            <input type="text" name="credit" id="credit" placeholder="Enter credit hour" required value="<%= subjectData[0] ? subjectData[0].theoryCreditHour+subjectData[0].practicalCreditHour : '' %>">
           </div>
         </div>
 
@@ -975,7 +978,7 @@
         </div>
         <div class="form-group">
           <label for="themeName_${themeIndex}"><% if(studentClass<=3){ %>Theme Name<% }else{ %>मुल्याङ्कन आधारको नाम (Evaluation Criteria Name)<% } %></label>
-          <textarea name="themes[${themeIndex}][themeName]" id="themeName_${themeIndex}" 
+          <textarea  name="themes[${themeIndex}][themeName]" id="themeName_${themeIndex}" data-index="${themeIndex}"
                  placeholder="<% if(studentClass<=3){ %>Enter Theme Name<% }else{ %>Enter मुल्याङ्कन आधारको नाम (Enter Evaluation Criteria Name)<% } %>" 
                  required rows="1" 
                  oninput="autoResize(this); scheduleAutoSave();">${themeData ? themeData.themeName || '' : ''}</textarea>
@@ -1022,8 +1025,8 @@
         </div>
         <div class="form-group">
           <label for="outcomeName_${themeIdx}_${outcomeIndex}"><% if(studentClass<=3){ %>Learning Outcome Name<% }else{ %>परिक्षण पक्षको नाम (Examination Criteria Name)<% } %></label>
-          <textarea name="themes[${themeIdx}][learningOutcome][${outcomeIndex}][learningOutcomeName]" 
-                 id="outcomeName_${themeIdx}_${outcomeIndex}" 
+          <textarea  name="themes[${themeIdx}][learningOutcome][${outcomeIndex}][learningOutcomeName]" 
+                 id="outcomeName_${themeIdx}_${outcomeIndex}" data-theme-index="${themeIdx}" data-outcome-index="${outcomeIndex}"
                  placeholder="Enter <% if(studentClass<=3){ %>Learning Outcome Name<% }else{ %>परिक्षण पक्षको नाम (Examination Criteria Name)<% } %>" 
                   rows="1"
                  oninput="autoResize(this); scheduleAutoSave();">${outcomeData ? outcomeData.learningOutcomeName || '' : ''}</textarea>
@@ -1070,7 +1073,7 @@
       group.className = 'indicator-group';
 
       group.innerHTML = `
-        <textarea name="themes[${themeIdx}][learningOutcome][${outcomeIdx}][indicators][${indicatorIndex}][indicatorName]" 
+        <textarea  name="themes[${themeIdx}][learningOutcome][${outcomeIdx}][indicators][${indicatorIndex}][indicatorName]" data-theme-index="${themeIdx}" data-outcome-index="${outcomeIdx}" data-indicator-index="${indicatorIndex}"
                placeholder="Enter indicator name (सूचक)" required rows="1"
                oninput="autoResize(this); scheduleAutoSave();">${indicatorData ? indicatorData.indicatorName || '' : ''}</textarea>
         <input type="number" step="0.01" class="indicator-marks" 
@@ -1097,7 +1100,7 @@
       let total = 0;
       container.querySelectorAll('.indicator-marks').forEach(input => {
         const val = parseFloat(input.value);
-        if (!isNaN(val)) total += val;
+        if (!isNaN(val)) total = Math.max(total, val);
       });
 
       document.getElementById(`totalMarks-${themeIdx}-${outcomeIdx}`).value = total;
@@ -1150,7 +1153,7 @@
         // Show saving indicator
         
         
-        const response = await fetch('/theme/autosave', {
+        const response = await fetch('/autosave-themefillup', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1345,7 +1348,7 @@
 
     // Initialize on page load
     window.onload = () => {
-      loadExistingData();
+      
       
       // Initialize auto-resize for existing textareas
       initializeAutoResize();
@@ -1382,5 +1385,7 @@
       }
     });
   </script>
+
+
 </body>
 </html>

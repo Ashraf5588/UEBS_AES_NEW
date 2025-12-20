@@ -817,7 +817,7 @@
 
           <div class="form-group">
             <label for="credit">Credit Hour</label>
-            <input type="text" name="credit" id="credit" placeholder="Enter credit hour" required value="<%= editing ? existingData.credit : '' %>">
+            <input type="text" name="credit" id="credit" placeholder="Enter credit hour" required value="<%= subjectData ? subjectData.theoryCreditHour+subjectData.practicalCreditHour : '' %>">
           </div>
         </div>
 
@@ -1090,7 +1090,7 @@
       let total = 0;
       container.querySelectorAll('.indicator-marks').forEach(input => {
         const val = parseFloat(input.value);
-        if (!isNaN(val)) total += val;
+        if (!isNaN(val)) total = Math.max(total, val);
       });
 
       document.getElementById(`totalMarks-${themeIdx}-${outcomeIdx}`).value = total;
@@ -1119,7 +1119,60 @@
 
     // Auto-save functionality
    
+    function scheduleAutoSave() {
+      if (isLoading) return;
+      
+      clearTimeout(autoSaveTimeout);
+      autoSaveTimeout = setTimeout(() => {
+        performAutoSave();
+      }, 1000); // Save after 1 second of inactivity
+    }
+
+
+    async function performAutoSave() {
+      const studentClass = document.getElementById('studentClass').value;
+      const subject = document.getElementById('subject').value;
+      const credit = document.getElementById('credit').value;
+      
+      if (!studentClass || !subject) {
+        return; // Don't save if required fields are missing
+      }
+
+      try {
+        const formData = collectFormData();
+        
+        // Show saving indicator
+        
+        
+        const response = await fetch('/autosave-projectrubrik', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            studentClass: studentClass,
+            subject: subject,
+            credit: credit,
+            themes: formData.themes,
+            outcomes: formData.outcomes,
+            indicators: formData.indicators
+          })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          showSaveStatus(result.action === 'updated' ? 'Updated' : 'Saved', 'success');
+        } else {
+         
+          console.error('Auto-save failed:', result.message);
+        }
+      } catch (error) {
     
+        console.error('Auto-save error:', error);
+      }
+    }
+
 
     function collectFormData() {
       const themes = [];

@@ -17,7 +17,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #87CEEB 0%, #E0F6FF 50%, #B0E0E6 100%);
+      background: linear-gradient(135deg, #00275B 0%, #385c8b 50%, #75a2dc 100%);
       min-height: 100vh;
       padding: 20px;
     }
@@ -28,7 +28,7 @@
     }
 
     .header-card {
-      background: rgba(255, 255, 255, 0.95);
+      background: #f28712;
       backdrop-filter: blur(20px);
       border-radius: 24px;
       padding: 2.5rem;
@@ -36,14 +36,15 @@
       border: 1px solid rgba(255, 255, 255, 0.3);
       box-shadow: 0 10px 40px rgba(135, 206, 235, 0.2);
       text-align: center;
+      
     }
 
     .header-card h1 {
-      color: #2c3e50;
-      font-size: 2.8rem;
+      color:white !important;
+      font-size: 2rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, #4A90E2, #357ABD);
+      background: linear-gradient(135deg, #ffffff, #dbdbdb);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -260,7 +261,7 @@
 
     .load-button {
       padding: 1rem 2rem;
-      background: linear-gradient(135deg, #4A90E2, #357ABD);
+      background: linear-gradient(135deg, #f28712, #fcca34);
       color: white;
       border: none;
       border-radius: 16px;
@@ -273,6 +274,7 @@
       transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       height: fit-content;
       white-space: nowrap;
+      width: 100%;
     }
 
     .load-button:hover {
@@ -448,8 +450,8 @@
 <body>
   <div class="container fade-in">
     <div class="header-card">
-      <h1>Class 4-10 Practical Management</h1>
-      <p>Select subject to manage practical</p>
+      <h1>Class <%= studentClass %>-<%=section%> Practical/Project Work Management</h1>
+      
     </div>
 
     <!-- Quick Actions at the top -->
@@ -457,18 +459,18 @@
       <h3>🚀 Quick Navigation</h3>
       <div class="action-grid">
         <a href="/internalreport?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject %>&terminal=<%= terminal %>" class="compact-action-card">
-          <div class="compact-action-icon">📊</div>
+          <div class="compact-action-icon"><img src="/lesson.png" alt="lesson" width="80%" height="80%"></div>
           <div class="compact-action-title">View Record Unit Wise</div>
         </a>
         <% if (subject==="MATHEMATICS"){ %>
           <a href="/indicatorwisereport?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject %>&terminal=<%= terminal %>" class="compact-action-card">
-          <div class="compact-action-icon">📊</div>
+          <div class="compact-action-icon"><img src="/indicator.png" alt="indicator" width="80%" height="80%"></div>
           <div class="compact-action-title">Indicator Wise Report</div>
         </a>
         <%}%>
 
         <a href="/themefillupform?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject%>&terminal=<%=terminal%>" target="_blank" class="compact-action-card">
-          <div class="compact-action-icon">⚙️</div>
+          <div class="compact-action-icon"><img src="/criteria.png" alt="" width="80%" height="80%"></div>
           <div class="compact-action-title">
             <%if (subject==="SCIENCE") { %>
              Create Practical Rubriks <br><b>(10 marks)</b>
@@ -511,12 +513,12 @@
         </a>
         <% if(subject==="SCIENCE" || subject==="MATHEMATICS" || subject==="SOCIAL" || subject==="HEALTH" || subject==="NEPALI" || subject==="ENGLISH"){%>
          <a href="/practicalform?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject%>&terminal=<%=terminal%>" target="_blank" class="compact-action-card">
-          <div class="compact-action-icon">⚙️</div>
-          <div class="compact-action-title">Add Practical </div>
+          <div class="compact-action-icon"><img src="/practical.png" alt="practical" width="80%" height="80%"></div>
+          <div class="compact-action-title">Add Practical/Project Work </div>
         </a>
         <%}else{%>
           <a href="/practicalform?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject%>&terminal=<%=terminal%>" target="_blank" class="compact-action-card">
-          <div class="compact-action-icon">⚙️</div>
+          <div class="compact-action-icon"><img src="/practical.png" alt="practical" width="80%" height="80%"></div>
           <div class="compact-action-title">Add Practical </div>
         </a>
 
@@ -527,7 +529,7 @@
           <div class="compact-action-title">Practical Marks Slip</div>
         </a>
          <a href="/attendance?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject %>&terminal=<%= terminal %>" class="compact-action-card">
-          <div class="compact-action-icon">📋</div>
+          <div class="compact-action-icon"><img src="/attendance.png" alt="" height="80%" width="80%"></div>
           <div class="compact-action-title">Add Attendance</div>
         </a>
       </div>

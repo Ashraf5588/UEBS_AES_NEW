@@ -400,12 +400,12 @@ exports.themefillupform = async (req, res) => {
       studentClass: classParam,
       subject: subject
     }).lean();
-   
-    
+   const subjectData = await newsubject.find({newsubject:subject,forClass:classParam}).lean();
+    console.log("Practical format data fetched successfully:", subjectData);
     
     // If studentClass is provided, render the form for that class
     if (classParam) {
-      return res.render("theme/themefiller", { studentClass: classParam ,editing:false, ...await getSidenavData(req) ,subject,terminal,practicalFormatData});
+      return res.render("theme/themefiller", { studentClass: classParam ,editing:false, ...await getSidenavData(req) ,subject,terminal,practicalFormatData, subjectData});
     } 
     
     // If no class provided, render the class selection page first
@@ -922,7 +922,7 @@ exports.editpracticalrubriks = async (req, res, next) => {
       studentClass: studentClass,
       subject: subject
     }).lean();
-
+const subjectData = await newsubject.find({newsubject:subject,forClass:classParam}).lean();
     const model = getThemeFormat(classParam);
     const existingData = await model.findOne({ studentClass: classParam, subject: subject }).lean();
     if (!existingData) {
@@ -935,6 +935,7 @@ exports.editpracticalrubriks = async (req, res, next) => {
       subject,
       editing: true,
       existingData,
+      subjectData,
       ...await getSidenavData(req)
     });
   }catch (err) {
@@ -1002,4 +1003,31 @@ async function getAcademicYear()
 
 }
 
+exports.autoSaveThemeFillup = async (req, res, next) => {
+  try {
+    const { studentClass, subject, terminal, themes, credit } = req.body;
+    const Practicalmodel =  getThemeFormat(studentClass);
+    await Practicalmodel.updateOne(
+        { studentClass, subject},
+        {
+        $set: {
+          studentClass,
+          subject,
+       
+          credit,
+          themes,
+          updatedAt: new Date()
+         
+        }
+      },
+      { upsert: true }
+    );
+
+    res.sendStatus(200);
+    
+  }catch (err) {
+    console.error("Error in autosave:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}
 

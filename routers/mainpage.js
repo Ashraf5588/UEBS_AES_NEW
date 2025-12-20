@@ -274,11 +274,14 @@ student.get('/themefillupform', verifytoken, authorized, themecontroller.themefi
 student.post('/themefillupform', verifytoken, authorized, themecontroller.themefillupformsave);
 student.post('/themeform', verifytoken, authorized, themecontroller.themeformSave);
 student.get('/thememarks', verifytoken, authorized, themecontroller.themeformMarks);
+student.post('/autosave-themefillup', verifytoken, authorized, themecontroller.autoSaveThemeFillup);
+student.post('/autosave-projectrubrik', verifytoken, authorized, practical410controller.autoSaveRubrik);
 student.get('/thememarksofstudent', verifytoken, authorized, themecontroller.thememarksOfStudent);
 student.get('/themewisemarks', verifytoken, authorized, themecontroller.themewisemarks);
 student.get('/themeMarksheet', verifytoken, authorized, themecontroller.themeMarksheet);
 
 student.get('/themeslip', verifytoken, authorized, themecontroller.themeslip);
+
 student.get('/theme/previous-data', verifytoken, authorized, themecontroller.getPreviousThemeData);
 student.get('/theme/student-themes', verifytoken, authorized, themecontroller.getStudentThemes);
 student.get('/marksheetsetup',verifytoken,authorized,isAdmin,admincontrol.showmarksheetSetupForm);

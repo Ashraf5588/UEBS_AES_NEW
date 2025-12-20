@@ -2104,6 +2104,7 @@ exports.projectrubrikscreate = async (req, res, next) => {
       studentClass: studentClass,
       subject: subject
     }).lean();
+    const subjectData = await newsubject.findOne({ newsubject: subject, forClass: classParam }).lean();
     // If studentClass is provided, render the form for that class
     if (classParam) {
       const subjects = await newsubject.find({});
@@ -2119,6 +2120,7 @@ exports.projectrubrikscreate = async (req, res, next) => {
         editing: false,
         terminal,
         section,
+        subjectData,
         ...await getSidenavData(req),
         existingData: null // Always start with null, let frontend load per subject
       });
@@ -2219,6 +2221,13 @@ exports.projectrubrikscreatesave = async (req, res) => {
     res.status(500).send("Internal Server Error: " + err.message);
   }
 }
+
+
+
+
+
+
+
 exports.showrubriksforadmin = async (req, res, next) => {
   try {
     const subjectList = await newsubject.find().lean();
@@ -2289,6 +2298,7 @@ exports.editprojectrubriks = async (req, res, next) => {
       studentClass: studentClass,
       subject: subject
     }).lean();
+    const subjectData = await newsubject.findOne({ newsubject: subject, forClass: classParam }).lean();
 
     const model = getProjectThemeFormat(classParam);
     const existingData = await model.findOne({ studentClass: classParam, subject: subject }).lean();
@@ -2300,6 +2310,7 @@ exports.editprojectrubriks = async (req, res, next) => {
       projectFormatData,
       
       subject,
+      subjectData,
       editing: true,
       existingData,
       ...await getSidenavData(req)
@@ -2449,3 +2460,31 @@ const practicalFormat = getThemeFormat(studentClass);
     res.status(500).send("Internal Server Error");
   }
 }
+exports.autoSaveRubrik = async (req, res, next) => {
+  try {
+    const { studentClass, subject, terminal, themes, credit } = req.body;
+    const ProjectModel =  getProjectThemeFormat(studentClass);
+    await ProjectModel.updateOne(
+        { studentClass, subject},
+        {
+        $set: {
+          studentClass,
+          subject,
+       
+          credit,
+          themes,
+          updatedAt: new Date()
+         
+        }
+      },
+      { upsert: true }
+    );
+
+    res.sendStatus(200);
+    
+  }catch (err) {
+    console.error("Error in autosave:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}
+
