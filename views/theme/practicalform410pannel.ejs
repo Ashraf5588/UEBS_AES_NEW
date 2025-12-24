@@ -9,18 +9,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Class 4 to 10 Practical Management</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+     *{margin:0;padding:0;box-sizing:border-box}
+    :root{--primary:#ff8c42;--primary-dark:#e67a2e;--secondary:#1a3a52;--secondary-light:#2c5f8d;--bg:#f8f9fa;--card:#fff;--border:#e1e8ed;--text:#2d3748;--success:#48bb78;--hover:#fff5eb}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--secondary) 0%,var(--secondary-light) 100%);min-height:100vh;padding:15px;color:var(--text)}
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #00275B 0%, #385c8b 50%, #75a2dc 100%);
-      min-height: 100vh;
-      padding: 20px;
-    }
+  
 
     .container {
       max-width: 800px;
@@ -28,8 +21,8 @@
     }
 
     .header-card {
-      background: #f28712;
-      backdrop-filter: blur(20px);
+      background: var(--primary);
+     
       border-radius: 24px;
       padding: 2.5rem;
       margin-bottom: 2rem;
@@ -44,7 +37,7 @@
       font-size: 2rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, #ffffff, #dbdbdb);
+      background: white;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -448,6 +441,7 @@
   </style>
 </head>
 <body>
+       <%- include('../partials/mainnav') %>
   <div class="container fade-in">
     <div class="header-card">
       <h1>Class <%= studentClass %>-<%=section%> Practical/Project Work Management</h1>
@@ -469,42 +463,81 @@
         </a>
         <%}%>
 
-        <a href="/themefillupform?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject%>&terminal=<%=terminal%>" target="_blank" class="compact-action-card">
+        <a href="/themefillupform?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject%>&terminal=<%=terminal%>" class="compact-action-card">
           <div class="compact-action-icon"><img src="/criteria.png" alt="" width="80%" height="80%"></div>
           <div class="compact-action-title">
             <%if (subject==="SCIENCE") { %>
              Create Practical Rubriks <br><b>(10 marks)</b>
               <% }else if(subject==="MATHEMATICS"){%>
-                Create कार्य सञ्चालन र कार्यसम्पादन Rubriks (20 marks)
+                Create कार्य सञ्चालन र कार्यसम्पादन Rubriks
+                <%if(studentClass>8){%>
+                  (10 marks)
+                <%}else{%>
+                  (20 marks)
+                <%}%>
               <%}else if(subject==="SOCIAL"){%>
-                Create Practical/ProjectWork Rubriks
+                <% if(studentClass>8){%>
+                  Create Practical/ProjectWork Rubriks (16 marks)
+                <%}else{%>
+                  Create Practical/ProjectWork Rubriks (18 marks)
+                <%}%>
+               
               <%}else if(subject==="HEALTH"){%>
                
 
                Create प्रयोगात्मक कार्य (शारीरिक र सिर्जनात्मक कला) को मूल्याङ्कन (रुब्रिक्स)
               <%} else if(subject==="NEPALI"){%>
+                 <%if(studentClass>8){%>
+                   Create सुनाइ,बोलाइ र पढाई भाषिक सिपको आन्तरिक मूल्याङ्कनका आधार (12 marks)
+                  <%}
+                    else { %>
                 Create सुनाइ र बोलाइको आन्तरिक मूल्याङ्कनका आधार (20 marks)
+                <%}%>
+             
+                
               <%}else if(subject==="ENGLISH"){%>
+                <% if (studentClass>8) { %>
+                   Create Listening Test Criteria (8 marks)
+                <%}else{%>
                 Create Listeing and Speaking Rubriks (20 marks)
+                <%}%>
               <%}else{ %>
                 Create Practical Rubriks(20 marks)
               <%}%>
             </div>
         </a>
-        <a href="/projectrubrikscreate?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject%>&terminal=<%=terminal%>" target="_blank" class="compact-action-card">
+        <a style="display: <%=subject==="SOCIAL"?'none':'block';%>"  href="/projectrubrikscreate?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject%>&terminal=<%=terminal%>" class="compact-action-card">
           <div class="compact-action-icon">⚙️</div>
           <div class="compact-action-title"> <%if (subject==="SCIENCE") { %>
-             Create ProjectWork Rubriks <br><b>(8 marks)</b>
+             Create ProjectWork Rubriks <br><b>
+              <% if (studentClass>8) { %>
+                (6 marks)
+              <%}else{ %>
+                (8 marks)
+              <%}%>
               <% }else if(subject==="MATHEMATICS"){%>
-                Create प्रस्तुतीकरण र अभिलेखीकरण Rubriks  (12 marks)
+                Create प्रस्तुतीकरण र अभिलेखीकरण Rubriks 
+                <%if(studentClass>8){%>
+                  (6 marks)
+                <%}else{%>
+                  (12 marks)
+                <%}%>
               <%}else if(subject==="SOCIAL"){%>
                 Create Practical/ProjectWork Rubriks
               <%}else if(subject==="HEALTH"){%>
                     Create परियोजना कार्य (स्वास्थ्य) को मूल्याङ्कन (रुब्रिक्स) 
                 <%}else if(subject==="NEPALI"){%>
+                  <% if (studentClass>8) { %>
+                    सिर्जनात्मक र परियोजना कार्यको मूल्याङ्कनमुल्यान्ग्कन आधार Rubriks (4 marks)
+                  <%}else {%>
                   Create पढाई र लेखाइको मूल्याङ्कनमुल्यान्ग्कन आधार  Rubriks (16 marks)
+                  <%}%>
               <%}else if(subject==="ENGLISH"){%>
+                <% if (studentClass>8) { %>
+                   Create Speaking Test Criteria(8)
+                <%}else{%>
                   Create Reading & Writing Rubriks (16 marks)
+                <%}%>
               <%}else{ %>
                 Create ProjectWork Rubriks(16 marks)
 
@@ -512,12 +545,12 @@
             </div>
         </a>
         <% if(subject==="SCIENCE" || subject==="MATHEMATICS" || subject==="SOCIAL" || subject==="HEALTH" || subject==="NEPALI" || subject==="ENGLISH"){%>
-         <a href="/practicalform?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject%>&terminal=<%=terminal%>" target="_blank" class="compact-action-card">
+         <a href="/practicalform?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject%>&terminal=<%=terminal%>" class="compact-action-card">
           <div class="compact-action-icon"><img src="/practical.png" alt="practical" width="80%" height="80%"></div>
           <div class="compact-action-title">Add Practical/Project Work </div>
         </a>
         <%}else{%>
-          <a href="/practicalform?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject%>&terminal=<%=terminal%>" target="_blank" class="compact-action-card">
+          <a href="/practicalform?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject%>&terminal=<%=terminal%>" class="compact-action-card">
           <div class="compact-action-icon"><img src="/practical.png" alt="practical" width="80%" height="80%"></div>
           <div class="compact-action-title">Add Practical </div>
         </a>

@@ -7,8 +7,17 @@
 <link rel="manifest" href="/site.webmanifest">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Social Project Evaluation Form</title>
+  <title><%=subject %> Project Evaluation Form</title>
   <style>
+    :root {
+      --primary-color: #003366; /* Dark Blue */
+      --secondary-color: #ff6600; /* Orange */
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --text-color: #333;
+      --border-color: #e0e0e0;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -16,38 +25,38 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      min-height: 100vh;
+      background-color: var(--bg-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text-color);
+      line-height: 1.6;
       padding: 20px;
-      color: #2c3e50;
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
-      background: white;
+      background: var(--card-bg);
       border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       overflow: hidden;
     }
 
     .header {
-       background: linear-gradient(135deg, #87CEEB 0%, #2380cb 50%, #B0E0E6 100%);
+      background: linear-gradient(135deg, var(--primary-color), #004080);
       color: white;
-      padding: 30px;
+      padding: 25px;
       text-align: center;
     }
 
     .header h1 {
-      font-size: 2rem;
-      font-weight: 600;
+      font-size: 28px;
       margin-bottom: 10px;
+      font-weight: 700;
     }
 
     .header p {
+      font-size: 16px;
       opacity: 0.9;
-      font-size: 1.1rem;
     }
 
     .form-content {
@@ -55,23 +64,24 @@
     }
 
     .section {
-      margin-bottom: 40px;
-      border: 1px solid #e9ecef;
-      border-radius: 10px;
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      margin: 20px 0;
       overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
 
     .section-header {
-      background: linear-gradient(135deg, #87CEEB 0%, #2380cb 50%, #B0E0E6 100%);
+      background-color: var(--primary-color);
       color: white;
       padding: 15px 20px;
-      font-size: 1.2rem;
+      font-size: 18px;
       font-weight: 600;
     }
 
     .section-content {
-      padding: 25px;
-      background: #f8f9fa;
+      padding: 20px;
     }
 
     .form-row {
@@ -89,57 +99,71 @@
     .form-group label {
       font-weight: 600;
       margin-bottom: 8px;
-      color: #495057;
+      color: var(--primary-color);
+      font-size: 14px;
     }
 
     .form-control {
       padding: 12px 15px;
-      border: 2px solid #e9ecef;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
-      font-size: 14px;
+      font-size: 16px;
       transition: all 0.3s ease;
+      background: white;
     }
 
     .form-control:focus {
       outline: none;
-      border-color: #667eea ;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      border-color: var(--secondary-color);
+      box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
     }
 
-    .form-control[readonly] {
-      background-color: #e9ecef;
-      cursor: not-allowed;
+    .form-control:readonly {
+      background: #f8f9fa;
+      color: #6c757d;
     }
 
-    .table-container {
-      overflow-x: auto;
-      margin: 20px 0;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    table {
+    /* Enhanced Table Styles */
+    .evaluation-table, table {
       width: 100%;
       border-collapse: collapse;
+      margin: 15px 0;
       background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #dee2e6;
-    }
-
-    th {
-      background: #66a4ea;
+    .evaluation-table th, table th {
+      background-color: var(--primary-color);
       color: white;
+      padding: 15px 12px;
+      text-align: left;
       font-weight: 600;
-      position: sticky;
-      top: 0;
+      font-size: 16px;
+      border-bottom: 2px solid #002244;
     }
 
-    tr:hover {
+    .evaluation-table td, table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      vertical-align: middle;
+      font-size: 15px;
+      line-height: 1.6;
+      color: black;
+    }
+
+    .evaluation-table tr:hover, table tr:hover {
+      background-color: #fff8e1;
+    }
+
+    .evaluation-table tr:nth-child(even), table tr:nth-child(even) {
       background-color: #f8f9fa;
+    }
+
+    .evaluation-table td:last-child, table td:last-child {
+      text-align: center;
     }
 
     .radio-group {
@@ -148,54 +172,53 @@
       gap: 12px;
       margin: 8px 0;
       justify-content: center;
+      flex-wrap: wrap;
     }
 
     .radio-group input[type="radio"] {
-      margin-right: 8px;
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-      transform: scale(1.2);
+      display: none;
     }
 
     .radio-group label {
       margin: 0;
       font-weight: 600;
       cursor: pointer;
-      font-size: 16px;
-      color: #2d3748;
-      padding: 6px 12px;
-      border-radius: 6px;
+      font-size: 14px;
+      color: #555;
+      padding: 8px 16px;
+      border-radius: 20px;
       transition: all 0.2s ease;
-      background: #f0f7ff;
-      border: 1px solid #c3dafe;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
     }
 
     .radio-group label:hover {
-      background: #e1f0ff;
-      border-color: #a3c3ff;
+      background: #e0e0e0;
     }
 
     .radio-group input[type="radio"]:checked + label {
-      background: linear-gradient(135deg, #667eea 0%, #377cf4 100%);
+      background-color: var(--secondary-color);
       color: white;
-      border-color: #5a67d8;
+      border-color: var(--secondary-color);
+      transform: scale(1.05);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
     .unit-section {
       background: white;
-      border: 1px solid #dee2e6;
+      border: 1px solid var(--border-color);
       border-radius: 10px;
       margin: 20px 0;
       overflow: hidden;
     }
 
     .unit-header {
-      background: #495057;
-      color: white;
-      padding: 15px 20px;
-      font-size: 1.1rem;
-      font-weight: 600;
+      background-color: #e6f0ff;
+      color: var(--primary-color);
+      padding: 12px 15px;
+      font-weight: 700;
+      font-size: 18px;
+      border-bottom: 1px solid var(--primary-color);
     }
 
     .unit-content {
@@ -203,14 +226,15 @@
     }
 
     .practical-section {
-      border: 1px solid #e9ecef;
+      background: #fafcff;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       margin: 15px 0;
       overflow: hidden;
     }
 
     .practical-header {
-      background: #6c757d;
+      background-color: var(--primary-color);
       color: white;
       padding: 10px 15px;
       font-weight: 600;
@@ -218,22 +242,22 @@
 
     .practical-content {
       padding: 15px;
-      background: #f8f9fa;
     }
 
     .project-section {
-      background: white;
-      border: 1px solid #dee2e6;
+      background: #fafcff;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       margin: 15px 0;
       overflow: hidden;
     }
 
     .project-header {
-      background: #28a745;
-      color: white;
+      background-color: #fff3e0;
+      color: var(--secondary-color);
       padding: 10px 15px;
       font-weight: 600;
+      border-left: 5px solid var(--secondary-color);
     }
 
     .project-content {
@@ -241,92 +265,113 @@
     }
 
     .total-display {
-      background: #e3f2fd;
-      border: 2px solid #2196f3;
-      border-radius: 8px;
+      background-color: var(--primary-color);
+      color: white;
       padding: 15px;
-      margin: 10px 0;
-      text-align: center;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0;
+      font-weight: bold;
     }
 
     .total-display label {
-      font-weight: 600;
-      color: #1976d2;
-      margin-bottom: 5px;
-      display: block;
+      font-size: 16px;
+      color: white;
     }
-
+    
     .total-display input {
-      font-size: 1.2rem;
-      font-weight: bold;
-      text-align: center;
-      border: none;
-      background: transparent;
-      color: #1976d2;
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        width: 80px;
+        text-align: center;
+        font-weight: bold;
     }
 
     .submit-btn {
-      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      background:  var(--secondary-color);
       color: white;
       border: none;
-      padding: 15px 40px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      border-radius: 8px;
+      padding: 15px 30px;
+      font-size: 18px;
+      font-weight: 700;
+      border-radius: 10px;
       cursor: pointer;
       transition: all 0.3s ease;
-      display: block;
-      margin: 30px auto;
-      min-width: 200px;
+      width: 100%;
+      margin-top: 30px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
     }
 
     .submit-btn:hover {
+      background: linear-gradient(45deg, var(--secondary-color), #ff8533);
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+      box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
     }
 
-    /* Enhanced Table Styles */
-    .evaluation-table, .table-container table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 15px 0;
-      background: white;
+    /* Student List Styles */
+    .student-list-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      max-height: 250px;
+      overflow-y: auto;
+      padding: 15px;
+      background: #f8f9fa;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      border: 2px solid #c3dafe;
+      margin-bottom: 20px;
+    }
+    
+    @media (min-width: 768px) {
+        .student-list-container {
+            grid-template-columns: repeat(4, 1fr);
+        }
     }
 
-    .evaluation-table th, .table-container table th {
-      background: linear-gradient(135deg, #2864bf 0%, #5188e7 100%);
+    .student-btn {
+      background-color: var(--secondary-color);
       color: white;
-      padding: 15px 12px;
-      text-align: left;
+      border: 1px solid var(--primary-color);
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
       font-weight: 600;
-      font-size: 16px;
-      border: 2px solid #5a67d8;
-      border-bottom: 2px solid #4c51bf;
+      transition: all 0.2s ease;
+      text-align: left;
+      font-size: 14px;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      border-radius: 30px;
+    }
+    
+    .student-btn span.roll {
+        background: var(--primary-color);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-right: 8px;
+        font-size: 12px;
+        min-width: 25px;
+        text-align: center;
     }
 
-    .evaluation-table td, .table-container table td {
-      padding: 12px 15px;
-      border: 1px solid #c3dafe;
-      vertical-align: middle;
-      font-size: 15px;
-      line-height: 1.6;
-      border-right: 1px solid #c3dafe;
-    }
-
-    .evaluation-table tr:hover, .table-container table tr:hover {
-      background-color: #f0f7ff;
-    }
-
-    .evaluation-table tr:nth-child(even), .table-container table tr:nth-child(even) {
-      background-color: #fafcff;
-    }
-
-    .evaluation-table td:last-child, .table-container table td:last-child {
-      border-right: 2px solid #c3dafe;
+  
+   
+    
+    .student-btn:hover span.roll {
+        background: white;
+        color: var(--secondary-color);
     }
 
     @media (max-width: 768px) {
@@ -339,87 +384,29 @@
         border-radius: 10px;
       }
       
-      .header {
-        padding: 20px;
-      }
-      
       .header h1 {
-        font-size: 1.5rem;
+        font-size: 24px;
       }
       
       .form-content {
         padding: 20px;
       }
 
-      /* Mobile Optimization - Flatten nested structure */
+      /* Mobile Optimization */
       .unit-section {
-        background: transparent;
-        border: none;
-        border-radius: 0;
         margin: 15px 0;
-        overflow: visible;
-        padding: 0;
       }
 
       .unit-header {
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: white;
-        padding: 8px 12px;
-        font-weight: 600;
+        padding: 10px 15px;
         font-size: 16px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        text-align: center;
       }
 
-      .unit-content {
-        padding: 0;
-      }
-
-      .practical-section {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        margin: 10px 0;
-        overflow: hidden;
-      }
-
-      .practical-header {
-        background: linear-gradient(135deg, #007bff, #0056b3);
-        color: white;
+      .practical-header, .project-header {
         padding: 8px 12px;
-        font-weight: 600;
         font-size: 14px;
-        text-align: center;
       }
 
-      .practical-content {
-        padding: 10px;
-        background: white;
-      }
-
-      .project-section {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        margin: 10px 0;
-        overflow: hidden;
-      }
-
-      .project-header {
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: white;
-        padding: 8px 12px;
-        font-weight: 600;
-        font-size: 14px;
-        text-align: center;
-      }
-
-      .project-content {
-        padding: 10px;
-      }
-
-      /* Compact section headers */
       .section-header {
         padding: 10px 15px;
         font-size: 16px;
@@ -429,13 +416,11 @@
         padding: 15px;
       }
 
-      /* Make form elements more mobile-friendly */
       .form-control {
         padding: 10px 12px;
-        font-size: 16px; /* Prevents zoom on iOS */
+        font-size: 16px;
       }
 
-      /* Reduce total display padding */
       .total-display {
         padding: 10px;
         margin: 15px 0;
@@ -449,77 +434,46 @@
       .table-container {
         overflow-x: auto;
         margin: 15px 0;
-        border: 2px solid #c3dafe;
+        border: 1px solid var(--border-color);
         border-radius: 8px;
         background: white;
         max-width: 100%;
         -webkit-overflow-scrolling: touch;
       }
 
-      .table-container::-webkit-scrollbar {
-        height: 8px;
-      }
-
-      .table-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-      }
-
-      .table-container::-webkit-scrollbar-thumb {
-        background: #c3dafe;
-        border-radius: 10px;
-      }
-
-      .table-container::-webkit-scrollbar-thumb:hover {
-        background: #667eea;
-      }
-
-      .evaluation-table, .table-container table {
+      .evaluation-table, table {
         min-width: 800px;
-        border-collapse: collapse;
         margin: 0;
-        background: white;
-        border-radius: 0;
-        box-shadow: none;
         border: none;
+        box-shadow: none;
       }
 
-      .evaluation-table th, .table-container table th {
+      .evaluation-table th, table th {
         padding: 12px 8px;
-        text-align: center;
         font-size: 14px;
         white-space: nowrap;
-        min-width: 120px;
       }
 
-      .evaluation-table td, .table-container table td {
+      .evaluation-table td, table td {
         padding: 10px 8px;
         font-size: 13px;
-        line-height: 1.4;
-        word-wrap: break-word;
-        max-width: 200px;
       }
 
       .radio-group {
-        gap: 4px;
-        flex-wrap: wrap;
-      }
-
-      .radio-group input[type="radio"] {
-        width: 16px;
-        height: 16px;
-        transform: scale(1.1);
+        gap: 8px;
       }
 
       .radio-group label {
-        padding: 4px 8px;
-        font-size: 14px;
-        min-width: 30px;
-        text-align: center;
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+      
+      .student-list-container {
+          grid-template-columns: repeat(2, 1fr);
       }
     }
 
-    /* Extra small screens - Ultra compact layout */
+    /* Extra small screens */
     @media (max-width: 480px) {
       body {
         padding: 10px 5px;
@@ -529,105 +483,26 @@
         padding: 10px;
       }
 
-      /* Ultra flat structure for very small screens */
-      .unit-section {
-        margin: 10px 0;
-        padding: 0;
-        background: transparent;
-        border: none;
-      }
-
-      .unit-header {
-        padding: 6px 10px;
-        font-size: 14px;
-        margin-bottom: 8px;
-        border-radius: 6px;
-      }
-
-      .practical-section, .project-section {
-        margin: 8px 0;
-        border-radius: 6px;
-      }
-
-      .practical-header, .project-header {
-        padding: 6px 10px;
-        font-size: 13px;
-      }
-
-      .practical-content, .project-content {
-        padding: 8px;
-      }
-
-      /* Compact section styling */
-      .section {
-        margin: 10px 0;
-        border-radius: 8px;
-      }
-
-      .section-header {
-        padding: 8px 12px;
-        font-size: 14px;
-      }
-
-      .section-content {
-        padding: 10px;
-      }
-
-      /* More compact form elements */
-      .form-control {
-        padding: 8px 10px;
-      }
-
-      .radio-group {
-        gap: 4px;
-      }
-
-      .radio-group label {
-        padding: 2px 6px;
-        font-size: 12px;
-        min-width: 25px;
-      }
-
-      /* Compact table styling */
-      .evaluation-table th,
-      .table-container table th {
-        padding: 8px 4px;
-        font-size: 12px;
-        min-width: 80px;
-      }
-
-      .evaluation-table td,
-      .table-container table td {
-        padding: 6px 4px;
-        font-size: 11px;
-        max-width: 150px;
-      }
-
-      /* Ultra compact total display */
-      .total-display {
-        padding: 8px;
-        margin: 10px 0;
-      }
-
-      .total-display label {
-        font-size: 12px;
-      }
-
-      /* Header optimization */
       .header h1 {
         font-size: 20px;
       }
 
-      .header p {
-        font-size: 14px;
+      .student-list-container {
+          grid-template-columns: 1fr;
+      }
+      
+      .radio-group label {
+        padding: 4px 8px;
+        font-size: 12px;
       }
     }
   </style>
 </head>
 <body>
+       <%- include('../partials/mainnav') %>
   <div class="container">
     <div class="header">
-      <h1>Social Project Evaluation Form</h1>
+      <h1><%= subject %> Project Evaluation Form</h1>
       <p>Complete evaluation form for practical and project work assessment</p>
     </div>
 
@@ -638,11 +513,13 @@
         <div class="section">
           <div class="section-header">Student Information</div>
           <div class="section-content">
-            <div class="studentname">
-            <% studentData.forEach((studentname) => { %>
-              <input type="button" name="" id="studentData<%= studentname.roll %>" value="<%=studentname.roll%>- <%= studentname.name %>" style="background-color:#2196f3; color:white; border-radius: 7px; margin:1%; padding:5px; border:none; font-weight: bold; font-size: 16px;" onclick="fill('<%= studentname.roll %>','<%= studentname.name %>','<%= studentname.reg %>')">
-            <% }); %>
-          </div><input type="hidden" name="reg" id="reg">
+            <div class="student-list-container">
+             <% studentData.forEach((studentname) => { %>
+                <button type="button" class="student-btn" id="studentData<%= studentname.roll %>" onclick="fill('<%= studentname.roll %>','<%= studentname.name %>','<%= studentname.reg %>')">
+                  <span class="roll"><%=studentname.roll%></span> <%= studentname.name %>
+                </button>
+              <% }); %>
+            </div><input type="hidden" name="reg" >
             <div class="form-row">
               <div class="form-group">
                 <label for="roll">Roll Number</label>
@@ -707,24 +584,22 @@
                   <tr>
                     <td rowspan="4">सक्रियता र सहभागिता</td>
                     <td>सर्वोत्कृष्ट</td>
-                    <td>सिकाइमा जिज्ञासा राख्ने, अन्तव्र्रिmयामा भाग लिने, आफ्नो विचार प्रस्तुत
-गर्ने, दिइएको कार्य (कक्षा कार्य, समूह कार्य वा अन्य कार्य) पूरा गर्ने
-गरेमा </td>
+                    <td>सिकाइमा जिज्ञासा राख्दै, समूह छलफल र अन्तरक्रियामा सक्रियतापूर्वक भाग लिएको</td>
                     <td><div class="radio-group"><input type="radio" name="participationMarks" value="2" id="part2"> <label for="part2">२</label></div></td>
                   </tr>
                   <tr>
                     <td>उत्कृष्ट</td>
-                    <td>उल्लिखित मध्ये कुनै ३ ओटा कार्य गरेमा </td>
+                    <td>सिकाइमा जिज्ञासा राख्दै, समूह छलफल र अन्तरक्रियामा कम सक्रियतापूर्वक भाग लिएको</td>
                     <td><div class="radio-group"><input type="radio" name="participationMarks" value="1.5" id="part1_5"> <label for="part1_5">१.५</label></div></td>
                   </tr>
                   <tr>
                     <td>मध्यम</td>
-                    <td>उल्लिखित मध्ये कुनै २ ओटा कार्य गरेमा </td>
+                    <td>सिकाइमा कम जिज्ञासा राख्दै, समूह छलफल र अन्तरक्रियामा निर्देशानुसार भाग लिएको</td>
                     <td><div class="radio-group"><input type="radio" name="participationMarks" value="1" id="part1"> <label for="part1">१</label></div></td>
                   </tr>
                   <tr>
                     <td>सामान्य</td>
-                    <td>उल्लिखित मध्ये कुनै १ ओटा कार्य गरेमा</td>
+                    <td>सिकाइप्रति उदासीन रहेमा, समूह छलफल र अन्तरक्रियामा सक्रियता नदेखाएको</td>
                     <td><div class="radio-group"><input type="radio" name="participationMarks" value="0.5" id="part0_5"> <label for="part0_5">०.५</label></div></td>
                   </tr>
                 </tbody>
@@ -767,8 +642,11 @@
                       <!-- Practical <%= prindx + 1 %> -->
                       <div class="practical-section">
                         <div class="practical-header">
-                          Practical/Project मूल्याङ्कन (रुब्रिक्स)<%= prindx + 1 %>: <%= practical %>
+                       <center><h3><span style="color:rgb(255, 199, 94)"> Practical/Project कार्य सञ्चालन र कार्यसम्पादन </h3>
+                         <h1> <%= prindx + 1 %> )&ensp;</span> <%= practical %></center></h1>
                           <input type="hidden" name="unit[<%= idx %>][practicals][<%= prindx %>][practicalName]" value="<%= practical %>">
+                           <input type="hidden" name="unit[<%= idx %>][projectWorks][<%= prindx %>][projectName]" value="<%= practical %>">
+                          
                         </div>
                         <div class="practical-content">
                           <div class="table-container">
@@ -808,9 +686,9 @@
                                           <td>
                                             <div class="radio-group">
                                               <input type="radio" 
-                                                     value="<%= ind.indicatorsMarks %>" 
+                                                     value="<%= ind.indicatorsMarks %>||<%= ind.indicatorName %>||<%= theme.themeName %>" 
                                                      class="marks-radio"
-                                                     name="unit[<%= idx %>][practicals][<%= prindx %>][criteria][theme-<%= iIndex %>][lo-<%= loIdx %>]"
+                                                     name="unit[<%= idx %>][practicals][<%= prindx %>][criteria][<%= iIndex %>]"
                                                      data-practical="<%= idx %>-<%= prindx %>"
                                                      id="practical_<%= idx %>_<%= prindx %>_<%= iIndex %>_<%= indIndex %>">
                                               <label for="practical_<%= idx %>_<%= prindx %>_<%= iIndex %>_<%= indIndex %>"><%= ind.indicatorsMarks %></label>
@@ -834,7 +712,8 @@
                         </div>
                       </div>
 
-                      
+                     
+                     
                     <% }) %>
                   </div>
                 </div>
@@ -853,8 +732,8 @@
 
   </form>
 
-  <input type="text" id="workingDays" value="<%=workingDays%>" style="display:none;">
 
+<input type="number" value="<%=workingDays%>" id="totalWorkingDays" style="display:none;">
 
 
 
@@ -876,16 +755,16 @@ function calculateTerminalMarks() {
     
     const terminalValue = terminalParams.get('terminal');
   
-    if(terminalValue === "FIRST-2082")
+    if(terminalValue !="FINAL")
   {
     const theoryMarks = parseFloat(document.getElementById('theoryMarks').value);
-    document.getElementById('obtainedconvertedmarks').value = 0.1 * theoryMarks;
+    document.getElementById('obtainedconvertedmarks').value = (( theoryMarks)/50*10).toFixed(2);
   }
 }
 
     function calculateAttendanceMarks() {
      const attendanceDays = parseInt(document.getElementById('attendanceDays').value, 10) || 0;
-          const totalWorkingDays = document.getElementById('totalWorkingDays').value || 0;
+         const totalWorkingDays = document.getElementById('totalWorkingDays').value || 0;
     
       const attendancePercentage = (attendanceDays / totalWorkingDays) * 100;
       console.log(attendancePercentage);
@@ -927,45 +806,52 @@ document.querySelectorAll(".marks-radio").forEach(radio => {
 });
   </script>
 <!-- Project total calculation -->
- <script>
-function calcTotal(unitIdx, projectIdx) {
-  let total = 0;
+<script>
+document.querySelectorAll(".marks-radio-project").forEach(radio => {
+  radio.addEventListener("change", e => {
+    let group = e.target.dataset.project;   // e.g. "0-1"
+    let totalInput = document.getElementById("project-total-" + group);
 
-  // get selected value of "operation" outcome
-  let op = document.querySelector(`input[name="${unitIdx}-project-${projectIdx}-परियोजना कार्य सञ्चालन र प्रस्तुतिकरण"]:checked`);
-  if(op) total += parseInt(op.value);
+    // सबै radio जसमा data-practical = यो group छ, र checked
+    let checked = document.querySelectorAll(`input[data-project="${group}"]:checked`);
+    let total = Array.from(checked).reduce((sum, r) => sum + parseInt(r.value), 0);
 
-  // get selected value of "recording" outcome
-  let rec = document.querySelector(`input[name="${unitIdx}-project-${projectIdx}-अभिलेखीकरण"]:checked`);
-  if(rec) total += parseInt(rec.value);
+    totalInput.value = total;
+  });
+});
+  </script>
 
-  // update display + hidden input
-  document.getElementById(`total-${unitIdx}-${projectIdx}`).innerText = total;
-  document.getElementById(`totalInput-${unitIdx}-${projectIdx}`).value = total;
-}
-</script>
+
+
+  
 
 <script>
   async function fill(roll,name,reg) {
      const buttons = document.querySelectorAll("[id^='studentData']");
     buttons.forEach(btn => {
-        btn.style.backgroundColor = '#2196f3'; // default color
+        btn.style.backgroundColor = '#ff6600'; // default color
         btn.style.color = 'white';
     });
+
     const clickedBtn = document.getElementById('studentData' + roll);
     clickedBtn.style.backgroundColor = 'darkblue'; // selected color
     clickedBtn.style.color = 'white';
     document.getElementById('roll').value = roll;
     document.getElementById('name').value = name;
     document.querySelector('input[name="reg"]').value = reg;
-
+  
     if(roll && name && reg) {
-      fillAttendance()
+        fillAttendance();
       // Fetch existing data from server
       const response = await fetch(`/getPracticalData?roll=${roll}&reg=${reg}&studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject %>&terminal=<%= terminal %>`);
       const practicalData = await response.json();
+      
       console.log("Fetched data:", practicalData);
-
+if(practicalData===null)
+{
+  clearForm();
+  return;
+}
         if(practicalData.participationMarks) {
           document.querySelector(`input[name="participationMarks"][value="${practicalData.participationMarks}"]`).checked = true;
 
@@ -1114,6 +1000,7 @@ if(unit.projectWorks && Array.isArray(unit.projectWorks)) {
 
       }
     }
+  
 </script>
 
 <input type="text" id="attendanceData" value='<%= JSON.stringify(attendanceData) %>' style="display:none;">
@@ -1134,6 +1021,7 @@ if(unit.projectWorks && Array.isArray(unit.projectWorks)) {
         if(terminalname===marksheetSetting[0].terminals[0].name)
       {
         document.getElementById('attendanceDays').value = record.firstTerm || 0;
+        console.log("value of working days from db", record.firstTerm);
         calculateAttendanceMarks();
       }
       else if (terminalname===marksheetSetting[0].terminals[1].name) {

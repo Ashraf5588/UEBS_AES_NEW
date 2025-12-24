@@ -1,6 +1,7 @@
 const path = require("path");
-
+const multer = require('multer')
 const fs= require("fs");
+const csv = require("csv-parser");
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -23,6 +24,7 @@ app.set("view", path.join(rootDir, "views"));
 const newsubject = mongoose.model("newsubject", newsubjectSchema, "newsubject");
 const { marksheetsetupschemaForAdmin } = require("../model/marksheetschema");
 const marksheetSetup = mongoose.model("marksheetSetup", marksheetsetupschemaForAdmin, "marksheetSetup");
+const upload = multer({ dest: "uploads/" });
 const getSlipModel = () => {
   // to Check if model already exists
   if (mongoose.models[`exam_marks`]) {
@@ -211,3 +213,56 @@ exports.getAttendanceData= async (req,res,next)=>
     res.status(500).json({error:"Internal Server Error"});
   }
 }
+exports.uploadOldDataPost = async (req, res, next) => {
+  try {
+
+if(!req.file)
+{
+  return res.status(400).send("No file uploaded");
+}
+const result = [];
+fs.createReadStream(req.file.path) //it read the content of file chunk by chunk
+.pipe(csv( { separator: ",",mapHeaders: ({ header }) => header.trim()  }))//it convert line itno comma separated value
+.on("data",(row)=>{ // for every uunique data it will call function
+
+  console.log("Row Data:", row); // Debug logging
+  result.push(
+    {
+
+      reg: row.reg?.trim() || row['reg ']?.trim(),
+      roll: row.roll?.trim(),
+      name: row.name?.trim(),
+      studentClass: row.studentClass?.trim(),
+      section: row.section?.trim(),
+      academicYear: row.academicYear?.trim(),
+      terminal: row.terminal?.trim(),
+      subject: row.subject?.trim(),
+      theorymarks: Number(row.theorymarks) || 0,
+      practicalmarks: Number(row.practicalmarks) || 0,
+      attendance: Number(row.attendance) || 0,
+      gender: row.gender || "",
+      passMarks: Number(row.passMarks) || 0,
+      theoryfullmarks: Number(row.theoryfullmarks) || 0,
+      practicalfullmarks: Number(row.practicalfullmarks) || 0,
+    }
+  )
+
+}).on("end",async()=>{
+  try{
+const model = getSlipModel();
+await model.insertMany(result);
+fs.unlinkSync(req.file.path);
+res.redirect("/uploadolddata?success=true");
+
+  }catch(err){
+    console.error("Error processing CSV data:", err);
+    return res.status(500).send("Internal Server Error");
+  }
+
+})
+
+  } catch (error) {
+    console.error("Error uploading old data:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};

@@ -16,12 +16,8 @@
       box-sizing: border-box;
     }
 
-    body {
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #87CEEB 0%, #E0F6FF 40%, #B0E0E6 100%);
-      color: #333;
-      line-height: 1.4;
-    }
+     :root{--primary:#ff8c42;--primary-dark:#e67a2e;--secondary:#1a3a52;--secondary-light:#2c5f8d;--bg:#f8f9fa;--card:#fff;--border:#e1e8ed;--text:#2d3748;--success:#48bb78;--hover:#fff5eb}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--secondary) 0%,var(--secondary-light) 100%);min-height:100vh;padding:15px;color:var(--text)}
 
     /* A4 Container for screen */
     .a4 {
@@ -304,6 +300,7 @@
   </style>
 </head>
 <body>
+       <%- include('../partials/mainnav') %>
     <div class="a4">
     <button class="print-btn" onclick="window.print()">🖨️ Print Report</button>
     
@@ -349,7 +346,7 @@
        <td><%=student.name %></td>
         <td><%=student.studentClass %></td>
          <td><%=student.section %></td>
-          <td><%=student.attendanceMarks+student.participationMarks %></td>
+          <td><%= (student.attendanceMarks + student.participationMarks).toFixed(2) %></td>
             <!-- Hidden inputs -->
 
 
@@ -386,15 +383,15 @@
 
 <% totalPracticalproject = (((((totalObtainedAllPractical/20)*20) + (((totalObtainedAllProject)/12)*16))) / lessonData[0].units.length) %>
  
-           <td><%= (((((totalObtainedAllPractical/20)*20) + (((totalObtainedAllProject)/12)*16))) / lessonData[0].units.length)%></td>
+           <td><%= (((((totalObtainedAllPractical/20)*20) + (((totalObtainedAllProject)/12)*16))) / lessonData[0].units.length).toFixed(2) %></td>
 
            <td><%= student.terminalMarks %></td>
            <% totalPractical = (student.attendanceMarks+student.participationMarks+
            ((((totalObtainedAllPractical/20)*20)) + (((totalObtainedAllProject)/12)*16)) / lessonData[0].units.length
            +student.attendanceMarks+student.terminalMarks)/50*100 %>
-           <td><%=student.attendanceMarks+student.participationMarks+
+           <td><%=(student.attendanceMarks+student.participationMarks+
             (((((totalObtainedAllPractical/20 )*20)) 
-            + (((totalObtainedAllProject)/12)*16)) / lessonData[0].units.length)+student.attendanceMarks+student.terminalMarks %></td>
+            + (((totalObtainedAllProject)/12)*16)) / lessonData[0].units.length)+student.attendanceMarks+student.terminalMarks).toFixed(2) %></td>
            <td> 
             <% totalPractical = ((student.attendanceMarks+student.participationMarks+
             (((((totalObtainedAllPractical/20)*20)) 

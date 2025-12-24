@@ -9,6 +9,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Practical Project Form</title>
   <style>
+    :root {
+      --primary-color: #003366; /* Dark Blue */
+      --secondary-color: #ff6600; /* Orange */
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --text-color: #333;
+      --border-color: #e0e0e0;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -16,23 +25,24 @@
     }
 
     body {
+      background-color: var(--bg-color);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #e8f4fd 0%, #c3dafe 100%);
-      min-height: 100vh;
+      color: var(--text-color);
+      line-height: 1.6;
       padding: 20px;
     }
 
     .container {
       max-width: 1400px;
       margin: 0 auto;
-      background: white;
+      background: var(--card-bg);
       border-radius: 15px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       overflow: hidden;
     }
 
     .header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, var(--primary-color), #004080);
       color: white;
       padding: 25px;
       text-align: center;
@@ -41,6 +51,7 @@
     .header h1 {
       font-size: 28px;
       margin-bottom: 10px;
+      font-weight: 700;
     }
 
     .header p {
@@ -48,20 +59,21 @@
       opacity: 0.9;
     }
 
-    .form-container {
+    .form-content {
       padding: 30px;
     }
 
     .section {
-      background: #fafcff;
-      border: 2px solid #c3dafe;
+      background: #fff;
+      border: 1px solid var(--border-color);
       border-radius: 12px;
       margin: 20px 0;
       overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
 
     .section-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-color: var(--primary-color);
       color: white;
       padding: 15px 20px;
       font-size: 18px;
@@ -87,13 +99,13 @@
     .form-group label {
       font-weight: 600;
       margin-bottom: 8px;
-      color: #2d3748;
+      color: var(--primary-color);
       font-size: 14px;
     }
 
     .form-control {
       padding: 12px 15px;
-      border: 2px solid #c3dafe;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       font-size: 16px;
       transition: all 0.3s ease;
@@ -102,13 +114,13 @@
 
     .form-control:focus {
       outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      border-color: var(--secondary-color);
+      box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
     }
 
     .form-control:readonly {
-      background: #f0f7ff;
-      color: #4a5568;
+      background: #f8f9fa;
+      color: #6c757d;
     }
 
     /* Enhanced Table Styles */
@@ -119,40 +131,38 @@
       background: white;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      border: 2px solid #c3dafe;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .evaluation-table th, table th {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-color: var(--primary-color);
       color: white;
       padding: 15px 12px;
       text-align: left;
       font-weight: 600;
       font-size: 16px;
-      border: 2px solid #5a67d8;
-      border-bottom: 2px solid #4c51bf;
+      border-bottom: 2px solid #002244;
     }
 
     .evaluation-table td, table td {
       padding: 12px 15px;
-      border: 1px solid #c3dafe;
+      border: 1px solid var(--border-color);
       vertical-align: middle;
       font-size: 15px;
       line-height: 1.6;
-      border-right: 1px solid #c3dafe;
     }
 
     .evaluation-table tr:hover, table tr:hover {
-      background-color: #f0f7ff;
+      background-color: #fff8e1;
     }
 
     .evaluation-table tr:nth-child(even), table tr:nth-child(even) {
-      background-color: #fafcff;
+      background-color: #f8f9fa;
     }
 
     .evaluation-table td:last-child, table td:last-child {
-      border-right: 2px solid #c3dafe;
+      text-align: center;
     }
 
     .radio-group {
@@ -161,54 +171,53 @@
       gap: 12px;
       margin: 8px 0;
       justify-content: center;
+      flex-wrap: wrap;
     }
 
     .radio-group input[type="radio"] {
-      margin-right: 8px;
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-      transform: scale(1.2);
+      display: none;
     }
 
     .radio-group label {
       margin: 0;
       font-weight: 600;
       cursor: pointer;
-      font-size: 16px;
-      color: #2d3748;
-      padding: 6px 12px;
-      border-radius: 6px;
+      font-size: 14px;
+      color: #555;
+      padding: 8px 16px;
+      border-radius: 20px;
       transition: all 0.2s ease;
-      background: #f0f7ff;
-      border: 1px solid #c3dafe;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
     }
 
     .radio-group label:hover {
-      background: #e1f0ff;
-      border-color: #a3c3ff;
+      background: #e0e0e0;
     }
 
     .radio-group input[type="radio"]:checked + label {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-color: var(--secondary-color);
       color: white;
-      border-color: #5a67d8;
+      border-color: var(--secondary-color);
+      transform: scale(1.05);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
     .unit-section {
       background: white;
-      border: 1px solid #c3dafe;
+      border: 1px solid var(--border-color);
       border-radius: 10px;
       margin: 20px 0;
       overflow: hidden;
     }
 
     .unit-header {
-      background: #28a745;
-      color: white;
+      background-color: #e6f0ff;
+      color: var(--primary-color);
       padding: 12px 15px;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 18px;
+      border-bottom: 1px solid var(--primary-color);
     }
 
     .unit-content {
@@ -217,14 +226,14 @@
 
     .practical-section {
       background: #fafcff;
-      border: 1px solid #c3dafe;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       margin: 15px 0;
       overflow: hidden;
     }
 
     .practical-header {
-      background: #007bff;
+      background-color: var(--primary-color);
       color: white;
       padding: 10px 15px;
       font-weight: 600;
@@ -236,17 +245,18 @@
 
     .project-section {
       background: #fafcff;
-      border: 1px solid #c3dafe;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       margin: 15px 0;
       overflow: hidden;
     }
 
     .project-header {
-      background: #28a745;
-      color: white;
+      background-color: #fff3e0;
+      color: var(--secondary-color);
       padding: 10px 15px;
       font-weight: 600;
+      border-left: 5px solid var(--secondary-color);
     }
 
     .project-content {
@@ -254,37 +264,117 @@
     }
 
     .total-display {
-      background: #e3f2fd;
-      border: 2px solid #2196f3;
-      border-radius: 8px;
+      background-color: var(--primary-color);
+      color: white;
       padding: 15px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin: 20px 0;
-      text-align: center;
+      font-weight: bold;
     }
 
     .total-display label {
-      font-weight: 600;
       font-size: 16px;
-      color: #1976d2;
+      color: white;
+    }
+    
+    .total-display input {
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        width: 80px;
+        text-align: center;
+        font-weight: bold;
     }
 
     .submit-btn {
-      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      background: linear-gradient(45deg, var(--primary-color), #004080);
       color: white;
       border: none;
       padding: 15px 30px;
       font-size: 18px;
-      font-weight: 600;
+      font-weight: 700;
       border-radius: 10px;
       cursor: pointer;
       transition: all 0.3s ease;
       width: 100%;
       margin-top: 30px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
     }
 
     .submit-btn:hover {
+      background: linear-gradient(45deg, var(--secondary-color), #ff8533);
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+      box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+    }
+
+    /* Student List Styles */
+    .student-list-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      max-height: 250px;
+      overflow-y: auto;
+      padding: 15px;
+      background: #f8f9fa;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    @media (min-width: 768px) {
+        .student-list-container {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    .student-btn {
+      background-color: white;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      text-align: left;
+      font-size: 14px;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+    }
+    
+    .student-btn span.roll {
+        background: var(--primary-color);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-right: 8px;
+        font-size: 12px;
+        min-width: 25px;
+        text-align: center;
+    }
+
+    .student-btn:hover {
+      background-color: var(--secondary-color);
+      color: white;
+      border-color: var(--secondary-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .student-btn:hover span.roll {
+        background: white;
+        color: var(--secondary-color);
     }
 
     @media (max-width: 768px) {
@@ -301,13 +391,118 @@
         font-size: 24px;
       }
       
-      .form-container {
+      .form-content {
         padding: 20px;
+      }
+
+      /* Mobile Optimization */
+      .unit-section {
+        margin: 15px 0;
+      }
+
+      .unit-header {
+        padding: 10px 15px;
+        font-size: 16px;
+      }
+
+      .practical-header, .project-header {
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+
+      .section-header {
+        padding: 10px 15px;
+        font-size: 16px;
+      }
+
+      .section-content {
+        padding: 15px;
+      }
+
+      .form-control {
+        padding: 10px 12px;
+        font-size: 16px;
+      }
+
+      .total-display {
+        padding: 10px;
+        margin: 15px 0;
+      }
+
+      .total-display label {
+        font-size: 14px;
+      }
+
+      /* Table responsive */
+      .table-container {
+        overflow-x: auto;
+        margin: 15px 0;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: white;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .evaluation-table, table {
+        min-width: 800px;
+        margin: 0;
+        border: none;
+        box-shadow: none;
+      }
+
+      .evaluation-table th, table th {
+        padding: 12px 8px;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      .evaluation-table td, table td {
+        padding: 10px 8px;
+        font-size: 13px;
+      }
+
+      .radio-group {
+        gap: 8px;
+      }
+
+      .radio-group label {
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+      
+      .student-list-container {
+          grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 480px) {
+      body {
+        padding: 10px 5px;
+      }
+
+      .form-content {
+        padding: 10px;
+      }
+
+      .header h1 {
+        font-size: 20px;
+      }
+
+      .student-list-container {
+          grid-template-columns: 1fr;
+      }
+      
+      .radio-group label {
+        padding: 4px 8px;
+        font-size: 12px;
       }
     }
   </style>
 </head>
 <body>
+       <%- include('../partials/mainnav') %>
   <div class="container">
     <div class="header">
       <h1>Practical Project Evaluation Form</h1>
@@ -322,9 +517,12 @@
               
           <div class="section-header">Student Information</div>
 
-          <div class="studentname">
+          <div class="student-list-container">
             <% studentData.forEach((studentname) => { %>
-              <input type="button" name="" id="studentData<%= studentname.roll %>" value="<%=studentname.roll%>- <%= studentname.name %>" style="background-color:#2196f3; color:white; border-radius: 7px; margin:1%; padding:5px; border:none; font-weight: bold; font-size: 16px;" onclick="fill('<%= studentname.roll %>','<%= studentname.name %>','<%= studentname.reg %>')">
+              <div class="student-btn" id="studentData<%= studentname.roll %>" onclick="fill('<%= studentname.roll %>','<%= studentname.name %>','<%= studentname.reg %>')">
+                <span class="roll"><%= studentname.roll %></span>
+                <%= studentname.name %>
+              </div>
             <% }); %>
           </div><input type="hidden" name="reg" >
           <div class="section-content">

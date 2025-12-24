@@ -2104,12 +2104,14 @@ exports.projectrubrikscreate = async (req, res, next) => {
       studentClass: studentClass,
       subject: subject
     }).lean();
+    const existingprojectData =await projectFormat.find({ subject: subject , studentClass: studentClass });
+    console.log("Existing Project Data:", existingprojectData);
     const subjectData = await newsubject.findOne({ newsubject: subject, forClass: classParam }).lean();
     // If studentClass is provided, render the form for that class
     if (classParam) {
       const subjects = await newsubject.find({});
       
-      
+      const sidenavData = await getSidenavData(req);
       // Don't load any specific subject data by default
       // Let the frontend handle loading data when subject is selected
       return res.render("theme/projectrubrik", { 
@@ -2121,7 +2123,9 @@ exports.projectrubrikscreate = async (req, res, next) => {
         terminal,
         section,
         subjectData,
-        ...await getSidenavData(req),
+        existingprojectData,
+      
+        accessibleClasses: sidenavData.studentClassdata,
         existingData: null // Always start with null, let frontend load per subject
       });
     }
@@ -2302,18 +2306,19 @@ exports.editprojectrubriks = async (req, res, next) => {
 
     const model = getProjectThemeFormat(classParam);
     const existingData = await model.findOne({ studentClass: classParam, subject: subject }).lean();
+    const sidenavData = await getSidenavData(req);
     if (!existingData) {
       return res.status(404).send("Rubrik not found for the specified class and subject");
     }
     res.render("theme/projectrubrik", { 
       studentClass: classParam,
       projectFormatData,
-      
+      accessibleClasses: sidenavData.studentClassdata,
       subject,
       subjectData,
       editing: true,
       existingData,
-      ...await getSidenavData(req)
+      
     });
   }catch (err) {
     console.error("Error fetching rubrik for editing:", err);
@@ -2488,3 +2493,20 @@ exports.autoSaveRubrik = async (req, res, next) => {
   }
 }
 
+exports.datafromanotherclass = async (req, res, next) => {
+  try {
+    const { studentClass, subject } = req.query;
+    if (!studentClass || !subject) {
+      throw new Error("Student class and subject are required");
+    }
+    const model = getProjectThemeFormat(studentClass);
+   const existingThemeDataInDB = await model.findOne({
+  studentClass,
+  subject
+}).lean();
+  res.json(existingThemeDataInDB);
+  } catch (err) {
+    console.error("Error fetching theme data from another class:", err);
+    throw err;
+  }
+};

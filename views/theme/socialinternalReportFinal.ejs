@@ -10,6 +10,7 @@
   <title>Final Term Practical Project Report</title>
 </head>
 <body>
+       <%- include('../partials/mainnav') %>
   <h1>Final Term Practical Project Report</h1>
 
   <% sciencepracticaldata.forEach((student, index) => { %>
@@ -80,7 +81,11 @@
           <td><%= unit.unitName %></td>
           <td><%= totalPracticalGiven %></td>
           <td><%= totalPracticalDone %></td>
+          <%if(studentClass>8){%>
+          <td><%= ((obtainedPracticalMarks)/16)*16 %></td>
+          <%}else{%>
           <td><%= ((obtainedPracticalMarks)/18)*36 %></td>
+          <%}%>
           
           <td></td>
         </tr>
@@ -94,7 +99,11 @@
         <td>Total</td>
         <td><%= totalGivenAllPractical %></td>
         <td><%= totalDoneAllPractical %></td>
+        <%if(studentClass>8){%>
+        <td><%= ((totalObtainedAllPractical)/16)*16 %></td>
+        <%}else{%>
         <td><%= ((totalObtainedAllPractical)/18)*36 %></td>
+        <%}%>
         
         <td></td>
       </tr>
@@ -105,7 +114,11 @@
         <td>Average</td>
         <td></td>
         <td></td>
+        <%if(studentClass>8){%>
+        <td><%= (((totalObtainedAllPractical)/16)*16) / totalUnit %></td>
+        <%}else{%>
         <td><%= (((totalObtainedAllPractical)/18)*36) / totalUnit %></td>
+        <%}%>
         <td></td>
         <td></td>
        

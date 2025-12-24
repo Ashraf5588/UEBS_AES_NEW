@@ -1,5 +1,5 @@
 const path = require("path");
-
+const multer  = require('multer')
 const fs= require("fs");
 const express = require("express");
 const app = express();
@@ -25,6 +25,7 @@ const marksheetSetup = mongoose.model("marksheetSetup", marksheetsetupschemaForA
 app.set("view engine", "ejs");
 app.set("view", path.join(rootDir, "views"));
 const newsubject = mongoose.model("newsubject", newsubjectSchema, "newsubject");
+
 const getSlipModel = () => {
  
   if (mongoose.models[`exam_marks`]) {
@@ -1233,26 +1234,8 @@ exports.studentPortfolio = async (req, res, next) => {
     const {studentClass,section,terminal,academicYear,reg} = req.query;
     const studentClassdata = await studentClassModel.find({}).lean();
      const user = req.user;
-    let accessibleSubject =[];
-    let accessibleClass=[];
-    if(user.role==="ADMIN")
-    {
-      accessibleSubject = subject;
-      accessibleClass = studentClassdata;
-    }
-    else
-    {
-     accessibleSubject = subject.filter(subject =>
-        user.allowedSubjects.some(allowed =>
-          allowed.subject === subject.newsubject
-        )
-      );
-      accessibleClass = studentClassdata.filter(studentclass =>
-        user.allowedSubjects.some(allowed =>
-          allowed.studentClass === studentclass.studentClass &  allowed.section === studentclass.section
-        )
-      );
-    }
+    
+    
        const marksheetSetups = await marksheetSetup.find({}).lean();
        const model = getSlipModel();
         const studentWisedata = await model.aggregate([
@@ -1341,6 +1324,19 @@ for (const student of studentWisedata) {
   }
   catch (error) {
     console.error("Error loading student portfolio page:", error);
+    res.status(500).send("Internal Server Error");
+  }
+}
+exports.uploadOldData = async (req, res, next) => {
+  try {
+    res.render("./exam/uploadolddata", {
+      currentPage: "exammanagement",
+      user: req.user,
+      success:"false"
+    });
+  }
+  catch (error) {
+    console.error("Error loading upload old data page:", error);
     res.status(500).send("Internal Server Error");
   }
 }

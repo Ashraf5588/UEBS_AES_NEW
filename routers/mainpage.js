@@ -338,7 +338,11 @@ student.get('/showrubriksforadmin', verifytoken, authorized,isAdmin, practical41
 student.get('/seerubriks',verifytoken,authorized,isAdmin,practical410controller.seerubriks)
 student.get('/indicatorwisereport',verifytoken,authorized,practical410controller.indicatorwiserecord)
 
+student.get('/datafromanotherclass',verifytoken,authorized,themecontroller.datafromanotherclass)
+student.get('/projectdatafromanotherclass',verifytoken,authorized,practical410controller.datafromanotherclass)
 // end Theme Routes
+student.get('/uploadolddata',verifytoken,authorized,isAdmin,examdashboardcontroller.uploadOldData)
+student.post('/uploadCSV',verifytoken,authorized,isAdmin,upload.single('marksFile'),examcontroller.uploadOldDataPost)
 
 student.get('/forms/:subjectinput/:studentClass/:section/:terminal',verifytoken,authorized,controller.showForm)
 student.post('/forms/:subjectinput/:studentClass?/:section?/:terminal?',verifytoken,authorized,controller.saveForm)

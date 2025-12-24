@@ -304,6 +304,7 @@
   </style>
 </head>
 <body>
+       <%- include('../partials/mainnav') %>
  <div class="a4">
     <button class="print-btn" onclick="window.print()">🖨️ Print Report</button>
     
@@ -329,9 +330,9 @@
        <th>Name</th>
        <th>Class</th>
        <th>Section</th>
-       <th>Attendance & Participation (4)</th>
-       <th>Project Work & Practical Work (36)</th>
-       <th>Terminal Exam Marks (10)</th>
+       <th>Attendance & Participation <%=studentClass>8 ? "(3)" : "(4)" %></th>
+       <th>Project Work & Practical Work <%=studentClass>8 ? "(16)" : "(36)" %> </th>
+       <th>Terminal Exam Marks <%=studentClass>8 ? "(6)" : "(10)" %></th>
        <th>Total</th>
        <th>Grade</th>
       </tr>
@@ -375,25 +376,50 @@
 
         <% }) %>
       <% }) %>
-
+<%if(studentClass>8){%>
+           <% totalPracticalproject = ((((totalObtainedAllPractical/16)*16) )/ lessonData[0].units.length) %>
+           <%}else{%>
 <% totalPracticalproject = ((((totalObtainedAllPractical/18)*36) )/ lessonData[0].units.length) %>
- 
-           <td><%= ((((totalObtainedAllPractical/18)*36) ) / lessonData[0].units.length)%></td>
+            <%}%>
+          <td><%= totalPracticalproject %></td>
 
            <td><%= student.terminalMarks %></td>
-           <% totalPractical = ((student.attendanceMarks+student.participationMarks+
+           <%if(studentClass>8){%>
+           <% totalPractical = ((student.attendanceMarks+student.participationMarks+ 
+           ((((totalObtainedAllPractical/16)*16))) / lessonData[0].units.length
+           +student.attendanceMarks+student.terminalMarks)/50)*100 %>
+            <%}else{%>
+              <% totalPractical = ((student.attendanceMarks+student.participationMarks+ 
            ((((totalObtainedAllPractical/18)*36))) / lessonData[0].units.length
            +student.attendanceMarks+student.terminalMarks)/50)*100 %>
+            <%}%>
+
+          
+          <%if(studentClass>8){%>
+          
            <td><%=student.attendanceMarks+student.participationMarks+
+            ((((totalObtainedAllPractical/16)*16)) 
+             / lessonData[0].units.length)+student.attendanceMarks+student.terminalMarks %></td>
+           <td> 
+            <% totalPractical = (((student.attendanceMarks+student.participationMarks+
+            ((((totalObtainedAllPractical/16)*16)) 
+              / lessonData[0].units.length)+student.attendanceMarks+student.terminalMarks)/50)*100)
+              
+           %>
+  <%}else{%>
+     <td> <%=student.attendanceMarks+student.participationMarks+
             ((((totalObtainedAllPractical/18)*36)) 
              / lessonData[0].units.length)+student.attendanceMarks+student.terminalMarks %></td>
            <td> 
             <% totalPractical = (((student.attendanceMarks+student.participationMarks+
             ((((totalObtainedAllPractical/18)*36)) 
               / lessonData[0].units.length)+student.attendanceMarks+student.terminalMarks)/50)*100)
+              
            %>
+  <%}%>
+  
             <% if (totalPractical >= 90 && totalPractical <= 100) { %>
-  A+
+   A+
   <% let grade = "A+" %>
 <% } else if (totalPractical >= 85 && totalPractical < 90) { %>
   A
@@ -409,6 +435,9 @@
 <% } else if (totalPractical >= 40 && totalPractical < 50) { %>
   D <% let grade = "D" %>
   
+<% }else{%>
+  <span style="color: red;">NG</span>
+
 <% } %>
 
         </td>

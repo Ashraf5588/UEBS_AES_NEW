@@ -304,6 +304,7 @@
   </style>
 </head>
 <body>
+       <%- include('../partials/mainnav') %>
   <div class="a4">
     <button class="print-btn" onclick="window.print()">🖨️ Print Report</button>
     
@@ -327,9 +328,9 @@
        <th>Name</th>
        <th>Class</th>
        <th>Section</th>
-       <th>Attendance & Participation (4)</th>
-       <th>Project Work & Practical Work (36)</th>
-       <th>Terminal Exam Marks (10)</th>
+       <th>Attendance & Participation <%=studentClass>8 ? "(3)" : "(4)" %></th>
+       <th>Project Work & Practical Work <%=studentClass>8 ? "(16)" : "(36)" %> </th>
+       <th>Terminal Exam Marks <%=studentClass>8 ? "(6)" : "(10)" %></th>
        <th>Total</th>
        <th>Grade</th>
       </tr>
@@ -365,9 +366,18 @@
      
 <% terminal.unit.forEach(unitdata=>{%>
          <% unitdata.practicals.forEach(practicaldata=>{%>
-             <p><% ((practicaldata.practicalMarks / 18) * 36)/unitdata.practicals.length %></p>
+
+             <p>
+              <% if(studentClass>8){%>
+              <% ((practicaldata.practicalMarks / 16) * 16)/unitdata.practicals.length %></p>
+
+             <% totalPracticalFinal += (((practicaldata.practicalMarks / 16) * 16)/unitdata.practicals.length) %>
+              <%}else{%>
+                 <% ((practicaldata.practicalMarks / 18) * 36)/unitdata.practicals.length %></p>
 
              <% totalPracticalFinal += (((practicaldata.practicalMarks / 18) * 36)/unitdata.practicals.length) %>
+              <%}%>
+                
            
 
 
@@ -386,7 +396,7 @@
       
       if (student.terminals && student.terminals.length > 0) {
         student.terminals.forEach(t => {
-          if (t.terminalName === "FIRST-2082" || t.terminalName === "SECOND-2082") {
+          if (t.terminalName === "FIRST" || t.terminalName === "SECOND") {
             firstSecondMarks += t.terminalMarks || 0;
             
           }

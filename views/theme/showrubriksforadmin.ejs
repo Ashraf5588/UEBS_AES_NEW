@@ -579,13 +579,10 @@
     </style>
 </head>
 <body>
+       <%- include('../partials/mainnav') %>
   <%- include('../partials/nav',{currentPage:'home'}) %>
   
-  <%- include('../partials/sidenav', { 
-     
-      studentClassdata: studentClassdata,
-      terminals: terminals 
-  }) %>
+
   
     <div class="container">
     <div class="row mb-5">

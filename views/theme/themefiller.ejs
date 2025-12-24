@@ -15,14 +15,8 @@
       box-sizing: border-box;
     }
 
-    body {
-      background: linear-gradient(135deg, #87CEEB 0%, #E0F6FF 50%, #B0E0E6 100%);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: #1a1a1a;
-      min-height: 100vh;
-      line-height: 1.6;
-      padding: 2rem 1rem;
-    }
+    :root{--primary:#ff8c42;--primary-dark:#e67a2e;--secondary:#1a3a52;--secondary-light:#2c5f8d;--bg:#f8f9fa;--card:#fff;--border:#e1e8ed;--text:#2d3748;--success:#48bb78;--hover:#fff5eb}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--secondary) 0%,var(--secondary-light) 100%);min-height:100vh;padding:15px;color:var(--text)}
 
     .container {
       max-width: 800px;
@@ -791,6 +785,7 @@
   </style>
 </head>
 <body>
+  <%- include('../partials/mainnav') %>
   <div class="container">
     <div class="header-card">
       <h2><% if (studentClass<3) { %>Theme Configuration<% } else { %>
@@ -823,6 +818,24 @@
             <label for="credit">Credit Hour</label>
             <input type="text" name="credit" id="credit" placeholder="Enter credit hour" required value="<%= subjectData[0] ? subjectData[0].theoryCreditHour+subjectData[0].practicalCreditHour : '' %>">
           </div>
+           <div class="form-group">
+            <label for="credit">Copy same format from another class</label>
+            <select name="copyFormatClass" id="copyFormatClass"  onchange="getDataFromAnotherClass()" style="text-align: center;
+    border: 2px solid #dadada;
+    font-size: 17px;
+    height: 3rem;
+    width: 22rem;
+    border-radius: 7px;">
+              <option value="" selected disabled>choose format of class</option>
+              <% uniqueClasses = new Set(accessibleClasses.map(cls => cls.studentClass)); %>
+              <% uniqueClasses.forEach(function(cls) { %>
+                <% if(cls != studentClass) { %>
+                  <option value="<%= cls%>">Class <%= cls %></option>
+                <% } %>
+              <% }) %>
+            </select>
+          </div>
+
         </div>
 
         <div id="themes-container"></div>
@@ -952,12 +965,38 @@
 
     // Load existing data if available
  
-    const existingData = <%- JSON.stringify(editing ? existingData.themes : []) %>;
-    const studentClass = <%= typeof studentClass !== 'undefined' ? studentClass : 'null' %>;
-    if (existingData && existingData.length > 0) {
+    let themesData = <%- JSON.stringify(editing ? existingData.themes : []) %>;
+    const practicalDataObj = <%- JSON.stringify(typeof existingPracticalData !== 'undefined' && existingPracticalData && existingPracticalData.length > 0 ? existingPracticalData[0] : null) %>;
+    
+    // If we are not in "editing" mode but we found practical data, use that.
+    if ((!themesData || themesData.length === 0) && practicalDataObj && practicalDataObj.themes) {
+        console.log("Using existingPracticalData for themes");
+        themesData = practicalDataObj.themes;
+        
+        // Ensure subject/class are set
+        setTimeout(() => {
+            const scInput = document.getElementById('studentClass');
+            const subInput = document.getElementById('subject');
+            const creditInput = document.getElementById('credit');
+            
+            if(scInput && !scInput.value && practicalDataObj.studentClass) scInput.value = practicalDataObj.studentClass;
+            if(subInput && !subInput.value && practicalDataObj.subject) subInput.value = practicalDataObj.subject;
+            if(creditInput && !creditInput.value && practicalDataObj.credit) creditInput.value = practicalDataObj.credit;
+        }, 0);
+    }
 
-      existingData.forEach(themeData => {
-        addTheme(themeData);
+    const studentClass = <%= typeof studentClass !== 'undefined' ? studentClass : 'null' %>;
+    
+    console.log("Themes Data to load:", themesData);
+
+    if (themesData && Array.isArray(themesData) && themesData.length > 0) {
+      themesData.forEach((themeData, idx) => {
+        console.log(`Processing theme ${idx}`, themeData);
+        try {
+          addTheme(themeData);
+        } catch (e) {
+          console.error(`Error adding theme ${idx}:`, e);
+        }
       });
     } else {
       addTheme(); // Start with one theme by default
@@ -965,134 +1004,173 @@
 
 
     function addTheme(themeData = null) {
-      const themesContainer = document.getElementById('themes-container');
+      try {
+        const themesContainer = document.getElementById('themes-container');
+        if (!themesContainer) {
+            console.error("Themes container not found!");
+            return;
+        }
 
-      const themeDiv = document.createElement('div');
-      themeDiv.className = 'theme-section';
-      themeDiv.dataset.index = themeIndex;
+        const themeDiv = document.createElement('div');
+        themeDiv.className = 'theme-section';
+        themeDiv.dataset.index = themeIndex;
 
-      themeDiv.innerHTML = `
-        <div class="theme-header">
-          <h3><% if(studentClass<=3) { %>थीम ${themeIndex + 1}<% }else{ %> मुल्याङ्कन आधार ${themeIndex + 1} (Evaluation Criteria-${themeIndex + 1})<% } %></h3>
-          <button type="button" class="btn btn-danger" onclick="removeTheme(this)">Remove Theme</button>
-        </div>
-        <div class="form-group">
-          <label for="themeName_${themeIndex}"><% if(studentClass<=3){ %>Theme Name<% }else{ %>मुल्याङ्कन आधारको नाम (Evaluation Criteria Name)<% } %></label>
-          <textarea  name="themes[${themeIndex}][themeName]" id="themeName_${themeIndex}" data-index="${themeIndex}"
-                 placeholder="<% if(studentClass<=3){ %>Enter Theme Name<% }else{ %>Enter मुल्याङ्कन आधारको नाम (Enter Evaluation Criteria Name)<% } %>" 
-                 required rows="1" 
-                 oninput="autoResize(this); scheduleAutoSave();">${themeData ? themeData.themeName || '' : ''}</textarea>
-        </div>
-        <div class="outcomes-container" id="outcomes-${themeIndex}"></div>
-        <div class="btn-group">
-          <button type="button" class="btn btn-primary" onclick="addOutcome(${themeIndex})">+ <% if(studentClass<=3){ %>+ Add Learning Outcome<% }else{ %>परिक्षण पक्षको नाम थप्नुहोस (Add Examination Criteria Name)<% } %></button>
-        </div>
-      `;
+        themeDiv.innerHTML = `
+          <div class="theme-header">
+            <h3><% if(studentClass<=3) { %>थीम ${themeIndex + 1}<% }else{ %> मुल्याङ्कन आधार ${themeIndex + 1} (Evaluation Criteria-${themeIndex + 1})<% } %></h3>
+            <button type="button" class="btn btn-danger" onclick="removeTheme(this)">Remove Theme</button>
+          </div>
+          <div class="form-group">
+            <label for="themeName_${themeIndex}"><% if(studentClass<=3){ %>Theme Name<% }else{ %>मुल्याङ्कन आधारको नाम (Evaluation Criteria Name)<% } %></label>
+            <textarea  name="themes[${themeIndex}][themeName]" id="themeName_${themeIndex}" data-index="${themeIndex}"
+                  placeholder="<% if(studentClass<=3){ %>Enter Theme Name<% }else{ %>Enter मुल्याङ्कन आधारको नाम (Enter Evaluation Criteria Name)<% } %>" 
+                  required rows="1" 
+                  oninput="autoResize(this); scheduleAutoSave();">${themeData ? themeData.themeName || '' : ''}</textarea>
+          </div>
+          <div class="outcomes-container" id="outcomes-${themeIndex}"></div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="addOutcome(${themeIndex})">+ <% if(studentClass<=3){ %>+ Add Learning Outcome<% }else{ %>परिक्षण पक्षको नाम थप्नुहोस (Add Examination Criteria Name)<% } %></button>
+          </div>
+        `;
 
-      themesContainer.appendChild(themeDiv);
-      
-      // Add existing outcomes or create a default one
-      if (themeData && themeData.learningOutcome && themeData.learningOutcome.length > 0) {
-        themeData.learningOutcome.forEach(outcomeData => {
-          addOutcome(themeIndex, outcomeData);
-        });
-      } else {
-        addOutcome(themeIndex);
+        themesContainer.appendChild(themeDiv);
+        
+        // Add existing outcomes or create a default one
+        if (themeData && Array.isArray(themeData.learningOutcome) && themeData.learningOutcome.length > 0) {
+          console.log(`Theme ${themeIndex} has ${themeData.learningOutcome.length} outcomes`);
+          themeData.learningOutcome.forEach((outcomeData, idx) => {
+            console.log(`Adding outcome ${idx} to theme ${themeIndex}`, outcomeData);
+            try {
+              addOutcome(themeIndex, outcomeData);
+            } catch (e) {
+              console.error(`Error adding outcome ${idx} to theme ${themeIndex}:`, e);
+            }
+          });
+        } else {
+          console.log(`Theme ${themeIndex} has no outcomes, adding default`);
+          addOutcome(themeIndex);
+        }
+        
+        // Initialize auto-resize for new textareas
+        setTimeout(() => {
+          themeDiv.querySelectorAll('textarea').forEach(textarea => {
+            autoResize(textarea);
+          });
+        }, 10);
+        
+        themeIndex++;
+      } catch (e) {
+        console.error("Fatal error in addTheme:", e);
       }
-      
-      // Initialize auto-resize for new textareas
-      setTimeout(() => {
-        themeDiv.querySelectorAll('textarea').forEach(textarea => {
-          autoResize(textarea);
-        });
-      }, 10);
-      
-      themeIndex++;
     }
 
     function addOutcome(themeIdx, outcomeData = null) {
-      const outcomesContainer = document.getElementById(`outcomes-${themeIdx}`);
-      const outcomeIndex = outcomesContainer.children.length;
+      try {
+        const outcomesContainer = document.getElementById(`outcomes-${themeIdx}`);
+        if (!outcomesContainer) {
+            console.error(`Outcomes container outcomes-${themeIdx} not found`);
+            return;
+        }
+        
+        const outcomeIndex = outcomesContainer.children.length;
 
-      const outcomeDiv = document.createElement('div');
-      outcomeDiv.className = 'outcome-section';
-      outcomeDiv.dataset.index = outcomeIndex;
+        const outcomeDiv = document.createElement('div');
+        outcomeDiv.className = 'outcome-section';
+        outcomeDiv.dataset.index = outcomeIndex;
 
-      outcomeDiv.innerHTML = `
-        <div class="outcome-header">
-          <h4><% if(studentClass<=3){ %>मुख्य सिकाइ उपलब्धि ${outcomeIndex + 1}<% }else{ %>परिक्षण पक्ष (Examination Criteria) ${outcomeIndex + 1}<% } %></h4>
-          <button type="button" class="btn btn-warning" onclick="removeOutcome(this)">Remove</button>
-        </div>
-        <div class="form-group">
-          <label for="outcomeName_${themeIdx}_${outcomeIndex}"><% if(studentClass<=3){ %>Learning Outcome Name<% }else{ %>परिक्षण पक्षको नाम (Examination Criteria Name)<% } %></label>
-          <textarea  name="themes[${themeIdx}][learningOutcome][${outcomeIndex}][learningOutcomeName]" 
-                 id="outcomeName_${themeIdx}_${outcomeIndex}" data-theme-index="${themeIdx}" data-outcome-index="${outcomeIndex}"
-                 placeholder="Enter <% if(studentClass<=3){ %>Learning Outcome Name<% }else{ %>परिक्षण पक्षको नाम (Examination Criteria Name)<% } %>" 
-                  rows="1"
-                 oninput="autoResize(this); scheduleAutoSave();">${outcomeData ? outcomeData.learningOutcomeName || '' : ''}</textarea>
-        </div>
-        <div class="indicators-container" id="indicators-${themeIdx}-${outcomeIndex}"></div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-          <button type="button" class="btn btn-primary" onclick="addIndicator(${themeIdx}, ${outcomeIndex})">+ Add Indicator</button>
-          <div class="total-display">
-            <label>कुल अंक (Total Marks):</label>
-            <input type="number" step="0.01" readonly id="totalMarks-${themeIdx}-${outcomeIndex}" 
-                   style="border: none; background: transparent; text-align: center; font-weight: bold;"
-                   value="${outcomeData ? outcomeData.totalMarks || 0 : 0}">
-            <input type="hidden" name="themes[${themeIdx}][learningOutcome][${outcomeIndex}][totalMarks]" 
-                   id="totalMarksInput-${themeIdx}-${outcomeIndex}" 
-                   value="${outcomeData ? outcomeData.totalMarks || 0 : 0}">
+        outcomeDiv.innerHTML = `
+          <div class="outcome-header">
+            <h4><% if(studentClass<=3){ %>मुख्य सिकाइ उपलब्धि ${outcomeIndex + 1}<% }else{ %>परिक्षण पक्ष (Examination Criteria) ${outcomeIndex + 1}<% } %></h4>
+            <button type="button" class="btn btn-warning" onclick="removeOutcome(this)">Remove</button>
           </div>
-        </div>
-      `;
+          <div class="form-group">
+            <label for="outcomeName_${themeIdx}_${outcomeIndex}"><% if(studentClass<=3){ %>Learning Outcome Name<% }else{ %>परिक्षण पक्षको नाम (Examination Criteria Name)<% } %></label>
+            <textarea  name="themes[${themeIdx}][learningOutcome][${outcomeIndex}][learningOutcomeName]" 
+                  id="outcomeName_${themeIdx}_${outcomeIndex}" data-theme-index="${themeIdx}" data-outcome-index="${outcomeIndex}"
+                  placeholder="Enter <% if(studentClass<=3){ %>Learning Outcome Name<% }else{ %>परिक्षण पक्षको नाम (Examination Criteria Name)<% } %>" 
+                    rows="1"
+                  oninput="autoResize(this); scheduleAutoSave();">${outcomeData ? outcomeData.learningOutcomeName || '' : ''}</textarea>
+          </div>
+          <div class="indicators-container" id="indicators-${themeIdx}-${outcomeIndex}"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+            <button type="button" class="btn btn-primary" onclick="addIndicator(${themeIdx}, ${outcomeIndex})">+ Add Indicator</button>
+            <div class="total-display">
+              <label>कुल अंक (Total Marks):</label>
+              <input type="number" step="0.01" readonly id="totalMarks-${themeIdx}-${outcomeIndex}" 
+                    style="border: none; background: transparent; text-align: center; font-weight: bold;"
+                    value="${outcomeData ? outcomeData.totalMarks || 0 : 0}">
+              <input type="hidden" name="themes[${themeIdx}][learningOutcome][${outcomeIndex}][totalMarks]" 
+                    id="totalMarksInput-${themeIdx}-${outcomeIndex}" 
+                    value="${outcomeData ? outcomeData.totalMarks || 0 : 0}">
+            </div>
+          </div>
+        `;
 
-      outcomesContainer.appendChild(outcomeDiv);
-      
-      // Add existing indicators or create a default one
-      if (outcomeData && outcomeData.indicators && outcomeData.indicators.length > 0) {
-        outcomeData.indicators.forEach(indicatorData => {
-          addIndicator(themeIdx, outcomeIndex, indicatorData);
-        });
-      } else {
-        addIndicator(themeIdx, outcomeIndex);
+        outcomesContainer.appendChild(outcomeDiv);
+        
+        // Add existing indicators or create a default one
+        if (outcomeData && Array.isArray(outcomeData.indicators) && outcomeData.indicators.length > 0) {
+          console.log(`Outcome ${outcomeIndex} (Theme ${themeIdx}) has ${outcomeData.indicators.length} indicators`);
+          outcomeData.indicators.forEach((indicatorData, idx) => {
+            try {
+              addIndicator(themeIdx, outcomeIndex, indicatorData);
+            } catch (e) {
+              console.error(`Error adding indicator ${idx} to outcome ${outcomeIndex}:`, e);
+            }
+          });
+        } else {
+          console.log(`Outcome ${outcomeIndex} (Theme ${themeIdx}) has no indicators, adding default`);
+          addIndicator(themeIdx, outcomeIndex);
+        }
+
+        // Initialize auto-resize for new textareas
+        setTimeout(() => {
+          outcomeDiv.querySelectorAll('textarea').forEach(textarea => {
+            autoResize(textarea);
+          });
+        }, 10);
+      } catch (e) {
+        console.error(`Fatal error in addOutcome (Theme ${themeIdx}):`, e);
       }
-
-      // Initialize auto-resize for new textareas
-      setTimeout(() => {
-        outcomeDiv.querySelectorAll('textarea').forEach(textarea => {
-          autoResize(textarea);
-        });
-      }, 10);
     }
 
     function addIndicator(themeIdx, outcomeIdx, indicatorData = null) {
-      const container = document.getElementById(`indicators-${themeIdx}-${outcomeIdx}`);
-      const indicatorIndex = container.children.length;
+      try {
+        const container = document.getElementById(`indicators-${themeIdx}-${outcomeIdx}`);
+        if (!container) {
+            console.error(`Indicators container indicators-${themeIdx}-${outcomeIdx} not found`);
+            return;
+        }
+        
+        const indicatorIndex = container.children.length;
 
-      const group = document.createElement('div');
-      group.className = 'indicator-group';
+        const group = document.createElement('div');
+        group.className = 'indicator-group';
 
-      group.innerHTML = `
-        <textarea  name="themes[${themeIdx}][learningOutcome][${outcomeIdx}][indicators][${indicatorIndex}][indicatorName]" data-theme-index="${themeIdx}" data-outcome-index="${outcomeIdx}" data-indicator-index="${indicatorIndex}"
-               placeholder="Enter indicator name (सूचक)" required rows="1"
-               oninput="autoResize(this); scheduleAutoSave();">${indicatorData ? indicatorData.indicatorName || '' : ''}</textarea>
-        <input type="number" step="0.01" class="indicator-marks" 
-               name="themes[${themeIdx}][learningOutcome][${outcomeIdx}][indicators][${indicatorIndex}][indicatorsMarks]" 
-               placeholder="Marks" required min="0"
-               value="${indicatorData ? indicatorData.indicatorsMarks || '' : ''}"
-               oninput="updateTotalMarks(${themeIdx}, ${outcomeIdx}); scheduleAutoSave();">
-        <button type="button" class="btn btn-danger" onclick="removeIndicator(this, ${themeIdx}, ${outcomeIdx})">Remove</button>
-      `;
+        group.innerHTML = `
+          <textarea  name="themes[${themeIdx}][learningOutcome][${outcomeIdx}][indicators][${indicatorIndex}][indicatorName]" data-theme-index="${themeIdx}" data-outcome-index="${outcomeIdx}" data-indicator-index="${indicatorIndex}"
+                placeholder="Enter indicator name (सूचक)" required rows="1"
+                oninput="autoResize(this); scheduleAutoSave();">${indicatorData ? indicatorData.indicatorName || '' : ''}</textarea>
+          <input type="number" step="0.01" class="indicator-marks" 
+                name="themes[${themeIdx}][learningOutcome][${outcomeIdx}][indicators][${indicatorIndex}][indicatorsMarks]" 
+                placeholder="Marks" required min="0"
+                value="${indicatorData ? indicatorData.indicatorsMarks || '' : ''}"
+                oninput="updateTotalMarks(${themeIdx}, ${outcomeIdx}); scheduleAutoSave();">
+          <button type="button" class="btn btn-danger" onclick="removeIndicator(this, ${themeIdx}, ${outcomeIdx})">Remove</button>
+        `;
 
-      container.appendChild(group);
-      
-      // Initialize auto-resize for the new textarea
-      const textarea = group.querySelector('textarea');
-      if (textarea) {
-        setTimeout(() => autoResize(textarea), 10);
+        container.appendChild(group);
+        
+        // Initialize auto-resize for the new textarea
+        const textarea = group.querySelector('textarea');
+        if (textarea) {
+          setTimeout(() => autoResize(textarea), 10);
+        }
+        
+        updateTotalMarks(themeIdx, outcomeIdx);
+      } catch (e) {
+        console.error(`Fatal error in addIndicator (Theme ${themeIdx}, Outcome ${outcomeIdx}):`, e);
       }
-      
-      updateTotalMarks(themeIdx, outcomeIdx);
     }
 
     function updateTotalMarks(themeIdx, outcomeIdx) {
@@ -1349,7 +1427,6 @@
     // Initialize on page load
     window.onload = () => {
       
-      
       // Initialize auto-resize for existing textareas
       initializeAutoResize();
       
@@ -1385,7 +1462,54 @@
       }
     });
   </script>
+  <script>
+   async function getDataFromAnotherClass()
+   {
+    const selectedClass = document.getElementById('copyFormatClass').value;
+    const subject = document.getElementById('subject').value;
+    if(!selectedClass) return;
+    try{
+const response = await fetch(`/datafromanotherclass?studentClass=${encodeURIComponent(selectedClass)}&subject=${encodeURIComponent(subject)}`);
+      const result = await response.json();
+      console.log("Data from another class:", result);
+      
+      // Handle both wrapped response {success: true, data: ...} and direct data object
+      const data = (result.success && result.data) ? result.data : result;
+      
+      if(data && (data.themes || data.credit))
+      {
+        // Clear existing form
+        clearForm();
+        
+        isLoading = true;
+        
+        // Populate credit if available  
+        if (data.credit) {
+          const creditInput = document.getElementById('credit');
+          if(creditInput) creditInput.value = data.credit;
+        }
 
-
+        // Load themes
+        if (data.themes && data.themes.length > 0) {
+          data.themes.forEach(themeData => {
+            addTheme(themeData);
+          });
+        } else {
+          addTheme(); // Add empty theme if no data
+        }
+        
+        isLoading = false;
+        showSaveStatus('Data loaded from Class ' + selectedClass, 'success');
+        scheduleAutoSave();
+      } else {
+        showSaveStatus('No data found for Class ' + selectedClass, 'info');
+      }
+     
+    }catch(err)
+    {
+      console.error("Error fetching data from another class:", err);
+    }
+   }
+  </script>
 </body>
 </html>

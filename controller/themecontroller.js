@@ -393,19 +393,33 @@ exports.themeformSave = async (req, res) => {
 
 exports.themefillupform = async (req, res) => {
   try {
-    const { studentClass: classParam ,subject,terminal} = req.query;
+    const { studentClass: classParam ,subject,terminal,section} = req.query;
 
     const practicalFormat = getThemeFormat(classParam);
     const practicalFormatData = await practicalFormat.find({
       studentClass: classParam,
       subject: subject
     }).lean();
+
+    const existingPracticalData = await practicalFormat.find({studentClass: classParam, subject: subject}).lean();
+    console.log("Existing practical data fetched successfully:", existingPracticalData);
    const subjectData = await newsubject.find({newsubject:subject,forClass:classParam}).lean();
     console.log("Practical format data fetched successfully:", subjectData);
-    
+    const sidenavData = await getSidenavData(req);
     // If studentClass is provided, render the form for that class
     if (classParam) {
-      return res.render("theme/themefiller", { studentClass: classParam ,editing:false, ...await getSidenavData(req) ,subject,terminal,practicalFormatData, subjectData});
+      return res.render("theme/themefiller", { studentClass: classParam ,editing:false,
+       section,
+         subject,
+         terminal,
+         practicalFormatData,
+          subjectData, 
+          existingPracticalData,
+         accessibleClasses: sidenavData.studentClassdata,
+          accessibleSubjects: sidenavData.subjects,
+
+
+      });
     } 
     
     // If no class provided, render the class selection page first
@@ -912,11 +926,12 @@ exports.getStudentThemes = async (req, res) => {
 
 exports.editpracticalrubriks = async (req, res, next) => {
   try {
-    const { studentClass: classParam ,subject,terminal} = req.query;
+    const { studentClass: classParam ,subject,terminal,section} = req.query;
     if (!classParam || !subject) {
       return res.status(400).send("Student class and subject are required");
     }
       const {studentClass} = req.query;
+   
       const practicalFormat = getThemeFormat(studentClass)
     const practicalFormatData = await practicalFormat.find({
       studentClass: studentClass,
@@ -928,6 +943,7 @@ const subjectData = await newsubject.find({newsubject:subject,forClass:classPara
     if (!existingData) {
       return res.status(404).send("Rubrik not found for the specified class and subject");
     }
+    const sidenavData = await getSidenavData(req);
     res.render("theme/themefiller", { 
       studentClass: classParam,
       practicalFormatData,
@@ -936,7 +952,13 @@ const subjectData = await newsubject.find({newsubject:subject,forClass:classPara
       editing: true,
       existingData,
       subjectData,
-      ...await getSidenavData(req)
+      accessibleClasses: sidenavData.studentClassdata,
+      accessibleSubjects: sidenavData.subjects,
+      section
+
+     
+      
+      
     });
   }catch (err) {
     console.error("Error fetching rubrik for editing:", err);
@@ -1031,3 +1053,20 @@ exports.autoSaveThemeFillup = async (req, res, next) => {
   }
 }
 
+exports.datafromanotherclass = async (req, res, next) => {
+  try {
+    const { studentClass, subject } = req.query;
+    if (!studentClass || !subject) {
+      throw new Error("Student class and subject are required");
+    }
+    const model = getThemeFormat(studentClass);
+   const existingThemeDataInDB = await model.findOne({
+  studentClass,
+  subject
+}).lean();
+  res.json(existingThemeDataInDB);
+  } catch (err) {
+    console.error("Error fetching theme data from another class:", err);
+    throw err;
+  }
+};

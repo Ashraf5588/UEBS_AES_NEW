@@ -100,6 +100,7 @@
   </style>
 </head>
 <body>
+       <%- include('../partials/mainnav') %>
   <div class="container">
     <h1>📊 Indicator Wise Marks Report</h1>
 
@@ -119,7 +120,7 @@
             <tr>
               <th rowspan="2" class="main-header">SN</th>
               <th rowspan="2" class="main-header">Practical/Project Name</th>
-              <th colspan="<%= practicalFormatData.reduce((sum, doc) => sum + doc.themes.length, 0) + projectFormatData.reduce((sum, doc) => sum + doc.themes.length, 0) %>" class="main-header">आधारगत प्राप्ताङ्क (Theme-wise Marks)</th>
+              <th colspan="<%= practicalFormatData.reduce((sum, doc) => sum + doc.themes.length, 0) + projectFormatData.reduce((sum, doc) => sum + doc.themes.length, 0) %>" class="main-header">आधारगत प्राप्ताङ्क (Indicator Wise Marks)</th>
               <th rowspan="2" class="main-header">Total Obtained</th>
             </tr>
             <tr>
