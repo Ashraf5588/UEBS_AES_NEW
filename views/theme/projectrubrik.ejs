@@ -839,8 +839,7 @@
           <button type="button" class="btn btn-primary" onclick="addTheme()"><% if(studentClass<=3) { %>+ Add Theme<% }else{ %>+ मुल्याङ्कनका आधार थप्नुहोस (Add evaluation Criteria)<% } %></button>
         </div>
 
-        <div class="submit-section" style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-          <button type="submit" class="submit-btn">Save Configuration</button>
+       
           <a href="/evaluationform?studentClass=<%= typeof studentClass !== 'undefined' ? studentClass : '' %>&subject=<%= typeof subject !== 'undefined' ? subject : '' %>&terminal=<%= typeof terminal !== 'undefined' ? terminal : '' %>&section=<%= typeof section !== 'undefined' ? section : '' %>" style="text-decoration: none;">
             <button type="button" class="btn btn-warning" style="padding: 10px 20px; min-width: 200px;">
               Back to Class Selection

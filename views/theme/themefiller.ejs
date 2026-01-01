@@ -844,13 +844,16 @@
           <button type="button" class="btn btn-primary" onclick="addTheme()"><% if(studentClass<=3) { %>+ Add Theme<% }else{ %>+ मुल्याङ्कनका आधार थप्नुहोस (Add evaluation Criteria)<% } %></button>
         </div>
 
-        <div class="submit-section" style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-          <button type="submit" class="submit-btn">Save Configuration</button>
+        
           <a href="/themefillupform" style="text-decoration: none;">
             <button type="button" class="btn btn-warning" style="padding: 10px 20px; min-width: 200px;">
               Back to Class Selection
             </button>
-          </a>
+          </a> <br>
+        <div class="submit-section">
+          Total Rubriks Marks:
+          <center><input type="text" id="totalRubriksmarks" style="width: 30%;text-align: center;" readonly> </center>
+          <br><br>
         </div>
       </form>
     </div>
@@ -1510,6 +1513,23 @@ const response = await fetch(`/datafromanotherclass?studentClass=${encodeURIComp
       console.error("Error fetching data from another class:", err);
     }
    }
+  </script>
+  <script>
+    window.onload = function() {
+     
+      const totalMarksInput = document.getElementById('totalRubriksmarks');
+      if (totalMarksInput) {
+        let total = 0;
+        document.querySelectorAll('.total-display').forEach(markDiv => {
+          const val =parseFloat(markDiv.querySelector('input[type="number"]').value);
+          if (!isNaN(val)) {
+            total += val;
+          }
+        });
+        
+        totalMarksInput.value = total;
+      }
+    };
   </script>
 </body>
 </html>

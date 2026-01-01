@@ -390,15 +390,15 @@
 
 <% totalPracticalproject = (((((totalObtainedAllPractical/20)*20) + (((totalObtainedAllProject)/16)*16))) / lessonData[0].units.length) %>
 
-           <td><%= (((((totalObtainedAllPractical/20)*20) + (((totalObtainedAllProject)/16)*16))) / lessonData[0].units.length)%></td>
+           <td><%= (((((totalObtainedAllPractical/20)*20) + (((totalObtainedAllProject)/16)*16))) / lessonData[0].units.length).toFixed(2)%></td>
 
-           <td><%= student.terminalMarks %></td>
+           <td><%= student.terminalMarks.toFixed(2) %></td>
            <% totalPractical = (student.attendanceMarks+student.participationMarks+
            ((((totalObtainedAllPractical/20)*20)) + (((totalObtainedAllProject)/16)*16)) / lessonData[0].units.length
            +student.attendanceMarks+student.terminalMarks)/50*100 %>
-            <td class="total-marks"><%= student.attendanceMarks + student.participationMarks +
+            <td class="total-marks"><%= (student.attendanceMarks + student.participationMarks +
               (((((totalObtainedAllPractical/20)*20)) 
-              + (((totalObtainedAllProject)/16)*16)) / lessonData[0].units.length) + student.attendanceMarks + student.terminalMarks %></td>
+              + (((totalObtainedAllProject)/16)*16)) / lessonData[0].units.length) + student.attendanceMarks + student.terminalMarks).toFixed(2) %></td>
             <td class="grade">
               <% totalPractical = ((student.attendanceMarks + student.participationMarks +
                 (((((totalObtainedAllPractical/20)*20)) 

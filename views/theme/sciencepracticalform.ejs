@@ -333,7 +333,7 @@
       <p>Set up units and practicals for science evaluation</p>
       <% if (typeof studentClass !== 'undefined') { %>
         <div style="background-color: #c9e2ff; padding: 10px; margin-top: 15px; border-radius: 8px; font-weight: bold; color: #4a90e2;">
-          Configuring <%= subject %> Practicals for Class <%= studentClass %>
+          Configuring <%= subject %> Practicals for Class <%= studentClass %>- <%= terminal %> Terminal
         </div>
       <% } %>
     </div>
@@ -344,6 +344,7 @@
         <% if (typeof editing !== 'undefined' && editing && typeof lessonData !== 'undefined' && lessonData._id) { %>
           <input type="hidden" name="lessonId" value="<%= lessonData._id %>">
         <% } %>
+        <input type="hidden" name="section" value="<%=section%>">
         
         <div class="form-row">
           <div class="form-group">
@@ -470,7 +471,7 @@
                 <!-- Actions -->
                 <td style="padding: 1rem 0.75rem; text-align: center; border: 1px solid #dee2e6;">
                   <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
-                    <a href="/editlessondata?lessonId=<%= totalLesson._id %>&studentClass=<%= studentClass %>&terminal=<%= terminal%>" style="text-decoration: none;">
+                    <a href="/editlessondata?lessonId=<%= totalLesson._id %>&studentClass=<%= studentClass %>&terminal=<%= terminal%>&subject=<%= subject %>&section=<%= section %>" style="text-decoration: none;">
                       <button type="button" style="background: linear-gradient(135deg, #1286f3, #82b8f1); color: white; border: none; padding: 0.5rem 0.8rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);" 
                               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(243, 156, 18, 0.4)'"
                               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(243, 156, 18, 0.3)'">
@@ -570,9 +571,9 @@
                     oninput="autoResize(this)">${unitData ? unitData.unitName || '' : ''}</textarea>
         </div>
         
-        <div class="form-group" style="margin-bottom: 1rem;">
+        <div class="form-group" style="margin-bottom: 1rem;" style="display: <%=subject==="HEALTH" ? "block" : "none" %>;">
           <label for="unitPortion_${unitIndex}">Unit Portion</label>
-          <input type="text" name="units[${unitIndex}][portion]" id="unitPortion_${unitIndex}" placeholder="Enter unit portion" value="${unitData ? unitData.portion || '' : ''}">
+          <input type="text" name="units[${unitIndex}][portion]" id="unitPortion_${unitIndex}" placeholder="Enter unit portion" value="${unitData ? unitData.portion || '' : ''}" style="display: <%=subject==="HEALTH" ? "block" : "none" %>;>
         </div>
         
         <!-- Practicals Section -->

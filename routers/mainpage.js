@@ -343,6 +343,10 @@ student.get('/projectdatafromanotherclass',verifytoken,authorized,practical410co
 // end Theme Routes
 student.get('/uploadolddata',verifytoken,authorized,isAdmin,examdashboardcontroller.uploadOldData)
 student.post('/uploadCSV',verifytoken,authorized,isAdmin,upload.single('marksFile'),examcontroller.uploadOldDataPost)
+// attendance system routes
+
+
+
 
 student.get('/forms/:subjectinput/:studentClass/:section/:terminal',verifytoken,authorized,controller.showForm)
 student.post('/forms/:subjectinput/:studentClass?/:section?/:terminal?',verifytoken,authorized,controller.saveForm)

@@ -467,6 +467,7 @@
           <div class="compact-action-icon"><img src="/criteria.png" alt="" width="80%" height="80%"></div>
           <div class="compact-action-title">
             <%if (subject==="SCIENCE") { %>
+              
              Create Practical Rubriks <br><b>(10 marks)</b>
               <% }else if(subject==="MATHEMATICS"){%>
                 Create कार्य सञ्चालन र कार्यसम्पादन Rubriks
@@ -504,6 +505,9 @@
               <%}else{ %>
                 Create Practical Rubriks(20 marks)
               <%}%>
+
+
+
             </div>
         </a>
         <a style="display: <%=subject==="SOCIAL"?'none':'block';%>"  href="/projectrubrikscreate?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject%>&terminal=<%=terminal%>" class="compact-action-card">

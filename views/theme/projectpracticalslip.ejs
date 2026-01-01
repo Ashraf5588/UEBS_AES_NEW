@@ -331,9 +331,9 @@
             <th style="width: 20%;">Name</th>
             <th style="width: 8%;">Class</th>
             <th style="width: 8%;">Section</th>
-            <th style="width: 12%;">Attendance & Participation (4)</th>
-            <th style="width: 20%;">Project Work & Practical Work (36)</th>
-            <th style="width: 12%;">Terminal Exam Marks (10)</th>
+            <th style="width: 12%;">Attendance & Participation (<%=studentClass>8 ? 3 : 4 %>)</th>
+            <th style="width: 20%;">Project Work & Practical Work (<%=studentClass>8 ? 16 : 36 %>)</th>
+            <th style="width: 12%;">Terminal Exam Marks (<%=studentClass>8 ? 6 : 10 %>)</th>
             <th style="width: 8%;">Total</th>
             <th style="width: 6%;">Grade</th>
           </tr>
@@ -388,21 +388,39 @@
         <% }) %>
       <% }) %>
 
-<% totalPracticalproject = (((((totalObtainedAllPractical/10)*20) + (((totalObtainedAllProject)/8)*16))) / lessonData[0].units.length) %>
- 
-           <td><%= (((((totalObtainedAllPractical/10)*20) + (((totalObtainedAllProject)/8)*16))) / lessonData[0].units.length)%></td>
+<%if(studentClass>8){%>
+<% totalPracticalproject = (((((totalObtainedAllPractical/10)*10) + (((totalObtainedAllProject)/6)*6))) / lessonData[0].units.length) %>
+<%}else{%>
+  <% totalPracticalproject = (((((totalObtainedAllPractical/10)*20) + (((totalObtainedAllProject)/8)*16))) / lessonData[0].units.length) %>
+<%}%>
 
-           <td><%= student.terminalMarks %></td>
-           <% totalPractical = (student.attendanceMarks+student.participationMarks+
-           ((((totalObtainedAllPractical/10)*20)) + (((totalObtainedAllProject)/8)*16)) / lessonData[0].units.length
-           +student.attendanceMarks+student.terminalMarks)/50*100 %>
-            <td class="total-marks"><%= student.attendanceMarks + student.participationMarks +
-              (((((totalObtainedAllPractical/10)*20)) 
-              + (((totalObtainedAllProject)/8)*16)) / lessonData[0].units.length) + student.attendanceMarks + student.terminalMarks %></td>
+           <td><%= totalPracticalproject.toFixed(2) %></td>
+
+           <td><%= student.terminalMarks.toFixed(2) %></td>
+
+ <% if(studentClass>8){%>
+           <% totalPractical = (student.attendanceMarks+student.participationMarks+ totalPracticalproject
+           +student.terminalMarks)/25*100 %>
+            <% }else{%>
+                   <% totalPractical = (student.attendanceMarks+student.participationMarks+ totalPracticalproject
+           +student.terminalMarks)/50*100 %>
+            <% }%>
+
+            <td class="total-marks"><%= (student.attendanceMarks + student.participationMarks +
+              totalPracticalproject + student.terminalMarks).toFixed(2) %></td>
+
+
+
+
             <td class="grade">
+              <% if(studentClass>8){%>
               <% totalPractical = ((student.attendanceMarks + student.participationMarks +
-                (((((totalObtainedAllPractical/10)*20)) 
-                + (((totalObtainedAllProject)/8)*16)) / lessonData[0].units.length) + student.attendanceMarks + student.terminalMarks)/50*100)
+               totalPracticalproject + student.terminalMarks)/25*100) %>
+               <%}else{%>
+                <% totalPractical = ((student.attendanceMarks + student.participationMarks +
+               totalPracticalproject + student.terminalMarks)/50*100) %>
+               <%}%>
+                 
               %>
               <% if (totalPractical >= 90 && totalPractical <= 100) { %>
                 A+

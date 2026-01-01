@@ -206,6 +206,7 @@ exports.showpracticalDetailForm = async (req, res) => {
   { "terminals.name": terminal },
   { "terminals.$": 1 } // project only the matched terminal
 ).lean();
+const subjectMarksData = await newsubject.findOne({ newsubject: subject ,forClass: studentClass}).lean();
 console.log("result variable=", result);
 const marksheetSetting = await marksheetSetup.find();
 const workingDays = result?.terminals?.[0]?.workingDays || 0;
@@ -289,6 +290,7 @@ const attendanceData = await attendancemodel.find({}).lean();
         workingDays,
         attendanceData,
         marksheetSetting,
+        subjectMarksData,
       });
 
       
@@ -350,6 +352,7 @@ const attendanceData = await attendancemodel.find({}).lean();
         workingDays,
         attendanceData,
         marksheetSetting,
+        subjectMarksData,
       });
 
       
@@ -411,6 +414,7 @@ const attendanceData = await attendancemodel.find({}).lean();
         workingDays,
           attendanceData,
         marksheetSetting,
+        subjectMarksData,
       });
 
       
@@ -472,6 +476,7 @@ const attendanceData = await attendancemodel.find({}).lean();
         workingDays,
           attendanceData,
         marksheetSetting,
+        subjectMarksData,
       });
 
       
@@ -532,6 +537,7 @@ const attendanceData = await attendancemodel.find({}).lean();
         workingDays,
           attendanceData,
         marksheetSetting,
+        subjectMarksData,
       });
 
       
@@ -593,6 +599,7 @@ const attendanceData = await attendancemodel.find({}).lean();
         workingDays,
           attendanceData,
         marksheetSetting,
+        subjectMarksData,
       });
 
       
@@ -624,6 +631,7 @@ const attendanceData = await attendancemodel.find({}).lean();
         workingDays,
           attendanceData,
         marksheetSetting,
+        subjectMarksData,
       });
     }
     
@@ -1248,11 +1256,12 @@ else
 }
  exports.saveSciencePractical = async (req, res, next) => {
   try {
-    
+   
     console.log('Raw form data received:', JSON.stringify(req.body, null, 2));
     
     // Process and clean the form data
-    let { studentClass, section, subject, terminal, units } = req.body;
+    let { studentClass, subject, terminal, units,section } = req.body;
+    
     
     // Transform units data to handle different input formats
     if (units && Array.isArray(units)) {
@@ -1376,7 +1385,7 @@ else
       
       await existingConfig.save();
       
-      res.redirect(`/practicalform?studentClass=${studentClass}&section=${section || ''}&subject=${subject}&terminal=${terminal}`);
+      res.redirect(`/practicalform?studentClass=${studentClass}&section=${section}&subject=${subject}&terminal=${terminal}`);
     } else {
       // Create new configuration
       const newSciencePractical = new ScienceModel({
@@ -2154,7 +2163,7 @@ exports.projectrubrikscreatesave = async (req, res) => {
       const projectModel = getProjectThemeFormat(studentClass);
       // Update the existing record with new data
       await projectModel.findByIdAndUpdate(projectId, req.body);
-      return res.render("./theme/success", {link:"projectrubrikscreate",studentClass,subject,terminal,...await getSidenavData(req),section:"",});
+      return res.render("./theme/success", {link:"projectrubrikscreate",studentClass,subject,terminal,section,...await getSidenavData(req),section:"",});
 
     }
     else
@@ -2296,7 +2305,7 @@ exports.editprojectrubriks = async (req, res, next) => {
     if (!classParam || !subject) {
       return res.status(400).send("Student class and subject are required");
     }
-      const {studentClass} = req.query;
+      const {studentClass,section} = req.query;
       const projectFormat = getProjectThemeFormat(studentClass)
     const projectFormatData = await projectFormat.find({
       studentClass: studentClass,
@@ -2318,6 +2327,7 @@ exports.editprojectrubriks = async (req, res, next) => {
       subjectData,
       editing: true,
       existingData,
+      section,
       
     });
   }catch (err) {
@@ -2347,7 +2357,7 @@ exports.deleteprojectrubriks = async (req, res, next) => {
 exports.editlessondata = async (req, res, next) => {
 
   try {
-    const { studentClass: classParam ,subject,terminal,editing,lessonId} = req.query;
+    const { studentClass: classParam ,subject,terminal,editing,lessonId,section} = req.query;
     if(lessonId)
     {
       const lessonData = await ScienceModel.findById(lessonId).lean();
@@ -2360,6 +2370,7 @@ exports.editlessondata = async (req, res, next) => {
         studentClass: classParam,
         subject,
         terminal,
+        section,
         editing: true,
         ...await getSidenavData(req)
       });

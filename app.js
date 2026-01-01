@@ -1,5 +1,6 @@
 const express = require('express');
 const student  = require('./routers/mainpage');
+const attendance  = require('./routers/attendance');
 const fs = require('fs');
 const admincontrol = require('./controller/admincontroller')
 
@@ -331,7 +332,7 @@ app.get('/convert-docx/:filename', (req, res) => {
 });
 
 app.use(student)
-
+app.use(attendance)
 app.listen(80,()=>{
     console.log('Server is running on port 80')
 

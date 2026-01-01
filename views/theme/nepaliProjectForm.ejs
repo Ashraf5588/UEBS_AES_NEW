@@ -151,6 +151,7 @@
       vertical-align: middle;
       font-size: 15px;
       line-height: 1.6;
+      color: black;
     }
 
     .evaluation-table tr:hover, table tr:hover {
@@ -244,11 +245,12 @@
     }
 
     .project-section {
-      background: #fafcff;
+      background: #ffcc13;
       border: 1px solid var(--border-color);
       border-radius: 8px;
       margin: 15px 0;
       overflow: hidden;
+      color: black !important; 
     }
 
     .project-header {
@@ -629,7 +631,15 @@
         </div>
         <!-- Practical/Project Work Section -->
         <div class="section">
-          <div class="section-header">सुनाइ र बोलाइ (२०)</div>
+          
+          <div class="section-header">
+            <% if(studentClass > 8){ %>
+              सुनाइ, बोलाइ र पढाइ (१२)
+            <% } else { %>
+            सुनाइ र बोलाइ (२०)
+            <% } %>
+
+          </div>
           <div class="section-content">
             
             <% ScienceData.forEach((item, itemIdx) => { %>
@@ -645,7 +655,9 @@
                       <!-- Practical <%= prindx + 1 %> -->
                       <div class="practical-section">
                         <div class="practical-header">
-                          सुनाइ र बोलाइ <%= prindx + 1 %>: <%= practical %>
+                          
+
+                          <%=studentClass>8?'सुनाइ, बोलाइ र पढाइ': 'सुनाइ र बोलाइ' %> <%= prindx + 1 %>: <%= practical %>
                           <input type="hidden" name="unit[<%= idx %>][practicals][<%= prindx %>][practicalName]" value="<%= practical %>">
                           
                         </div>
@@ -715,7 +727,8 @@
 
                       <!-- Project Work <%= prindx + 1 %> -->
                       <div class="project-section">
-                       पढाई र लेखइ (१६) <%= prindx + 1 %>
+                        <%= studentClass > 8 ? '(ख) सिर्जनात्मक कार्य र परियोजना कार्य तथा प्रस्तुति' : ' पढाई र लेखइ (१६) ' %>
+                      <%= prindx + 1 %>
                           <input type="hidden" name="unit[<%= idx %>][projectWorks][<%= prindx %>][projectName]" value="">
                         </div>
                         <div class="project-content">
@@ -806,7 +819,7 @@
 
 
 <input type="number" value="<%=workingDays%>" id="totalWorkingDays" style="display:none;">
-
+<input type="hidden" value="<%=subjectMarksData.theory%>" id="fullMarks">
 
 
 
@@ -822,40 +835,80 @@
     document.querySelector('#terminal').value = terminalValue;
 function calculateTerminalMarks() {
       const terminal = window.location.search;
+
     
     const terminalParams = new URLSearchParams(terminal);
     
     const terminalValue = terminalParams.get('terminal');
-
+  
     if(terminalValue != "FINAL")
   {
     const theoryMarks = parseFloat(document.getElementById('theoryMarks').value);
-    document.getElementById('obtainedconvertedmarks').value = (( theoryMarks)/50*10).toFixed(2);
+    const fullMarks = parseFloat(document.getElementById('fullMarks').value);
+    const studentClass = "<%= studentClass %>";
+    if(isNaN(theoryMarks) || isNaN(fullMarks) || fullMarks === 0) {
+      document.getElementById('obtainedconvertedmarks').value = '';
+      return;
+    }
+if(studentClass>8)
+{
+    document.getElementById('obtainedconvertedmarks').value = ((theoryMarks/fullMarks)*6).toFixed(2);
+}
+else
+{
+    document.getElementById('obtainedconvertedmarks').value = ((theoryMarks/fullMarks)*10).toFixed(2);
   }
+}
 }
 
     function calculateAttendanceMarks() {
      const attendanceDays = parseInt(document.getElementById('attendanceDays').value, 10) || 0;
+     const studentClass = "<%= studentClass %>";
          const totalWorkingDays = document.getElementById('totalWorkingDays').value || 0;
     
       const attendancePercentage = (attendanceDays / totalWorkingDays) * 100;
       console.log(attendancePercentage);
 
       if(attendancePercentage >=90 && attendancePercentage <=100) {
-        
-        document.getElementById('attendanceMarks').value = 2;
+        if(studentClass>8)
+        {
+          document.getElementById('attendanceMarks').value = 1;
+        }
+        else
+        {
+          document.getElementById('attendanceMarks').value = 2;
+        }
       }
       else if(attendancePercentage >= 85 && attendancePercentage < 90) {
       
-        document.getElementById('attendanceMarks').value = 1.5;
+        if(studentClass>8)
+        {
+          document.getElementById('attendanceMarks').value = 0.75;
+        }
+        else
+        {
+          document.getElementById('attendanceMarks').value = 1.5;
+        }
       }
       else if(attendancePercentage >= 80 && attendancePercentage < 85) {
-       
-        document.getElementById('attendanceMarks').value = 1;
+        if(studentClass>8)
+        {
+          document.getElementById('attendanceMarks').value = 0.5;
+        }
+        else
+        {
+          document.getElementById('attendanceMarks').value = 1;
+        }
       }
       else if(attendancePercentage >=75 && attendancePercentage < 80) {
-     
-        document.getElementById('attendanceMarks').value = 0.5;
+        if(studentClass>8)
+        {
+          document.getElementById('attendanceMarks').value = 0.25;
+        }
+        else
+        {
+          document.getElementById('attendanceMarks').value = 0.5;
+        }
       }
       else {
         document.getElementById('attendanceMarks').value = 0;
@@ -904,8 +957,8 @@ document.querySelectorAll(".marks-radio-project").forEach(radio => {
   async function fill(roll,name,reg) {
      const buttons = document.querySelectorAll("[id^='studentData']");
     buttons.forEach(btn => {
-        btn.style.backgroundColor = '#2196f3'; // default color
-        btn.style.color = 'white';
+        btn.style.backgroundColor = 'white'; // default color
+        btn.style.color = 'black';
     });
     const clickedBtn = document.getElementById('studentData' + roll);
     clickedBtn.style.backgroundColor = 'darkblue'; // selected color

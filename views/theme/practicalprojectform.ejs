@@ -27,7 +27,7 @@
     body {
       background-color: var(--bg-color);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: var(--text-color);
+      color: black;
       line-height: 1.6;
       padding: 20px;
     }
@@ -617,7 +617,7 @@
         </div>
 
         <!-- Terminal Marks Section -->
-        <div class="section">
+        <div class="section" style="display: <%=terminal==='FINAL'?'none':'block'%>;">
           <div class="section-header">Terminal Marks Evaluation</div>
           <div class="section-content">
             <div class="form-row">
@@ -828,7 +828,7 @@
 
   <input type="number" value="<%=workingDays%>" id="totalWorkingDays" style="display:none;">
 
-
+<input type="hidden" value="<%=subjectMarksData.theory%>" id="fullMarks">
 
 
 
@@ -844,6 +844,7 @@
     document.querySelector('#terminal').value = terminalValue;
 function calculateTerminalMarks() {
       const terminal = window.location.search;
+
     
     const terminalParams = new URLSearchParams(terminal);
     
@@ -852,10 +853,22 @@ function calculateTerminalMarks() {
     if(terminalValue != "FINAL")
   {
     const theoryMarks = parseFloat(document.getElementById('theoryMarks').value);
-    document.getElementById('obtainedconvertedmarks').value = (theoryMarks/50)*10;
+    const fullMarks = parseFloat(document.getElementById('fullMarks').value);
+    const studentClass = "<%= studentClass %>";
+    if(isNaN(theoryMarks) || isNaN(fullMarks) || fullMarks === 0) {
+      document.getElementById('obtainedconvertedmarks').value = '';
+      return;
+    }
+if(studentClass>8)
+{
+    document.getElementById('obtainedconvertedmarks').value = ((theoryMarks/fullMarks)*6).toFixed(2);
+}
+else
+{
+    document.getElementById('obtainedconvertedmarks').value = ((theoryMarks/fullMarks)*10).toFixed(2);
   }
 }
-
+}
     function calculateAttendanceMarks() {
      const attendanceDays = parseInt(document.getElementById('attendanceDays').value, 10) || 0;
       const totalWorkingDays = document.getElementById('totalWorkingDays').value || 0;
@@ -921,8 +934,8 @@ document.querySelectorAll(".marks-radio-project").forEach(radio => {
   async function fill(roll,name,reg) {
     const buttons = document.querySelectorAll("[id^='studentData']");
     buttons.forEach(btn => {
-        btn.style.backgroundColor = '#2196f3'; // default color
-        btn.style.color = 'white';
+        btn.style.backgroundColor = 'white'; // default color
+        btn.style.color = 'black';
     });
     const clickedBtn = document.getElementById('studentData' + roll);
     clickedBtn.style.backgroundColor = 'darkblue'; // selected color

@@ -319,7 +319,7 @@
       <h1>Science Practical & Project Slip</h1>
     </div>
   <form action="/practicalslipsave?studentClass=<%= studentClass %>&section=<%= section %>&subject=<%= subject %>&terminal=<%= terminal %>&academicYear=<%= marksheetSetting[0].academicYear %>" method="POST">
-    <h1>Practical Project Slip Final</h1>
+  
       <% totalTerminal = marksheetSetting[0].totalTerminals; %>
    <% totalTerminal || 3 %>
     <table border="1" cellspacing="0" cellpadding="5">
@@ -328,9 +328,9 @@
        <th>Name</th>
        <th>Class</th>
        <th>Section</th>
-       <th>Attendance & Participation (4)</th>
-       <th>Project Work & Practical Work (36)</th>
-       <th>Terminal Exam Marks (10)</th>
+       <th>Attendance & Participation (<%=studentClass>8 ? 3 : 4 %>)</th>
+       <th>Project Work & Practical Work (<%=studentClass>8 ? 16 : 36 %>)</th>
+       <th>Terminal Exam Marks (<%=studentClass>8 ? 6 : 10 %>)</th>
        <th>Total</th>
        <th>Grade</th>
       </tr>
@@ -365,18 +365,26 @@
     
 <% terminal.unit.forEach(unitdata=>{%>
          <% unitdata.practicals.forEach(practicaldata=>{%>
-             <p><% ((practicaldata.practicalMarks / 10) * 20)/unitdata.practicals.length %></p>
+             <p>
+               <%if(studentClass>8){%>
+              <% ((practicaldata.practicalMarks / 10) * 10)/unitdata.practicals.length %>
+              <%}else{%>
+               <% ((practicaldata.practicalMarks / 10) * 20)/unitdata.practicals.length %>
+               <%}%>
+              
+              </p>
 
-             <% totalPracticalFinal += (((practicaldata.practicalMarks / 10) * 20)/unitdata.practicals.length) %>
+             <% totalPracticalFinal += 
+             (((practicaldata.practicalMarks / 10) * (studentClass>8 ? 10 : 20))/unitdata.practicals.length) %>
            
 
 
           <%})%>
          
           <% unitdata.projectWorks.forEach(projectdata=>{%>
-            <p><% ((projectdata.projectMarks / 8) * 16)/unitdata.projectWorks.length %></p>
+            <p><% ((projectdata.projectMarks / (studentClass>8 ? 6 : 8)) * (studentClass>8 ? 6 : 16))/unitdata.projectWorks.length %></p>
 
-            <% totalProjectFinal += (((projectdata.projectMarks / 8) * 16)/unitdata.projectWorks.length) %>
+            <% totalProjectFinal += (((projectdata.projectMarks / (studentClass>8 ? 6 : 8)) * (studentClass>8 ? 6 : 16))/unitdata.projectWorks.length) %>
       <%})%>
       <%})%>
       <% totalPracticalProjectMarks = (totalPracticalFinal/totalUnit)+(totalProjectFinal/totalUnit) %>
@@ -390,23 +398,22 @@
       
       if (student.terminals && student.terminals.length > 0) {
         student.terminals.forEach(t => {
-          if (t.terminalName === "FIRST-2082" || t.terminalName === "SECOND-2082") {
+          if (t.terminalName === "FIRST" || t.terminalName === "SECOND" || t.terminalName === "THIRD" || t.terminalName === "MID") {
             firstSecondMarks += t.terminalMarks || 0;
             
           }
         });
       }
     %>
-<td><%=( firstSecondMarks.toFixed(2)/(totalTerminal-1)) %></td>
+<td><%=( firstSecondMarks.toFixed(2)/(totalTerminal-1)).toFixed(2) %></td>
 <td><%=(((student.attendanceTotalmarks+student.participationTotalmarks)/totalTerminal)+
   totalPracticalProjectMarks+
   ( firstSecondMarks/(totalTerminal-1)) ).toFixed(2)
-
    %></td>
 
-   <%OverallFinalPracticalMarks = ((( (student.attendanceTotalmarks+student.participationTotalmarks)/totalTerminal +
+   <%OverallFinalPracticalMarks = ((( ((student.attendanceTotalmarks+student.participationTotalmarks)/totalTerminal)+
    totalPracticalProjectMarks +
-   ( firstSecondMarks/(totalTerminal-1)) ).toFixed(2))/36)*100 %>
+   ( firstSecondMarks/(totalTerminal-1)) ).toFixed(2))/(studentClass>8 ? 25 : 50))*100 %>
 <td>
 <% if (OverallFinalPracticalMarks >= 90 && OverallFinalPracticalMarks <= 100) { %>
   A+
