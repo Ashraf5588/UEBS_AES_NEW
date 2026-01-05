@@ -578,33 +578,57 @@
               <table>
                 <thead>
                   <tr>
-                    <th>आधार</th>
-                    <th>स्तर</th>
-                    <th>विवरण</th>
-                    <th>अंक</th>
+                    <th>Criteria</th>
+                    <th>Level</th>
+                    <th>Indicator</th>
+                    <th>Marks</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td rowspan="4">सक्रियता र सहभागिता</td>
-                    <td>सर्वोत्कृष्ट</td>
-                    <td>सिकाइमा जिज्ञासा राख्दै, समूह छलफल र अन्तरक्रियामा सक्रियतापूर्वक भाग लिएको</td>
-                    <td><div class="radio-group"><input type="radio" name="participationMarks" value="2" id="part2"> <label for="part2">२</label></div></td>
+                    <td rowspan="4">Students'
+performance
+in teaching
+learning
+activities</td>
+                    <td>Excellent</td>
+                    <td>Be very curious in learning, have
+a thorough frequent interaction in
+discussion, present own creative
+views and ideas in all activities,
+complete the entire task oneself</td>
+                    <td><div class="radio-group"><input type="radio" name="participationMarks" value="2" id="part2"> <label for="part2">2</label></div></td>
                   </tr>
                   <tr>
-                    <td>उत्कृष्ट</td>
-                    <td>सिकाइमा जिज्ञासा राख्दै, समूह छलफल र अन्तरक्रियामा कम सक्रियतापूर्वक भाग लिएको</td>
-                    <td><div class="radio-group"><input type="radio" name="participationMarks" value="1.5" id="part1_5"> <label for="part1_5">१.५</label></div></td>
+                    <td>Very Good</td>
+                    <td>Be curious in learning, have
+frequent interaction in discussion,
+present own creative views and
+ideas in most of the activities,
+complete the most of the task
+oneself</td>
+                    <td><div class="radio-group"><input type="radio" name="participationMarks" value="1.5" id="part1_5"> <label for="part1_5">1.5</label></div></td>
                   </tr>
                   <tr>
-                    <td>मध्यम</td>
-                    <td>सिकाइमा कम जिज्ञासा राख्दै, समूह छलफल र अन्तरक्रियामा निर्देशानुसार भाग लिएको</td>
-                    <td><div class="radio-group"><input type="radio" name="participationMarks" value="1" id="part1"> <label for="part1">१</label></div></td>
+                    <td>Medium</td>
+                    <td>Be somehow curious in learning,
+have some interaction in
+discussion, present views and
+ideas in some of the activities,
+complete the partial task oneself
+or completes the task with other's
+help</td>
+                    <td><div class="radio-group"><input type="radio" name="participationMarks" value="1" id="part1"> <label for="part1">1</label></div></td>
                   </tr>
                   <tr>
-                    <td>सामान्य</td>
-                    <td>सिकाइप्रति उदासीन रहेमा, समूह छलफल र अन्तरक्रियामा सक्रियता नदेखाएको</td>
-                    <td><div class="radio-group"><input type="radio" name="participationMarks" value="0.5" id="part0_5"> <label for="part0_5">०.५</label></div></td>
+                    <td>Normal</td>
+                    <td>Be less curious in learning, have
+less interaction in discussion,
+present partial views and ideas in
+some of the activities , unable to
+complete the even the partial task
+oneself or with other's help</td>
+                    <td><div class="radio-group"><input type="radio" name="participationMarks" value="0.5" id="part0_5"> <label for="part0_5">0.5</label></div></td>
                   </tr>
                 </tbody>
               </table>
@@ -613,7 +637,7 @@
         </div>
 
         <!-- Terminal Marks Section -->
-        <div class="section">
+        <div class="section" style="display: <%=terminal==='FINAL'?'none':'block'%>;">
           <div class="section-header">Terminal Marks</div>
           <div class="section-content">
             <div class="form-row">
@@ -655,10 +679,10 @@
                               <thead>
                                 <tr>
                                   <th>S.No</th>
-                                  <th>मुल्याङ्कनका आधार</th>
-                                  <th>परिक्षण पक्ष</th>
-                                  <th>सूचक</th>
-                                  <th>अंक</th>
+                                  <th>Tasks</th>
+                                  <th>Criteria</th>
+                                  <th>Description/Indicator</th>
+                                  <th>Marks</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -724,10 +748,10 @@
                               <thead>
                                 <tr>
                                   <th>SN</th>
-                                  <th>आधार</th>
-                                  <th>पक्ष</th>
-                                  <th>सूचक</th>
-                                  <th>अंक</th>
+                                  <th>Task</th>
+                                  <th>Criteria</th>
+                                  <th>Description/Indicator</th>
+                                  <th>Marks</th>
                                 </tr>
                               </thead>
                                <tbody>
@@ -806,7 +830,7 @@
 
 
 <input type="number" value="<%=workingDays%>" id="totalWorkingDays" style="display:none;">
-
+<input type="hidden" value="<%=subjectMarksData.theory%>" id="fullMarks">
 
 
 
@@ -822,6 +846,7 @@
     document.querySelector('#terminal').value = terminalValue;
 function calculateTerminalMarks() {
       const terminal = window.location.search;
+
     
     const terminalParams = new URLSearchParams(terminal);
     
@@ -830,32 +855,72 @@ function calculateTerminalMarks() {
     if(terminalValue != "FINAL")
   {
     const theoryMarks = parseFloat(document.getElementById('theoryMarks').value);
-    document.getElementById('obtainedconvertedmarks').value = (( theoryMarks)/50*10).toFixed(2);
+    const fullMarks = parseFloat(document.getElementById('fullMarks').value);
+    const studentClass = "<%= studentClass %>";
+    if(isNaN(theoryMarks) || isNaN(fullMarks) || fullMarks === 0) {
+      document.getElementById('obtainedconvertedmarks').value = '';
+      return;
+    }
+if(studentClass>8)
+{
+    document.getElementById('obtainedconvertedmarks').value = ((theoryMarks/fullMarks)*6).toFixed(2);
+}
+else
+{
+    document.getElementById('obtainedconvertedmarks').value = ((theoryMarks/fullMarks)*10).toFixed(2);
   }
 }
+}
 
+    
     function calculateAttendanceMarks() {
      const attendanceDays = parseInt(document.getElementById('attendanceDays').value, 10) || 0;
+     const studentClass = "<%= studentClass %>";
          const totalWorkingDays = document.getElementById('totalWorkingDays').value || 0;
     
       const attendancePercentage = (attendanceDays / totalWorkingDays) * 100;
       console.log(attendancePercentage);
 
       if(attendancePercentage >=90 && attendancePercentage <=100) {
-        
-        document.getElementById('attendanceMarks').value = 2;
+        if(studentClass>8)
+        {
+          document.getElementById('attendanceMarks').value = 1;
+        }
+        else
+        {
+          document.getElementById('attendanceMarks').value = 2;
+        }
       }
       else if(attendancePercentage >= 85 && attendancePercentage < 90) {
       
-        document.getElementById('attendanceMarks').value = 1.5;
+        if(studentClass>8)
+        {
+          document.getElementById('attendanceMarks').value = 0.75;
+        }
+        else
+        {
+          document.getElementById('attendanceMarks').value = 1.5;
+        }
       }
       else if(attendancePercentage >= 80 && attendancePercentage < 85) {
-       
-        document.getElementById('attendanceMarks').value = 1;
+        if(studentClass>8)
+        {
+          document.getElementById('attendanceMarks').value = 0.5;
+        }
+        else
+        {
+          document.getElementById('attendanceMarks').value = 1;
+        }
       }
       else if(attendancePercentage >=75 && attendancePercentage < 80) {
-     
-        document.getElementById('attendanceMarks').value = 0.5;
+        if(studentClass>8)
+        {
+          document.getElementById('attendanceMarks').value = 0.25;
+        }
+        else
+        {
+          document.getElementById('attendanceMarks').value = 0.5;
+        }
       }
       else {
         document.getElementById('attendanceMarks').value = 0;
@@ -901,8 +966,8 @@ document.querySelectorAll(".marks-radio-project").forEach(radio => {
   async function fill(roll,name,reg) {
      const buttons = document.querySelectorAll("[id^='studentData']");
     buttons.forEach(btn => {
-        btn.style.backgroundColor = '#2196f3'; // default color
-        btn.style.color = 'white';
+        btn.style.backgroundColor = 'white'; // default color
+        btn.style.color = 'black';
     });
     const clickedBtn = document.getElementById('studentData' + roll);
     clickedBtn.style.backgroundColor = 'darkblue'; // selected color

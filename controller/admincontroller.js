@@ -573,9 +573,41 @@ exports.addSubject = async (req, res, next) => {
     Object.keys(formData).forEach(key => {
       // Check if it's one of our special question fields (starts with 'q')
       if (key.startsWith('q')) {
+        let value = formData[key];
+        
+        // Handle boolean checkboxes
+        if (key.endsWith('_has_subparts')) {
+             if (value === 'on') {
+                 value = true;
+             }
+        }
+
+        // Handle nested objects (subparts parsed by body-parser)
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+             // It's an object like { i: '5', ii: '5' }
+             // We need to flatten this into q1b_i, q1b_ii
+             Object.keys(value).forEach(subKey => {
+                 let subValue = value[subKey];
+                 // Try to convert to number
+                 if (!isNaN(parseFloat(subValue)) && isFinite(subValue)) {
+                     subValue = parseFloat(subValue);
+                 }
+                 
+                 const flatKey = `${key}_${subKey}`; // e.g. q1b_i
+                 processedData[flatKey] = subValue;
+                 console.log(`Flattened nested field ${key}.${subKey} → ${flatKey} = ${subValue}`);
+             });
+             // We do NOT add the object itself to processedData to avoid CastError
+             return; 
+        }
+
         // Convert string values to numbers where appropriate
-        const value = !isNaN(parseFloat(formData[key])) ? 
-          parseFloat(formData[key]) : formData[key];
+        // But only if it's not the boolean we just converted
+        if (typeof value !== 'boolean') {
+             if (!isNaN(parseFloat(value)) && isFinite(value)) {
+                 value = parseFloat(value);
+             }
+        }
         
         // MongoDB treats fields with dots as nested objects, so we need to replace dots
         // with a different character like underscore for storage
@@ -688,22 +720,8 @@ exports.addSubject = async (req, res, next) => {
 
   // We don't need to delete or filter anything since we're building a new object
 
-  // Process all form fields, preserving the field names for database
-  console.log("Processing form data keys...");
-  
-  // Get all the keys that match our new naming pattern (q1a, q1a.i, etc.)
-  Object.keys(formData).forEach(key => {
-    // Check if it's one of our special question fields (starts with 'q')
-    if (key.startsWith('q')) {
-      // Convert string values to numbers where appropriate
-      const value = !isNaN(parseFloat(formData[key])) ? 
-        parseFloat(formData[key]) : formData[key];
-      
-      // Add directly to processedData to preserve the field name (q1a, q1b.i, etc.)
-      processedData[key] = value;
-      console.log(`Question field ${key} = ${value}`);
-    }
-  });
+  // Redundant processing block removed to prevent CastError with nested objects
+  // The form data is already processed and sanitized at the beginning of the function
   
   // Process questions with their marks - For backwards compatibility
   const numericKeys = Object.keys(formData)
@@ -831,6 +849,7 @@ exports.addSubject = async (req, res, next) => {
      
      console.log("Before database create - FULL PROCESSED DATA:", JSON.stringify(processedData, null, 2));
      console.log("Question field keys:", Object.keys(processedData).filter(k => k.startsWith('q')));
+     
      
      const createdSubject = await subject.create(processedData);
      console.log("After save - Data saved to DB:", createdSubject);

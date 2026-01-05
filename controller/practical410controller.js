@@ -939,7 +939,7 @@ console.log(marksheetSetting)
 
     }
   }
-  else if(subject==="NEPALI")
+  else if(subject==="ENGLISH")
   {
     if(terminal==="FINAL")
     {

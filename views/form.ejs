@@ -385,7 +385,7 @@
                                 const subLabel = String.fromCharCode(97 + j);
                                 const qKey = `q${i}${subLabel}`;
                                 const fullMark = subjectData[qKey] || 0;
-                                const hasSubparts = subjectData[`${qKey}_has_subparts`] === 'on';
+                                const hasSubparts = subjectData[`${qKey}_has_subparts`] === 'on' || subjectData[`${qKey}_has_subparts`] === true;
                                 const subSubCount = subjectData[`${qKey}_subparts_count`];
                                 const markPerSubSub = subjectData[`${qKey}_marks_per_subpart`] || 0;
                             %>

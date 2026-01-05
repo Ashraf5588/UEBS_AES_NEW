@@ -399,21 +399,21 @@
           
            <td><%=student.attendanceMarks+student.participationMarks+
             ((((totalObtainedAllPractical/16)*16)) 
-             / lessonData[0].units.length)+student.attendanceMarks+student.terminalMarks %></td>
+             / lessonData[0].units.length)+student.terminalMarks %></td>
            <td> 
             <% totalPractical = (((student.attendanceMarks+student.participationMarks+
             ((((totalObtainedAllPractical/16)*16)) 
-              / lessonData[0].units.length)+student.attendanceMarks+student.terminalMarks)/50)*100)
+              / lessonData[0].units.length)+student.terminalMarks)/25)*100)
               
            %>
   <%}else{%>
      <td> <%=student.attendanceMarks+student.participationMarks+
             ((((totalObtainedAllPractical/18)*36)) 
-             / lessonData[0].units.length)+student.attendanceMarks+student.terminalMarks %></td>
+             / lessonData[0].units.length)+student.terminalMarks %></td>
            <td> 
             <% totalPractical = (((student.attendanceMarks+student.participationMarks+
             ((((totalObtainedAllPractical/18)*36)) 
-              / lessonData[0].units.length)+student.attendanceMarks+student.terminalMarks)/50)*100)
+              / lessonData[0].units.length)+student.terminalMarks)/50)*100)
               
            %>
   <%}%>

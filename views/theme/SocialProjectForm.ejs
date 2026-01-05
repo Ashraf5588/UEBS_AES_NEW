@@ -734,6 +734,7 @@
 
 
 <input type="number" value="<%=workingDays%>" id="totalWorkingDays" style="display:none;">
+<input type="hidden" value="<%=subjectMarksData.theory%>" id="fullMarks">
 
 
 
@@ -750,40 +751,80 @@
     document.querySelector('#terminal').value = terminalValue;
 function calculateTerminalMarks() {
       const terminal = window.location.search;
+
     
     const terminalParams = new URLSearchParams(terminal);
     
     const terminalValue = terminalParams.get('terminal');
   
-    if(terminalValue !="FINAL")
+    if(terminalValue != "FINAL")
   {
     const theoryMarks = parseFloat(document.getElementById('theoryMarks').value);
-    document.getElementById('obtainedconvertedmarks').value = (( theoryMarks)/50*10).toFixed(2);
+    const fullMarks = parseFloat(document.getElementById('fullMarks').value);
+    const studentClass = "<%= studentClass %>";
+    if(isNaN(theoryMarks) || isNaN(fullMarks) || fullMarks === 0) {
+      document.getElementById('obtainedconvertedmarks').value = '';
+      return;
+    }
+if(studentClass>8)
+{
+    document.getElementById('obtainedconvertedmarks').value = ((theoryMarks/fullMarks)*6).toFixed(2);
+}
+else
+{
+    document.getElementById('obtainedconvertedmarks').value = ((theoryMarks/fullMarks)*10).toFixed(2);
   }
+}
 }
 
     function calculateAttendanceMarks() {
      const attendanceDays = parseInt(document.getElementById('attendanceDays').value, 10) || 0;
+     const studentClass = "<%= studentClass %>";
          const totalWorkingDays = document.getElementById('totalWorkingDays').value || 0;
     
       const attendancePercentage = (attendanceDays / totalWorkingDays) * 100;
       console.log(attendancePercentage);
 
       if(attendancePercentage >=90 && attendancePercentage <=100) {
-        
-        document.getElementById('attendanceMarks').value = 2;
+        if(studentClass>8)
+        {
+          document.getElementById('attendanceMarks').value = 1;
+        }
+        else
+        {
+          document.getElementById('attendanceMarks').value = 2;
+        }
       }
       else if(attendancePercentage >= 85 && attendancePercentage < 90) {
       
-        document.getElementById('attendanceMarks').value = 1.5;
+        if(studentClass>8)
+        {
+          document.getElementById('attendanceMarks').value = 0.75;
+        }
+        else
+        {
+          document.getElementById('attendanceMarks').value = 1.5;
+        }
       }
       else if(attendancePercentage >= 80 && attendancePercentage < 85) {
-       
-        document.getElementById('attendanceMarks').value = 1;
+        if(studentClass>8)
+        {
+          document.getElementById('attendanceMarks').value = 0.5;
+        }
+        else
+        {
+          document.getElementById('attendanceMarks').value = 1;
+        }
       }
       else if(attendancePercentage >=75 && attendancePercentage < 80) {
-     
-        document.getElementById('attendanceMarks').value = 0.5;
+        if(studentClass>8)
+        {
+          document.getElementById('attendanceMarks').value = 0.25;
+        }
+        else
+        {
+          document.getElementById('attendanceMarks').value = 0.5;
+        }
       }
       else {
         document.getElementById('attendanceMarks').value = 0;

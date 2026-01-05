@@ -27,6 +27,8 @@ app.set("view", path.join(rootDir, "views"));
 const newsubject = mongoose.model("newsubject", newsubjectSchema, "newsubject");
 const {onlineAttendanceSchema} = require("../model/onlineattendanceschema");
 const onlineAttendance = mongoose.model("onlineAttendance", onlineAttendanceSchema, "onlineAttendance");
+const {holidaySchema} = require("../model/holidayschema");
+const holiday = mongoose.model("holiday", holidaySchema, "holiday");
 const getSidenavData = async (req) => {
   try {
     const subjects = await subjectlist.find({}).lean();
@@ -100,9 +102,12 @@ exports.onlineAttendancePage = async (req, res) => {
      
         const sidenavData = await getSidenavData(req);
         const marksheetSetups = await marksheetSetup.find({}).lean();
+        const HolidayData = await holiday.find({ academicYear: academicYear }).lean();
+        console.log('Holiday Data:', HolidayData[0]);
         res.render('./attendance/attendance', { studentClass,section,academicYear, 
           studentData : studentData  || { students: [] }
-          , marksheetSetups,studentClassdata:sidenavData.studentClassdata,month });
+          , marksheetSetups,studentClassdata:sidenavData.studentClassdata,month,
+          HolidayData: HolidayData[0] || null });
 
     } catch (error) {
         console.error('Error fetching attendance page:', error);
@@ -143,3 +148,45 @@ exports.saveOnlineAttendance = async (req, res) => {
     }
 }
 
+exports.setHoliday = async (req, res) => {
+  try {
+    const marksheetSetups = await marksheetSetup.find({}).lean();
+    const oldHolidayData = await holiday.find({ academicYear: req.query.academicYear }).lean();
+    console.log('Old Holiday Data:', oldHolidayData[0]);
+    res.render('./attendance/setholiday', { marksheetSetups, oldHolidayData: oldHolidayData[0] || null });
+    
+
+  }
+  catch (error) {
+    console.error('Error setting holiday:', error);
+    res.status(500).send('Internal Server Error');
+  }
+}
+exports.savesetHoliday = async (req, res) => {
+  try {
+    const { academicYear } = req.body;
+    await holiday.updateMany(
+      {
+        academicYear: academicYear,
+      },
+      {
+        $set: {
+          academicYear: academicYear,
+          month: req.body.month,
+          holidayDays: req.body.holidayDays
+
+        },
+      },
+      { upsert: true }
+    );
+    res.redirect('/setholiday?academicYear=' + academicYear);
+
+  
+  }
+  catch (error) {
+    console.error('Error saving holiday:', error);
+    res.status(500).send('Internal Server Error');
+  }
+}
+
+    
