@@ -47,6 +47,47 @@
     button { background: var(--secondary); color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
     button:hover { opacity: 0.9; }
 
+   .filter-tools {
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      max-width: 1200px;
+      margin: 0 auto 30px;
+      display: grid;
+      gap: 12px;
+   }
+
+   .filter-tools-row {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+   }
+
+   .filter-tools input,
+   .filter-tools select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.85rem;
+   }
+
+   .filter-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+   }
+
+   .filter-count {
+      font-size: 0.85rem;
+      color: #64748b;
+      font-weight: 600;
+   }
+
     /* Portfolio Card */
     .student-card {
         background: var(--card-bg);
@@ -307,6 +348,109 @@
       color: #64748b;
    }
 
+   .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+   }
+
+   .details-group {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #fff;
+      display: grid;
+      gap: 8px;
+   }
+
+   .details-title {
+      font-weight: 700;
+      color: var(--secondary);
+      font-size: 0.9rem;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 6px;
+      margin-bottom: 4px;
+   }
+
+   .detail-item {
+      font-size: 0.85rem;
+      color: var(--text);
+   }
+
+   .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+   }
+
+   .modal-backdrop.is-open { display: flex; }
+
+   .modal-card {
+      background: #fff;
+      width: min(920px, 100%);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+   }
+
+   .modal-header {
+      padding: 16px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+   }
+
+   .modal-title {
+      font-weight: 700;
+      color: var(--secondary);
+      font-size: 1rem;
+   }
+
+   .modal-body {
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      max-height: 70vh;
+      overflow: auto;
+   }
+
+   .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+   }
+
+   .btn-secondary {
+      background: #94a3b8;
+   }
+
+   .modal-field label { font-size: 0.75rem; color: #64748b; }
+   .modal-field input,
+   .modal-field select,
+   .modal-field textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.85rem;
+   }
+
+   .modal-field textarea { min-height: 70px; resize: vertical; }
+
    @media (max-width: 900px) {
       body { padding: 16px; }
       .filter-container { padding: 16px; }
@@ -369,19 +513,61 @@
       
       <div class="form-group">
         <label for="academicYear">Academic Year</label>
-        <select name="academicYear" id="academicYear">
-          <option value="" selected disabled>Choose Academic Year</option>
-          <% currentYear = Number(marksheetSetups[0].academicYear) %>;
-            <% for (let i = 0; i < 5; i++) { %>
-              <option value="<%= currentYear - i %>"><%= currentYear - i %></option>
-            <% } %>
-        </select>
+            <select name="academicYear" id="academicYear">
+               <option value="" selected disabled>Choose Academic Year</option>
+               <% const baseYear = (marksheetSetups && marksheetSetups[0] && Number(marksheetSetups[0].academicYear)) || new Date().getFullYear(); %>
+                  <% for (let i = 0; i < 5; i++) { %>
+                     <option value="<%= baseYear - i %>"><%= baseYear - i %></option>
+                  <% } %>
+            </select>
       </div>
     </div>
     <div style="text-align: right;">
       <button onclick="loadform()">Load Portfolio</button>
     </div>
   </div>
+
+   <div class="filter-tools">
+      <div class="filter-tools-row">
+         <input id="filterSearch" type="text" placeholder="Search name, reg, roll, family..." />
+         <input id="filterFamily" type="text" placeholder="Family keyword (parent/guardian/occupation)" />
+         <select id="filterMedical">
+            <option value="any" selected>Medical Condition: Any</option>
+            <option value="yes">Medical Condition: Yes</option>
+            <option value="no">Medical Condition: No</option>
+         </select>
+         <select id="filterBehavior">
+            <option value="any" selected>Behavioral Condition: Any</option>
+            <option value="yes">Behavioral Condition: Yes</option>
+            <option value="no">Behavioral Condition: No</option>
+         </select>
+         <select id="filterBlood">
+            <option value="any" selected>Blood Group: Any</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+         </select>
+         <select id="filterTv">
+            <option value="any" selected>TV at Home: Any</option>
+            <option value="yes">TV at Home: Yes</option>
+            <option value="no">TV at Home: No</option>
+         </select>
+         <select id="filterInternet">
+            <option value="any" selected>Internet at Home: Any</option>
+            <option value="yes">Internet at Home: Yes</option>
+            <option value="no">Internet at Home: No</option>
+         </select>
+      </div>
+      <div class="filter-actions">
+         <span id="filterCount" class="filter-count"></span>
+         <button type="button" class="btn-secondary" onclick="resetPortfolioFilters()">Clear Filters</button>
+      </div>
+   </div>
 
   <script>
     function loadform()
@@ -397,8 +583,10 @@
     }
   </script>
 
-  <% if(studentWisedatastructured){ %>
-    <% Object.entries(studentWisedatastructured).forEach(([reg, student]) => { %>
+  <% const safeStudentData = studentWisedatastructured || {}; %>
+  <% const hasStudentData = Object.keys(safeStudentData).length > 0; %>
+  <% if (hasStudentData) { %>
+    <% Object.entries(safeStudentData).forEach(([reg, student]) => { %>
        <!-- Logic to determine Zone -->
        <% 
           let totalSubjects = 0;
@@ -407,9 +595,11 @@
           let subjectPerformance = {}; // subject -> { term: marks }
           let subjectYearlyPerformance = {}; // subject -> { year: marks }
           let allYears = new Set();
+          const records = student.records || {};
+          const hasRecords = Object.keys(records).length > 0;
 
           // Process data for charts and zone
-          Object.entries(student.records).forEach(([year, record]) => {
+          Object.entries(records).forEach(([year, record]) => {
              allYears.add(year);
              Object.entries(record).forEach(([subject, termdata]) => {
                 if(!subjectPerformance[subject]) subjectPerformance[subject] = {};
@@ -445,7 +635,28 @@
        %>
        
 
-       <div class="student-card">
+        <% const roster = rosterByReg && rosterByReg[reg] ? rosterByReg[reg] : {}; %>
+        <% const portfolio = portfolioByReg ? portfolioByReg[reg] : null; %>
+        <% const complaints = portfolio && Array.isArray(portfolio.complaints) ? portfolio.complaints : []; %>
+
+        <div class="student-card"
+           data-name="<%= roster.name || student.name || '' %>"
+           data-reg="<%= reg || '' %>"
+           data-roll="<%= roster.roll || student.roll || '' %>"
+           data-class="<%= roster.studentClass || student.studentClass || '' %>"
+           data-section="<%= roster.section || student.section || '' %>"
+           data-blood="<%= roster.bloodGroup || '' %>"
+           data-medical="<%= Array.isArray(roster.anyMedicalCondition) ? roster.anyMedicalCondition.join(', ') : (roster.anyMedicalCondition || '') %>"
+           data-behaviour="<%= roster.otherbehaviouralCondition || '' %>"
+           data-father="<%= roster.fatherName || '' %>"
+           data-mother="<%= roster.motherName || '' %>"
+           data-guardian="<%= roster.otherguardianName || '' %>"
+           data-father-occ="<%= roster.fatheroccupation || '' %>"
+           data-mother-occ="<%= roster.motheroccupation || '' %>"
+           data-guardian-occ="<%= roster.otherguardianOccupation || '' %>"
+           data-income="<%= roster.yearlyIncome || '' %>"
+           data-tv="<%= roster.tvatHome || '' %>"
+           data-internet="<%= roster.internetAtHome || '' %>">
           <header class="profile-header">
              <div class="profile-left">
                  <div class="profile-img">
@@ -459,6 +670,7 @@
              </div>
              <div class="profile-right">
                <button type="button" onclick="addComplaint('<%= reg %>')" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Add Complaint</button>
+                 <button type="button" onclick="addInformation('<%= reg %>')" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Add Information</button>
                  <div class="zone-badge <%= zoneClass %>">
                     <%= zoneText %>
                  </div>
@@ -466,8 +678,55 @@
           </header>
 
           <main class="portfolio-content">
-                   <% const portfolio = portfolioByReg ? portfolioByReg[reg] : null; %>
-                   <% const complaints = portfolio && Array.isArray(portfolio.complaints) ? portfolio.complaints : []; %>
+                   <div class="section-title">
+                      <span>🧾</span> Student Details
+                   </div>
+                   <div class="details-grid">
+                      <div class="details-group">
+                         <div class="details-title">Student Info</div>
+                         <div class="detail-item"><strong>Name:</strong> <%= roster.name || student.name || '-' %></div>
+                         <div class="detail-item"><strong>Reg No:</strong> <%= reg || '-' %></div>
+                         <div class="detail-item"><strong>Roll:</strong> <%= roster.roll || student.roll || '-' %></div>
+                         <div class="detail-item"><strong>Class:</strong> <%= roster.studentClass || student.studentClass || '-' %></div>
+                         <div class="detail-item"><strong>Section:</strong> <%= roster.section || student.section || '-' %></div>
+                         <div class="detail-item"><strong>Gender:</strong> <%= roster.gender || '-' %></div>
+                         <div class="detail-item"><strong>Date of Birth:</strong> <%= roster.dob ? new Date(roster.dob).toLocaleDateString() : '-' %></div>
+                         <div class="detail-item"><strong>Class Started:</strong> <%= roster.classStartedAt ? new Date(roster.classStartedAt).toLocaleDateString() : '-' %></div>
+                         <div class="detail-item"><strong>Mother Tongue:</strong> <%= roster.mothersToungue || '-' %></div>
+                         <div class="detail-item"><strong>Previous School:</strong> <%= roster.previousSchool || '-' %></div>
+                      </div>
+                      <div class="details-group">
+                         <div class="details-title">Family Background</div>
+                         <div class="detail-item"><strong>Father Name:</strong> <%= roster.fatherName || '-' %></div>
+                         <div class="detail-item"><strong>Father Occupation:</strong> <%= roster.fatheroccupation || '-' %></div>
+                         <div class="detail-item"><strong>Father Contact:</strong> <%= roster.fatherContact || '-' %></div>
+                         <div class="detail-item"><strong>Father Qualification:</strong> <%= roster.fatherqualification || '-' %></div>
+                         <div class="detail-item"><strong>Mother Name:</strong> <%= roster.motherName || '-' %></div>
+                         <div class="detail-item"><strong>Mother Occupation:</strong> <%= roster.motheroccupation || '-' %></div>
+                         <div class="detail-item"><strong>Mother Contact:</strong> <%= roster.motherContact || '-' %></div>
+                         <div class="detail-item"><strong>Mother Qualification:</strong> <%= roster.motherqualification || '-' %></div>
+                         <div class="detail-item"><strong>Other Guardian:</strong> <%= roster.otherguardianName || '-' %></div>
+                         <div class="detail-item"><strong>Guardian Occupation:</strong> <%= roster.otherguardianOccupation || '-' %></div>
+                         <div class="detail-item"><strong>Guardian Contact:</strong> <%= roster.otherguardianContact || '-' %></div>
+                         <div class="detail-item"><strong>Yearly Income:</strong> <%= roster.yearlyIncome || '-' %></div>
+                      </div>
+                      <div class="details-group">
+                         <div class="details-title">Health</div>
+                         <div class="detail-item"><strong>Blood Group:</strong> <%= roster.bloodGroup || '-' %></div>
+                         <div class="detail-item"><strong>Medical Condition:</strong> <%= Array.isArray(roster.anyMedicalCondition) ? roster.anyMedicalCondition.join(', ') : (roster.anyMedicalCondition || '-') %></div>
+                         <div class="detail-item"><strong>Behavioral Condition:</strong> <%= roster.otherbehaviouralCondition || '-' %></div>
+                      </div>
+                      <div class="details-group">
+                         <div class="details-title">Contact Info</div>
+                         <div class="detail-item"><strong>Contact Number:</strong> <%= roster.numberofmobile || '-' %></div>
+                      </div>
+                      <div class="details-group">
+                         <div class="details-title">Home & Fees</div>
+                         <div class="detail-item"><strong>TV at Home:</strong> <%= roster.tvatHome || '-' %></div>
+                         <div class="detail-item"><strong>Internet at Home:</strong> <%= roster.internetAtHome || '-' %></div>
+                         <div class="detail-item"><strong>Fee Paid Duration:</strong> <%= roster.feepaidduration || '-' %></div>
+                      </div>
+                   </div>
 
                    <div class="complaint-panel">
                         <div class="complaint-header">
@@ -489,82 +748,239 @@
                         <% } else { %>
                            <div class="complaint-empty">No complaints recorded yet.</div>
                         <% } %>
+
+                        <div id="infoModal" class="modal-backdrop" aria-hidden="true">
+                           <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+                              <div class="modal-header">
+                                 <div class="modal-title" id="infoModalTitle">Student Information</div>
+                                 <button type="button" class="btn-secondary" onclick="closeInfoModal()">Close</button>
+                              </div>
+                              <form id="infoForm">
+                                 <div class="modal-body">
+                                    <div class="modal-field">
+                                       <label for="info_reg">Reg No</label>
+                                       <input id="info_reg" name="reg" type="text" readonly />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_name">Name</label>
+                                       <input id="info_name" name="name" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_roll">Roll</label>
+                                       <input id="info_roll" name="roll" type="number" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_class">Class</label>
+                                       <input id="info_class" name="studentClass" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_section">Section</label>
+                                       <input id="info_section" name="section" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_gender">Gender</label>
+                                       <input id="info_gender" name="gender" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_dob">Date of Birth</label>
+                                       <input id="info_dob" name="dob" type="date" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_class_started">Class Started At</label>
+                                       <input id="info_class_started" name="classStartedAt" type="date" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_mother_tongue">Mother Tongue</label>
+                                       <input id="info_mother_tongue" name="mothersToungue" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_previous_school">Previous School</label>
+                                       <input id="info_previous_school" name="previousSchool" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_father_name">Father Name</label>
+                                       <input id="info_father_name" name="fatherName" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_father_occupation">Father Occupation</label>
+                                       <input id="info_father_occupation" name="fatheroccupation" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_father_contact">Father Contact</label>
+                                       <input id="info_father_contact" name="fatherContact" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_father_qualification">Father Qualification</label>
+                                       <input id="info_father_qualification" name="fatherqualification" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_mother_name">Mother Name</label>
+                                       <input id="info_mother_name" name="motherName" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_mother_occupation">Mother Occupation</label>
+                                       <input id="info_mother_occupation" name="motheroccupation" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_mother_contact">Mother Contact</label>
+                                       <input id="info_mother_contact" name="motherContact" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_mother_qualification">Mother Qualification</label>
+                                       <input id="info_mother_qualification" name="motherqualification" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_guardian_name">Other Guardian Name</label>
+                                       <input id="info_guardian_name" name="otherguardianName" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_guardian_occupation">Other Guardian Occupation</label>
+                                       <input id="info_guardian_occupation" name="otherguardianOccupation" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_guardian_contact">Other Guardian Contact</label>
+                                       <input id="info_guardian_contact" name="otherguardianContact" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_yearly_income">Yearly Income</label>
+                                       <input id="info_yearly_income" name="yearlyIncome" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_blood_group">Blood Group</label>
+                                       <input id="info_blood_group" name="bloodGroup" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_medical">Any Medical Condition (comma separated)</label>
+                                       <textarea id="info_medical" name="anyMedicalCondition"></textarea>
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_behaviour">Other Behavioural Condition</label>
+                                       <textarea id="info_behaviour" name="otherbehaviouralCondition"></textarea>
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_mobile">Contact Number</label>
+                                       <input id="info_mobile" name="numberofmobile" type="text" />
+                                    </div>
+                                    <div class="modal-field">
+                                       <label>TV at Home</label>
+                                       <div style="display: flex; gap: 12px; align-items: center;">
+                                          <label style="font-weight: 500; color: #64748b;">
+                                             <input type="radio" name="tvatHome" value="Yes" /> Yes
+                                          </label>
+                                          <label style="font-weight: 500; color: #64748b;">
+                                             <input type="radio" name="tvatHome" value="No" /> No
+                                          </label>
+                                       </div>
+                                    </div>
+                                    <div class="modal-field">
+                                       <label>Internet at Home</label>
+                                       <div style="display: flex; gap: 12px; align-items: center;">
+                                          <label style="font-weight: 500; color: #64748b;">
+                                             <input type="radio" name="internetAtHome" value="Yes" /> Yes
+                                          </label>
+                                          <label style="font-weight: 500; color: #64748b;">
+                                             <input type="radio" name="internetAtHome" value="No" /> No
+                                          </label>
+                                       </div>
+                                    </div>
+                                    <div class="modal-field">
+                                       <label for="info_fee_paid">Fee Paid Duration</label>
+                                       <input id="info_fee_paid" name="feepaidduration" type="text" />
+                                    </div>
+                                 </div>
+                                 <div class="modal-footer">
+                                    <button type="button" class="btn-secondary" onclick="closeInfoModal()">Cancel</button>
+                                    <button type="submit">Save</button>
+                                 </div>
+                              </form>
+                           </div>
+                        </div>
                    </div>
              
-             <div class="charts-grid">
-                <div class="chart-scroll">
-                  <div class="chart-box">
-                     <div class="chart-title">Performance Across Terminals (Current Year)</div>
-                     <canvas id="chart_term_<%= reg %>"></canvas>
-                  </div>
+             <% if (hasRecords) { %>
+                <div class="charts-grid">
+                   <div class="chart-scroll">
+                     <div class="chart-box">
+                        <div class="chart-title">Performance Across Terminals (Current Year)</div>
+                        <canvas id="chart_term_<%= reg %>"></canvas>
+                     </div>
+                   </div>
+                   <div class="chart-scroll">
+                     <div class="chart-box">
+                        <div class="chart-title">Subject Performance Across Years</div>
+                        <canvas id="chart_year_<%= reg %>"></canvas>
+                     </div>
+                   </div>
                 </div>
-                <div class="chart-scroll">
-                  <div class="chart-box">
-                     <div class="chart-title">Subject Performance Across Years</div>
-                     <canvas id="chart_year_<%= reg %>"></canvas>
-                  </div>
+             <% } else { %>
+                <div class="section-title">
+                   <span>📊</span> Academic Progress Report
                 </div>
-             </div>
+                <div style="color: #64748b; font-weight: 600;">Marks not entered yet.</div>
+             <% } %>
 
-             <div class="section-title">
-                <span>📊</span> Academic Progress Report
-             </div>
-             
-             <div class="subjects-grid">
-                <% Object.entries(student.records).forEach(([year, record]) => { %>
-                   <% Object.entries(record).forEach(([subject, termdata]) => { %>
-                      <div class="subject-card">
-                         <div class="subject-header">
-                            <span><%= subject %></span>
-                            <span style="font-size:0.8em; opacity:0.7; background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:4px;"><%= year %></span>
+             <% if (hasRecords) { %>
+                <div class="section-title">
+                   <span>📊</span> Academic Progress Report
+                </div>
+                
+                <div class="subjects-grid">
+                   <% Object.entries(records).forEach(([year, record]) => { %>
+                      <% Object.entries(record).forEach(([subject, termdata]) => { %>
+                         <div class="subject-card">
+                            <div class="subject-header">
+                               <span><%= subject %></span>
+                               <span style="font-size:0.8em; opacity:0.7; background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:4px;"><%= year %></span>
+                            </div>
+                            <table cellspacing="0">
+                               <thead>
+                                  <tr>
+                                     <% 
+                                       // Sort terminals: First, Second, Third, Final (Case Insensitive)
+                                       const termOrder = ['first', 'second', 'third', 'final'];
+                                       const sortedTerms = Object.keys(termdata).sort((a, b) => {
+                                           const lowerA = a.toLowerCase();
+                                           const lowerB = b.toLowerCase();
+                                           const indexA = termOrder.findIndex(t => lowerA.includes(t));
+                                           const indexB = termOrder.findIndex(t => lowerB.includes(t));
+                                           
+                                           const valA = indexA === -1 ? 999 : indexA;
+                                           const valB = indexB === -1 ? 999 : indexB;
+                                           
+                                           return valA - valB;
+                                       });
+                                     %>
+                                     <% sortedTerms.forEach(term => { %>
+                                        <th><%= term %></th>
+                                     <% }) %>
+                                  </tr>
+                               </thead>
+                               <tbody>
+                                  <tr>
+                                     <% sortedTerms.forEach(term => { 
+                                          const data = termdata[term];
+                                     %>
+                                        <td class="mark-cell <%= data.theory < 35 ? 'mark-fail' : 'mark-pass' %>">
+                                           <%= data.theory %>
+                                        </td>
+                                     <% }) %>
+                                  </tr>
+                               </tbody>
+                            </table>
                          </div>
-                         <table cellspacing="0">
-                            <thead>
-                               <tr>
-                                  <% 
-                                    // Sort terminals: First, Second, Third, Final (Case Insensitive)
-                                    const termOrder = ['first', 'second', 'third', 'final'];
-                                    const sortedTerms = Object.keys(termdata).sort((a, b) => {
-                                        const lowerA = a.toLowerCase();
-                                        const lowerB = b.toLowerCase();
-                                        const indexA = termOrder.findIndex(t => lowerA.includes(t));
-                                        const indexB = termOrder.findIndex(t => lowerB.includes(t));
-                                        
-                                        const valA = indexA === -1 ? 999 : indexA;
-                                        const valB = indexB === -1 ? 999 : indexB;
-                                        
-                                        return valA - valB;
-                                    });
-                                  %>
-                                  <% sortedTerms.forEach(term => { %>
-                                     <th><%= term %></th>
-                                  <% }) %>
-                               </tr>
-                            </thead>
-                            <tbody>
-                               <tr>
-                                  <% sortedTerms.forEach(term => { 
-                                       const data = termdata[term];
-                                  %>
-                                     <td class="mark-cell <%= data.theory < 35 ? 'mark-fail' : 'mark-pass' %>">
-                                        <%= data.theory %>
-                                     </td>
-                                  <% }) %>
-                               </tr>
-                            </tbody>
-                         </table>
-                      </div>
+                      <% }) %>
                    <% }) %>
-                <% }) %>
-             </div>
+                </div>
+             <% } %>
 
-             <div class="section-title" style="margin-top: 40px;">
-                <span>🔮</span> Prediction Marks
-             </div>
+             <% if (hasRecords) { %>
+                <div class="section-title" style="margin-top: 40px;">
+                   <span>🔮</span> Prediction Marks
+                </div>
 
-             <div class="prediction-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
-                <% Object.entries(student.records).forEach(([year, record]) => { %>
-                   <% Object.entries(record).forEach(([subject, termdata]) => { 
+                <div class="prediction-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+                   <% Object.entries(records).forEach(([year, record]) => { %>
+                      <% Object.entries(record).forEach(([subject, termdata]) => { 
                         // Logic to extract marks
                         const findMark = (tName) => {
                             const key = Object.keys(termdata).find(k => k.toLowerCase().includes(tName.toLowerCase()));
@@ -628,105 +1044,304 @@
                             <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;"><%= predictionLabel %></div>
                          </div>
                       </div>
-                   <% } %>
+                      <% } %>
+                      <% }) %>
                    <% }) %>
-                <% }) %>
-             </div>
+                </div>
+             <% } %>
 
           </main>
        </div>
 
        <!-- Scripts for Charts -->
-       <script>
-          {
-             // Sort terminals for chart
-             const termOrder = ['first', 'second', 'third', 'final'];
-             const terminals = <%- JSON.stringify(Array.from(allTerminals)) %>.sort((a, b) => {
-                const lowerA = a.toLowerCase();
-                const lowerB = b.toLowerCase();
-                const indexA = termOrder.findIndex(t => lowerA.includes(t));
-                const indexB = termOrder.findIndex(t => lowerB.includes(t));
+       <% if (hasRecords) { %>
+          <script>
+             {
+                // Sort terminals for chart
+                const termOrder = ['first', 'second', 'third', 'final'];
+                const terminals = <%- JSON.stringify(Array.from(allTerminals)) %>.sort((a, b) => {
+                   const lowerA = a.toLowerCase();
+                   const lowerB = b.toLowerCase();
+                   const indexA = termOrder.findIndex(t => lowerA.includes(t));
+                   const indexB = termOrder.findIndex(t => lowerB.includes(t));
+                   
+                   const valA = indexA === -1 ? 999 : indexA;
+                   const valB = indexB === -1 ? 999 : indexB;
+                   
+                   return valA - valB;
+                });
                 
-                const valA = indexA === -1 ? 999 : indexA;
-                const valB = indexB === -1 ? 999 : indexB;
+                const subjectData = <%- JSON.stringify(subjectPerformance) %>;
                 
-                return valA - valB;
-             });
-             
-             const subjectData = <%- JSON.stringify(subjectPerformance) %>;
-             
-             // Prepare datasets for Terminal Chart
-             const datasets = Object.entries(subjectData).map(([subject, terms], index) => {
-                const data = terminals.map(t => terms[t] || 0);
-                const colors = ['#2563eb', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
-                return {
-                   label: subject,
-                   data: data,
-                   borderColor: colors[index % colors.length],
-                   backgroundColor: colors[index % colors.length],
-                   tension: 0.3,
-                   fill: false,
-                   pointRadius: 4
-                };
-             });
+                // Prepare datasets for Terminal Chart
+                const datasets = Object.entries(subjectData).map(([subject, terms], index) => {
+                   const data = terminals.map(t => terms[t] || 0);
+                   const colors = ['#2563eb', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+                   return {
+                      label: subject,
+                      data: data,
+                      borderColor: colors[index % colors.length],
+                      backgroundColor: colors[index % colors.length],
+                      tension: 0.3,
+                      fill: false,
+                      pointRadius: 4
+                   };
+                });
 
-             const ctxTerm = document.getElementById('chart_term_<%= reg %>').getContext('2d');
-             new Chart(ctxTerm, {
-                type: 'line',
-                data: {
-                   labels: terminals,
-                   datasets: datasets
-                },
-                options: {
-                   responsive: true,
-                   maintainAspectRatio: false,
-                   plugins: {
-                      legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
+                const ctxTerm = document.getElementById('chart_term_<%= reg %>').getContext('2d');
+                new Chart(ctxTerm, {
+                   type: 'line',
+                   data: {
+                      labels: terminals,
+                      datasets: datasets
                    },
-                   scales: { y: { beginAtZero: true } }
-                }
-             });
+                   options: {
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                         legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
+                      },
+                      scales: { y: { beginAtZero: true } }
+                   }
+                });
 
-             // Year Chart - Subject wise
-             const years = <%- JSON.stringify(Array.from(allYears).sort()) %>;
-             const subjectYearlyData = <%- JSON.stringify(subjectYearlyPerformance) %>;
-             
-             const yearDatasets = Object.entries(subjectYearlyData).map(([subject, yearData], index) => {
-                const data = years.map(y => yearData[y] || 0);
-                const colors = ['#2563eb', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
-                return {
-                   label: subject,
-                   data: data,
-                   borderColor: colors[index % colors.length],
-                   backgroundColor: colors[index % colors.length],
-                   tension: 0.3,
-                   fill: false,
-                   pointRadius: 4
-                };
-             });
-             
-             const ctxYear = document.getElementById('chart_year_<%= reg %>').getContext('2d');
-             new Chart(ctxYear, {
-                type: 'line',
-                data: {
-                   labels: years,
-                   datasets: yearDatasets
-                },
-                options: {
-                   responsive: true,
-                   maintainAspectRatio: false,
-                   plugins: {
-                      legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
+                // Year Chart - Subject wise
+                const years = <%- JSON.stringify(Array.from(allYears).sort()) %>;
+                const subjectYearlyData = <%- JSON.stringify(subjectYearlyPerformance) %>;
+                
+                const yearDatasets = Object.entries(subjectYearlyData).map(([subject, yearData], index) => {
+                   const data = years.map(y => yearData[y] || 0);
+                   const colors = ['#2563eb', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+                   return {
+                      label: subject,
+                      data: data,
+                      borderColor: colors[index % colors.length],
+                      backgroundColor: colors[index % colors.length],
+                      tension: 0.3,
+                      fill: false,
+                      pointRadius: 4
+                   };
+                });
+                
+                const ctxYear = document.getElementById('chart_year_<%= reg %>').getContext('2d');
+                new Chart(ctxYear, {
+                   type: 'line',
+                   data: {
+                      labels: years,
+                      datasets: yearDatasets
                    },
-                   scales: { y: { beginAtZero: true } }
-                }
-             });
-          }
-       </script>
+                   options: {
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                         legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
+                      },
+                      scales: { y: { beginAtZero: true } }
+                   }
+                });
+             }
+          </script>
+       <% } %>
 
-    <% }) %>
-  <% } %>
+      <% }) %>
+   <% } %>
 <script>
+   const rosterByReg = <%- JSON.stringify(rosterByReg || {}) %>;
+   const studentCards = Array.from(document.querySelectorAll('.student-card'));
+   const filterSearch = document.getElementById('filterSearch');
+   const filterFamily = document.getElementById('filterFamily');
+   const filterMedical = document.getElementById('filterMedical');
+   const filterBehavior = document.getElementById('filterBehavior');
+   const filterBlood = document.getElementById('filterBlood');
+   const filterTv = document.getElementById('filterTv');
+   const filterInternet = document.getElementById('filterInternet');
+   const filterCount = document.getElementById('filterCount');
+
+   function normalize(value) {
+      return String(value || '').toLowerCase().trim();
+   }
+
+   function isEmptyValue(value) {
+      const normalized = normalize(value);
+      return !normalized || normalized === '-' || normalized === 'n/a' || normalized === 'na' || normalized === 'none';
+   }
+
+   function matchesYesNo(value, filterValue) {
+      if (filterValue === 'any') return true;
+      const empty = isEmptyValue(value);
+      if (filterValue === 'yes') return !empty;
+      if (filterValue === 'no') return empty;
+      return true;
+   }
+
+   function applyPortfolioFilters() {
+      if (!studentCards.length) return;
+      const searchValue = normalize(filterSearch && filterSearch.value);
+      const familyValue = normalize(filterFamily && filterFamily.value);
+      const medicalValue = filterMedical ? filterMedical.value : 'any';
+      const behaviorValue = filterBehavior ? filterBehavior.value : 'any';
+      const bloodValue = normalize(filterBlood && filterBlood.value);
+      const tvValue = filterTv ? filterTv.value : 'any';
+      const internetValue = filterInternet ? filterInternet.value : 'any';
+
+      let visibleCount = 0;
+
+      studentCards.forEach((card) => {
+         const data = card.dataset;
+         const searchBlob = [
+            data.name,
+            data.reg,
+            data.roll,
+            data.father,
+            data.mother,
+            data.guardian
+         ].map(normalize).join(' ');
+
+         const familyBlob = [
+            data.father,
+            data.mother,
+            data.guardian,
+            data.fatherOcc,
+            data.motherOcc,
+            data.guardianOcc,
+            data.income
+         ].map(normalize).join(' ');
+
+         const matchesSearch = !searchValue || searchBlob.includes(searchValue);
+         const matchesFamily = !familyValue || familyBlob.includes(familyValue);
+         const matchesMedical = matchesYesNo(data.medical, medicalValue);
+         const matchesBehavior = matchesYesNo(data.behaviour, behaviorValue);
+         const matchesBlood = !bloodValue || bloodValue === 'any' || normalize(data.blood) === bloodValue;
+         const matchesTv = matchesYesNo(data.tv, tvValue);
+         const matchesInternet = matchesYesNo(data.internet, internetValue);
+
+         const visible = matchesSearch && matchesFamily && matchesMedical && matchesBehavior && matchesBlood && matchesTv && matchesInternet;
+         card.style.display = visible ? '' : 'none';
+         if (visible) visibleCount += 1;
+      });
+
+      if (filterCount) {
+         filterCount.textContent = `${visibleCount} student${visibleCount === 1 ? '' : 's'} shown`;
+      }
+   }
+
+   function resetPortfolioFilters() {
+      if (filterSearch) filterSearch.value = '';
+      if (filterFamily) filterFamily.value = '';
+      if (filterMedical) filterMedical.value = 'any';
+      if (filterBehavior) filterBehavior.value = 'any';
+      if (filterBlood) filterBlood.value = 'any';
+      if (filterTv) filterTv.value = 'any';
+      if (filterInternet) filterInternet.value = 'any';
+      applyPortfolioFilters();
+   }
+
+   if (filterSearch) filterSearch.addEventListener('input', applyPortfolioFilters);
+   if (filterFamily) filterFamily.addEventListener('input', applyPortfolioFilters);
+   if (filterMedical) filterMedical.addEventListener('change', applyPortfolioFilters);
+   if (filterBehavior) filterBehavior.addEventListener('change', applyPortfolioFilters);
+   if (filterBlood) filterBlood.addEventListener('change', applyPortfolioFilters);
+   if (filterTv) filterTv.addEventListener('change', applyPortfolioFilters);
+   if (filterInternet) filterInternet.addEventListener('change', applyPortfolioFilters);
+   applyPortfolioFilters();
+
+   function formatDateInput(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return date.toISOString().slice(0, 10);
+   }
+
+   function setField(id, value) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = value || '';
+   }
+
+   function setRadio(name, value) {
+      const radios = document.querySelectorAll(`input[name="${name}"]`);
+      if (!radios.length) return;
+      const normalized = String(value || '').toLowerCase();
+      radios.forEach((radio) => {
+         const radioValue = String(radio.value || '').toLowerCase();
+         radio.checked = normalized === radioValue;
+      });
+   }
+
+   function openInfoModal(reg) {
+      const data = rosterByReg[reg] || {};
+      setField('info_reg', reg);
+      setField('info_name', data.name);
+      setField('info_roll', data.roll);
+      setField('info_class', data.studentClass);
+      setField('info_section', data.section);
+      setField('info_gender', data.gender);
+      setField('info_dob', formatDateInput(data.dob));
+      setField('info_class_started', formatDateInput(data.classStartedAt));
+      setField('info_mother_tongue', data.mothersToungue);
+      setField('info_previous_school', data.previousSchool);
+      setField('info_father_name', data.fatherName);
+      setField('info_father_occupation', data.fatheroccupation);
+      setField('info_father_contact', data.fatherContact);
+      setField('info_father_qualification', data.fatherqualification);
+      setField('info_mother_name', data.motherName);
+      setField('info_mother_occupation', data.motheroccupation);
+      setField('info_mother_contact', data.motherContact);
+      setField('info_mother_qualification', data.motherqualification);
+      setField('info_guardian_name', data.otherguardianName);
+      setField('info_guardian_occupation', data.otherguardianOccupation);
+      setField('info_guardian_contact', data.otherguardianContact);
+      setField('info_yearly_income', data.yearlyIncome);
+      setField('info_blood_group', data.bloodGroup);
+      setField('info_medical', Array.isArray(data.anyMedicalCondition) ? data.anyMedicalCondition.join(', ') : data.anyMedicalCondition);
+      setField('info_behaviour', data.otherbehaviouralCondition);
+      setField('info_mobile', data.numberofmobile);
+      setRadio('tvatHome', data.tvatHome);
+      setRadio('internetAtHome', data.internetAtHome);
+      setField('info_fee_paid', data.feepaidduration);
+      document.getElementById('infoModal').classList.add('is-open');
+      document.getElementById('infoModal').setAttribute('aria-hidden', 'false');
+   }
+
+   function closeInfoModal() {
+      const modal = document.getElementById('infoModal');
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+   }
+
+   function addInformation(reg) {
+      openInfoModal(reg);
+   }
+
+   document.getElementById('infoForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const payload = {};
+      formData.forEach((value, key) => {
+         payload[key] = value;
+      });
+
+      fetch('/studentportfolio/record', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify(payload)
+      })
+      .then((response) => response.json())
+      .then((data) => {
+         if (data.success) {
+            alert('Student information saved.');
+            closeInfoModal();
+            window.location.reload();
+         } else {
+            alert(data.message || 'Failed to save student information.');
+         }
+      })
+      .catch((error) => {
+         console.error('Error:', error);
+         alert('An error occurred while saving the information.');
+      });
+   });
+
    function addComplaint(reg) {
       const complaint = prompt("Enter your complaint or feedback for this student:");
       if (complaint) {

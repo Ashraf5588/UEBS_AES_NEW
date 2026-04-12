@@ -264,6 +264,7 @@ student.get('/formatchoosestudent',examdashboardcontroller.formatChooseStudent)
 student.get('/student/generatemarksheet',examdashboardcontroller.generateMarksheetStudent)
 student.get('/studentportfolio',verifytoken,authorized,examdashboardcontroller.studentPortfolio)
 student.post('/addComplaint',verifytoken,authorized,examdashboardcontroller.addComplaint)
+student.post('/studentportfolio/record',verifytoken,authorized,examdashboardcontroller.saveStudentRecordFromPortfolio)
 
   
 

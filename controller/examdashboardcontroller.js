@@ -1248,7 +1248,14 @@ exports.studentPortfolio = async (req, res, next) => {
     
        const marksheetSetups = await marksheetSetup.find({}).lean();
        const model = getSlipModel();
-        const studentWisedata = await model.aggregate([
+       const roster = await studentRecord.find({ studentClass, section }).lean().sort({ roll: 1 });
+       const rosterByReg = roster.reduce((acc, item) => {
+         if (item && item.reg) {
+           acc[item.reg] = item;
+         }
+         return acc;
+       }, {});
+       const studentWisedata = await model.aggregate([
           {
             $match: {
               studentClass: studentClass,
@@ -1275,6 +1282,19 @@ exports.studentPortfolio = async (req, res, next) => {
         ]);
 const studentWisedatastructured = {};
 
+for (const student of roster) {
+  const reg = student.reg;
+  if (!reg) continue;
+  studentWisedatastructured[reg] = {
+    reg,
+    name: student.name || '- ',
+    roll: student.roll || '',
+    studentClass: student.studentClass || studentClass,
+    section: student.section || section,
+    records: {}
+  };
+}
+
 for (const student of studentWisedata) {
   const reg = student.reg;
   const name = student.name;
@@ -1283,9 +1303,8 @@ for (const student of studentWisedata) {
   const studentClass = student.studentClass;
   const section = student.section;
   const subject = student._id.subject;
-  const terminal = student._id.terminal; // IMPORTANT
+  const terminal = student._id.terminal;
 
-  // student base
   if (!studentWisedatastructured[reg]) {
     studentWisedatastructured[reg] = {
       reg,
@@ -1297,17 +1316,14 @@ for (const student of studentWisedata) {
     };
   }
 
-  // year
   if (!studentWisedatastructured[reg].records[academicYear]) {
     studentWisedatastructured[reg].records[academicYear] = {};
   }
 
-  // subject
   if (!studentWisedatastructured[reg].records[academicYear][subject]) {
     studentWisedatastructured[reg].records[academicYear][subject] = {};
   }
 
-  // terminal (THIS WAS MISSING)
   studentWisedatastructured[reg].records[academicYear][subject][terminal] = {
     theory: student.theorymarks,
     practical: student.practicalmarks,
@@ -1338,7 +1354,8 @@ for (const student of studentWisedata) {
       reg,
       studentWisedatastructured,
       marksheetSetups,
-      portfolioByReg,
+        portfolioByReg,
+        rosterByReg,
     });
   }
   catch (error) {
@@ -1375,6 +1392,90 @@ exports.addComplaint = async (req, res) => {
   } catch (error) {
     console.error('Error saving complaint:', error);
     return res.status(500).json({ success: false, message: 'Failed to save complaint.' });
+  }
+};
+exports.saveStudentRecordFromPortfolio = async (req, res) => {
+  try {
+    const reg = String(req.body && req.body.reg ? req.body.reg : '').trim();
+    if (!reg) {
+      return res.status(400).json({ success: false, message: 'Reg is required.' });
+    }
+
+    const allowedFields = [
+      'name',
+      'studentClass',
+      'section',
+      'gender',
+      'mothersToungue',
+      'previousSchool',
+      'fatherName',
+      'fatheroccupation',
+      'fatherContact',
+      'fatherqualification',
+      'motherName',
+      'motheroccupation',
+      'motherContact',
+      'motherqualification',
+      'otherguardianName',
+      'otherguardianOccupation',
+      'otherguardianContact',
+      'yearlyIncome',
+      'bloodGroup',
+      'otherbehaviouralCondition',
+      'numberofmobile',
+      'tvatHome',
+      'internetAtHome',
+      'feepaidduration'
+    ];
+
+    const update = {};
+    allowedFields.forEach((field) => {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+        update[field] = String(req.body[field] || '').trim();
+      }
+    });
+
+    if (Object.prototype.hasOwnProperty.call(req.body, 'roll')) {
+      const roll = Number(req.body.roll);
+      update.roll = Number.isFinite(roll) ? roll : undefined;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(req.body, 'dob')) {
+      update.dob = req.body.dob ? new Date(req.body.dob) : undefined;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(req.body, 'classStartedAt')) {
+      update.classStartedAt = req.body.classStartedAt ? new Date(req.body.classStartedAt) : undefined;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(req.body, 'anyMedicalCondition')) {
+      const raw = req.body.anyMedicalCondition;
+      if (Array.isArray(raw)) {
+        update.anyMedicalCondition = raw.filter(Boolean);
+      } else if (typeof raw === 'string') {
+        update.anyMedicalCondition = raw
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+    }
+
+    Object.keys(update).forEach((key) => {
+      if (update[key] === undefined) {
+        delete update[key];
+      }
+    });
+
+    await studentRecord.updateOne(
+      { reg },
+      { $set: update, $setOnInsert: { reg } },
+      { upsert: true }
+    );
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving student record:', error);
+    return res.status(500).json({ success: false, message: 'Failed to save student record.' });
   }
 };
 exports.uploadOldData = async (req, res, next) => {

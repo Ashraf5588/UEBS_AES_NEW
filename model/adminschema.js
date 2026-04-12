@@ -63,7 +63,35 @@ const studentrecordschema = new mongoose.Schema({
   "studentClass":{ type: String,required: false},
   "section":{ type: String,required: false},
   "roll":{ type: Number,required: false},
-  "gender": {type: String, required:false}
+  "gender": {type: String, required:false},
+  createdAt: { type: Date, default: Date.now },
+  dob: { type: Date, required: false },
+  classStartedAt: { type: Date, required: false },
+  mothersToungue: { type: String, required: false },
+  previousSchool: { type: String, required: false },
+  fatherName: { type: String, required: false },
+  fatheroccupation: { type: String, required: false },
+  fatherContact: { type: String, required: false },
+  fatherqualification: { type: String, required: false },
+  motherName: { type: String, required: false },
+  motheroccupation: { type: String, required: false },
+  motherContact: { type: String, required: false },
+  motherqualification: { type: String, required: false },
+  otherguardianName: { type: String, required: false },
+  otherguardianOccupation: { type: String, required: false },
+  otherguardianContact: { type: String, required: false },
+  yearlyIncome: { type: String, required: false },
+  bloodGroup: { type: String, required: false },
+  anyMedicalCondition: [{ type: String, required: false }],
+  otherbehaviouralCondition: { type: String, required: false },
+  numberofmobile: { type: String, required: false },
+  tvatHome: { type: String, required: false },
+  internetAtHome: { type: String, required: false },
+  feepaidduration: { type: String, required: false },
+ 
+  
+ 
+
 })
 const newsubjectSchema = new mongoose.Schema({
   "subject":{ type: String,required: false},
