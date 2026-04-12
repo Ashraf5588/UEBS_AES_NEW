@@ -485,6 +485,13 @@
       const result = (toNum(numerator, 0) / den) * 100;
       return fixed2(result, '0.00');
     };
+
+    const groupBy = (items, getKey) => items.reduce((acc, item) => {
+      const key = getKey(item);
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item);
+      return acc;
+    }, {});
   %>
   
   <div class="page">
@@ -498,7 +505,7 @@
     
     <div class="section-header">Class Wise Analysis Per Subject</div>
     
-<% const groupedByterminal = Object.groupBy(classSubjectAnalysis,item=>item._id.terminal); %>
+<% const groupedByterminal = groupBy(classSubjectAnalysis, item => item._id.terminal); %>
 
 
 <% for (const terminal in groupedByterminal) { %>
@@ -511,7 +518,7 @@
   <% const subjectsArr = [...new Set(data.map(i => i._id.subject))]; %>
 
   <!-- Group by class -->
-  <% const byClass = Object.groupBy(data, i => i._id.studentClass); %>
+  <% const byClass = groupBy(data, i => i._id.studentClass); %>
 
   <div class="table-container table-container--wide">
   <table border="1" cellspacing="0" cellpadding="5" class="wide-subject-table">
