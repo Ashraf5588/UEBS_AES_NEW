@@ -1,0 +1,277 @@
+:root {
+  --hm-ink: #1a1a1a;
+  --hm-muted: #6c6c6c;
+  --hm-card: #ffffff;
+  --hm-accent: #0d6b5f;
+  --hm-accent-dark: #0a4c45;
+  --hm-warm: #f4efe7;
+  --hm-shadow: 0 20px 40px rgba(16, 24, 40, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.hm-body {
+  margin: 0;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  color: var(--hm-ink);
+  background: #f8f5f1;
+  min-height: 100vh;
+}
+
+.hm-bg {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(13, 107, 95, 0.15), transparent 55%),
+    radial-gradient(circle at 80% 10%, rgba(204, 146, 90, 0.2), transparent 50%),
+    linear-gradient(120deg, #f4efe7 0%, #f8f5f1 100%);
+  z-index: -1;
+}
+
+.hm-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+  animation: hmFadeIn 0.6s ease-out both;
+}
+
+.hm-hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.hm-hero h1 {
+  font-family: "Fraunces", "Times New Roman", serif;
+  font-size: clamp(28px, 4vw, 44px);
+  margin: 8px 0 12px;
+  letter-spacing: 0.5px;
+}
+
+.hm-kicker {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 12px;
+  color: var(--hm-accent-dark);
+  font-weight: 600;
+}
+
+.hm-sub {
+  font-size: 16px;
+  color: var(--hm-muted);
+  max-width: 520px;
+}
+
+.hm-badge {
+  background: #fff3e6;
+  border: 1px solid rgba(13, 107, 95, 0.15);
+  padding: 16px 20px;
+  border-radius: 16px;
+  text-align: right;
+  min-width: 200px;
+}
+
+.hm-badge span {
+  display: block;
+  font-size: 12px;
+  color: var(--hm-muted);
+}
+
+.hm-badge strong {
+  display: block;
+  font-size: 18px;
+  color: var(--hm-accent-dark);
+}
+
+.hm-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 24px;
+}
+
+.hm-card {
+  background: var(--hm-card);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--hm-shadow);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.hm-form {
+  display: grid;
+  gap: 18px;
+}
+
+.hm-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.hm-field {
+  display: grid;
+  gap: 8px;
+  position: relative;
+}
+
+.hm-field span {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--hm-muted);
+}
+
+.hm-field input,
+.hm-field textarea {
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  background: #fff;
+}
+
+.hm-field input:focus,
+.hm-field textarea:focus {
+  outline: 2px solid rgba(13, 107, 95, 0.25);
+  border-color: rgba(13, 107, 95, 0.4);
+}
+
+.hm-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.08);
+  margin-top: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 10;
+  display: none;
+}
+
+.hm-suggestion-item {
+  padding: 12px 14px;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+}
+
+.hm-suggestion-item:hover {
+  background: #f4efe7;
+}
+
+.hm-suggestion-name {
+  font-weight: 600;
+  color: var(--hm-ink);
+}
+
+.hm-suggestion-meta {
+  font-size: 13px;
+  color: var(--hm-muted);
+}
+
+.hm-summary {
+  background: var(--hm-warm);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px dashed rgba(13, 107, 95, 0.3);
+  min-height: 84px;
+}
+
+.hm-summary-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.hm-summary strong {
+  display: block;
+  font-size: 12px;
+  color: var(--hm-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hm-summary span {
+  font-size: 14px;
+  color: var(--hm-ink);
+}
+
+.hm-divider {
+  height: 1px;
+  background: rgba(15, 23, 42, 0.1);
+  margin: 8px 0;
+}
+
+.hm-button {
+  border: none;
+  background: var(--hm-accent);
+  color: white;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hm-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(13, 107, 95, 0.25);
+}
+
+.hm-status {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hm-accent-dark);
+}
+
+.hm-guide ul {
+  padding-left: 18px;
+  color: var(--hm-muted);
+  line-height: 1.6;
+}
+
+.hm-highlight {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(13, 107, 95, 0.08);
+  color: var(--hm-accent-dark);
+}
+
+.hm-muted {
+  color: var(--hm-muted);
+}
+
+@keyframes hmFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 900px) {
+  .hm-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hm-badge {
+    width: 100%;
+    text-align: left;
+  }
+}

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Management - Student Record</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/health-record.css">
+</head>
+<body style="background-color: aqua !important;">
+  <div class="hm-bg"></div>
+  <div class="hm-page">
+    <header class="hm-hero">
+      <div>
+        <p class="hm-kicker">School Health Management</p>
+        <h1>Student Health Record</h1>
+        <p class="hm-sub">Search a student, review details, and log a clinical visit in one place.</p>
+      </div>
+      <div class="hm-badge">
+        <span>Clinic</span>
+        <strong>Active Intake</strong>
+      </div>
+    </header>
+
+    <section class="hm-grid">
+      <form id="healthRecordForm" class="hm-card hm-form" action="/healthrecord" method="post" autocomplete="off">
+        <div class="hm-card-header">
+          <h2>Student Lookup</h2>
+          <span class="hm-muted">Type at least 2 letters</span>
+        </div>
+
+        <label class="hm-field">
+          <span>Student Name</span>
+          <input id="studentSearch" name="studentSearch" type="text" placeholder="Search student" required>
+          <div id="studentSuggestions" class="hm-suggestions"></div>
+        </label>
+
+        <div class="hm-summary" id="studentSummary">
+          <p class="hm-muted">No student selected yet.</p>
+        </div>
+
+        <div class="hm-divider"></div>
+
+        <label class="hm-field">
+          <span>Diagnosis</span>
+          <input name="diagnosis" type="text" placeholder="Primary diagnosis" required>
+        </label>
+
+        <label class="hm-field">
+          <span>Treatment Plan</span>
+          <textarea name="treatment" rows="4" placeholder="Medication, procedures, advice" required></textarea>
+        </label>
+
+        <label class="hm-field">
+          <span>Remarks</span>
+          <textarea name="remarks" rows="3" placeholder="Follow-up notes"></textarea>
+        </label>
+
+        <input type="hidden" name="reg" id="reg">
+        <input type="hidden" name="name" id="name">
+        <input type="hidden" name="studentClass" id="studentClass">
+        <input type="hidden" name="section" id="section">
+        <input type="hidden" name="roll" id="roll">
+        <input type="hidden" name="fatherName" id="fatherName">
+        <input type="hidden" name="address" id="address">
+
+        <button type="submit" class="hm-button">Save Health Record</button>
+        <p id="formStatus" class="hm-status" aria-live="polite"></p>
+      </form>
+
+      <aside class="hm-card hm-guide">
+        <h3>Quick Tips</h3>
+        <ul>
+          <li>Use student name to pull verified class, roll, and guardian info.</li>
+          <li>Record diagnosis and treatment in concise, clear language.</li>
+          <li>Remarks are optional but useful for follow-up visits.</li>
+        </ul>
+        <div class="hm-highlight">
+          <p>Need a faster lookup? Start typing and pick from suggestions.</p>
+        </div>
+      </aside>
+    </section>
+  </div>
+
+  <script src="/health-record.js"></script>
+</body>
+</html>

@@ -13,39 +13,69 @@ const preeti_map = {
   "0":"०", "1":"१", "2":"२", "3":"३", "4":"४", "5":"५", "6":"६", "7":"७", "8":"८", "9":"९"
 };
 
+const isNepaliInputTarget = (target) => {
+  return target && target.matches && target.matches('input[type="text"], textarea');
+};
+
+const convertPreetiToUnicode = (value) => {
+  return String(value ?? '')
+    .split('')
+    .map((charStr) => (preeti_map.hasOwnProperty(charStr) ? preeti_map[charStr] : charStr))
+    .join('');
+};
+
 // Event Delegation for dynamic inputs
 document.addEventListener('keypress', function(e) {
-    // Check if Nepali mode is ON
-    if (!window.isNepaliMode) return;
+  // Check if Nepali mode is ON
+  if (!window.isNepaliMode) return;
     
-    // Only apply to text inputs and textareas
-    if (!e.target.matches('input[type="text"], textarea')) return;
+  // Only apply to text inputs and textareas
+  if (!isNepaliInputTarget(e.target)) return;
     
-    // Do not interfere with special keys
-    if (e.ctrlKey || e.altKey || e.metaKey) return;
+  // Do not interfere with special keys
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
     
-    const charCode = e.which || e.keyCode;
-    const charStr = String.fromCharCode(charCode);
+  const charCode = e.which || e.keyCode;
+  const charStr = String.fromCharCode(charCode);
     
-    // Check if character is in map
-    if (preeti_map.hasOwnProperty(charStr)) {
-        e.preventDefault();
-        const unicode = preeti_map[charStr];
+  // Check if character is in map
+  if (preeti_map.hasOwnProperty(charStr)) {
+    e.preventDefault();
+    const unicode = preeti_map[charStr];
         
-        const input = e.target;
+    const input = e.target;
         
-        // Insert unicode character at cursor position
-        const start = input.selectionStart;
-        const end = input.selectionEnd;
-        const val = input.value;
+    // Insert unicode character at cursor position
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const val = input.value;
         
-        // Handle selection replacement
-        input.value = val.substring(0, start) + unicode + val.substring(end);
+    // Handle selection replacement
+    input.value = val.substring(0, start) + unicode + val.substring(end);
         
-        // Restore cursor position after inserted character
-        input.selectionStart = input.selectionEnd = start + unicode.length;
+    // Restore cursor position after inserted character
+    input.selectionStart = input.selectionEnd = start + unicode.length;
         
-        // Trigger input event for auto-resizing textareas or other listeners
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-    }
+    // Trigger input event for auto-resizing textareas or other listeners
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+});
+
+document.addEventListener('paste', function(e) {
+  if (!window.isNepaliMode) return;
+  if (!isNepaliInputTarget(e.target)) return;
+
+  const clipboardText = (e.clipboardData || window.clipboardData).getData('text');
+  if (!clipboardText) return;
+
+  e.preventDefault();
+  const input = e.target;
+  const start = input.selectionStart;
+  const end = input.selectionEnd;
+  const converted = convertPreetiToUnicode(clipboardText);
+  const val = input.value;
+
+  input.value = val.substring(0, start) + converted + val.substring(end);
+  input.selectionStart = input.selectionEnd = start + converted.length;
+  input.dispatchEvent(new Event('input', { bubbles: true }));
 });

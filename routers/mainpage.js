@@ -3,6 +3,7 @@ const student = express.Router();
 const controller = require('../controller/controller')
 const newscontroller = require('../controller/newscontroller')
 const examcontroller = require('../controller/examconntroller')
+const nursecontroller = require('../controller/nursecontroller')
 const multer  = require('multer')
 const examdashboardcontroller = require('../controller/examdashboardcontroller')
 const practical410controller = require('../controller/practical410controller')
@@ -268,7 +269,9 @@ student.post('/studentportfolio/record',verifytoken,authorized,examdashboardcont
 
   
 
-
+student.get('/healthrecord',verifytoken,authorized,isAdmin,nursecontroller.showHealthRecordForm)
+student.get('/healthrecord/students',verifytoken,authorized,isAdmin,nursecontroller.searchStudents)
+student.post('/healthrecord',verifytoken,authorized,isAdmin,nursecontroller.createHealthRecord)
 
 // Theme Routes Start Here
 student.get('/theme', verifytoken, authorized, themecontroller.themeopener);

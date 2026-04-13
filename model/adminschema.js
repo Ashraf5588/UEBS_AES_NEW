@@ -70,6 +70,7 @@ const studentrecordschema = new mongoose.Schema({
   mothersToungue: { type: String, required: false },
   previousSchool: { type: String, required: false },
   fatherName: { type: String, required: false },
+  address: { type: String, required: false },
   fatheroccupation: { type: String, required: false },
   fatherContact: { type: String, required: false },
   fatherqualification: { type: String, required: false },
