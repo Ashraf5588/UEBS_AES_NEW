@@ -1,81 +1,65 @@
-// Global toggle state
-window.isNepaliMode = false;
+function preetiToUnicode(text) {
+  let modified = text;
 
-// Standard Preeti to Unicode Mapping
-const preeti_map = {
-  "~":"ञ्", "`":"़", "!":"ज्ञ", "@":"द्द", "#":"घ", "$":"द्ध", "%":"छ", "^":"ट", "&":"ठ", "*":"ड", "(":"ढ", ")":"ण", "_":")", "-":"(", "+":"़", "=":".",
-  "Q":"त्त", "W":"ड्ढ", "E":"ऐ", "R":"द्व", "T":"झ", "Y":"ठ", "U":"ङ", "I":"क्ष", "O":"इ", "P":"ए", "{":"र्", "}":"घ", "|":"्र", "\\":"्",
-  "q":"त्र", "w":"ध", "e":"भ", "r":"च", "t":"त", "y":"थ", "u":"ग", "i":"ष", "o":"य", "p":"उ", "[":"ृ", "]":"े",
-  "A":"ा", "S":"क्", "D":"म्", "F":"ा्", "G":"न्", "H":"ज्", "J":"व्", "K":"प्", "L":"ी", ":":"स्", "\"":"ू",
-  "a":"ब", "s":"क", "d":"म", "f":"ा", "g":"न", "h":"ज", "j":"व", "k":"प", "l":"ि", ";":"स", "'":"ु",
-  "Z":"श्", "X":"ह्", "C":"ऋ", "V":"ख्", "B":"द्य", "N":"ल्", "M":"ः", "<":"?", ">":"?", "?":"रु",
-  "z":"श", "x":"ह", "c":"अ", "v":"ख", "b":"द", "n":"ल", "m":"इ", ",":",", ".":"।", "/":"र",
-  "0":"०", "1":"१", "2":"२", "3":"३", "4":"४", "5":"५", "6":"६", "7":"७", "8":"८", "9":"९"
-};
+  const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const isNepaliInputTarget = (target) => {
-  return target && target.matches && target.matches('input[type="text"], textarea');
-};
+  const array_one = [
+    "ç","˜",".","'m","]m","Fmf","Fm",")","!","@","#","$","%","^","&","*","(",
+    "k|m","em","km","Qm","qm","N˜","¡","¢","1","2","4",">","?","B","I","Q","ß",
+    "q","„","‹","•","›","§","°","¶","¿","Å","Ë","Ì","Í","Î","Ý","å",
+    "6«","7«","8«","9«","Ø","|","8Þ","9Þ",
+    "S","s","V","v","U","u","£","3","ª","R","r","5","H","h","‰","´","~","`",
+    "6","7","8","9","0","T","t","Y","y","b","W","w","G","g",
+    "K","k","ˆ","A","a","E","e","D","d","o","/","N","n","J","j","Z","z","i",":",";","X","x",
+    "cf‘","c‘f","cf}","cf]","cf","c","O{","O","pm","p","C","P]","P",
+    "f‘","\"","'","+","f","[","\\","]","}","F","L","M"
+  ];
 
-const convertPreetiToUnicode = (value) => {
-  return String(value ?? '')
-    .split('')
-    .map((charStr) => (preeti_map.hasOwnProperty(charStr) ? preeti_map[charStr] : charStr))
-    .join('');
-};
+  const array_two = [
+    "ॐ","ऽ","।","m'","m]","mfF","mF","०","१","२","३","४","५","६","७","८","९",
+    "फ्र","झ","फ","क्त","क्र","ल","ज्ञ्","द्घ","ज्ञ","द्द","द्ध","श्र","रु","द्य","क्ष्","त्त","द्म",
+    "त्र","ध्र","ङ्घ","ड्ड","द्र","ट्ट","ड्ढ","ठ्ठ","रू","हृ",
+    "ङ्ग","त्र","ङ्क","ङ्ख","ट्ठ","द्व",
+    "ट्र","ठ्र","ड्र","ढ्र",
+    "्य","्र","ड़","ढ़",
+    "क्","क","ख्","ख","ग्","ग","घ्","घ","ङ",
+    "च्","च","छ","ज्","ज","झ्","झ","ञ्","ञ",
+    "ट","ठ","ड","ढ","ण्",
+    "त्","त","थ्","थ","द","ध्","ध","न्","न",
+    "प्","प","फ्","ब्","ब","भ्","भ","म्","म",
+    "य","र","ल्","ल","व्","व","श्","श","ष्","स्","स","ह्","ह",
+    "ऑ","ऑ","औ","ओ","आ","अ","ई","इ","ऊ","उ","ऋ","ऐ","ए",
+    "ॉ","ू","ु","ं","ा","ृ","्","े","ै","ँ","ी","ः"
+  ];
 
-// Event Delegation for dynamic inputs
-document.addEventListener('keypress', function(e) {
-  // Check if Nepali mode is ON
-  if (!window.isNepaliMode) return;
-    
-  // Only apply to text inputs and textareas
-  if (!isNepaliInputTarget(e.target)) return;
-    
-  // Do not interfere with special keys
-  if (e.ctrlKey || e.altKey || e.metaKey) return;
-    
-  const charCode = e.which || e.keyCode;
-  const charStr = String.fromCharCode(charCode);
-    
-  // Check if character is in map
-  if (preeti_map.hasOwnProperty(charStr)) {
-    e.preventDefault();
-    const unicode = preeti_map[charStr];
-        
-    const input = e.target;
-        
-    // Insert unicode character at cursor position
-    const start = input.selectionStart;
-    const end = input.selectionEnd;
-    const val = input.value;
-        
-    // Handle selection replacement
-    input.value = val.substring(0, start) + unicode + val.substring(end);
-        
-    // Restore cursor position after inserted character
-    input.selectionStart = input.selectionEnd = start + unicode.length;
-        
-    // Trigger input event for auto-resizing textareas or other listeners
-    input.dispatchEvent(new Event('input', { bubbles: true }));
+  // --- STEP 1: Replace symbols ---
+  for (let i = 0; i < array_one.length; i++) {
+    const regex = new RegExp(escapeRegex(array_one[i]), 'g');
+    modified = modified.replace(regex, array_two[i]);
   }
-});
 
-document.addEventListener('paste', function(e) {
-  if (!window.isNepaliMode) return;
-  if (!isNepaliInputTarget(e.target)) return;
+  // --- STEP 2: Fix "ि" ---
+  modified = modified.replace(/l(.)/g, "$1ि");
 
-  const clipboardText = (e.clipboardData || window.clipboardData).getData('text');
-  if (!clipboardText) return;
+  // Fix wrong placements like "ि्"
+  modified = modified.replace(/ि्(.)/g, "्$1ि");
 
-  e.preventDefault();
-  const input = e.target;
-  const start = input.selectionStart;
-  const end = input.selectionEnd;
-  const converted = convertPreetiToUnicode(clipboardText);
-  const val = input.value;
+  // --- STEP 3: Handle "र्" (reph) ---
+  const matras = "ािीुूृेैोौंःँ";
+  let pos = modified.indexOf("{");
 
-  input.value = val.substring(0, start) + converted + val.substring(end);
-  input.selectionStart = input.selectionEnd = start + converted.length;
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-});
+  while (pos > 0) {
+    let i = pos - 1;
+
+    while (matras.includes(modified[i])) {
+      i--;
+    }
+
+    const chunk = modified.substring(i, pos);
+    modified = modified.replace(chunk + "{", "र्" + chunk);
+
+    pos = modified.indexOf("{");
+  }
+
+  return modified;
+}

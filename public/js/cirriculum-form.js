@@ -66,6 +66,63 @@
     updateModeLabel();
   };
 
+  const convertPreetiToUnicode = (value) => {
+    if (typeof window.preetiToUnicode !== 'function') {
+      return value;
+    }
+    return window.preetiToUnicode(value);
+  };
+
+  let isConvertingNepali = false;
+
+  const shouldConvertTarget = (target) => {
+    if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) {
+      return false;
+    }
+    return form.contains(target) || unitsWrap.contains(target);
+  };
+
+  const applyNepaliConversion = (target) => {
+    if (!window.isNepaliMode || isConvertingNepali || !shouldConvertTarget(target)) {
+      return;
+    }
+
+    const rawValue = target.value;
+    if (!rawValue) {
+      return;
+    }
+
+    let converted = rawValue;
+    let convertedBefore = '';
+    let convertedSelection = '';
+
+    try {
+      const start = typeof target.selectionStart === 'number' ? target.selectionStart : rawValue.length;
+      const end = typeof target.selectionEnd === 'number' ? target.selectionEnd : rawValue.length;
+      converted = convertPreetiToUnicode(rawValue);
+      convertedBefore = convertPreetiToUnicode(rawValue.slice(0, start));
+      convertedSelection = convertPreetiToUnicode(rawValue.slice(start, end));
+    } catch (error) {
+      console.warn('Preeti conversion failed, keeping raw text.', error);
+      return;
+    }
+
+    if (converted === rawValue) {
+      return;
+    }
+
+    isConvertingNepali = true;
+    target.value = converted;
+
+    if (typeof target.selectionStart === 'number' && typeof target.selectionEnd === 'number') {
+      const newStart = convertedBefore.length;
+      const newEnd = newStart + convertedSelection.length;
+      target.setSelectionRange(newStart, newEnd);
+    }
+
+    isConvertingNepali = false;
+  };
+
   const createArrayRow = (unitIndex, fieldName, rowIndex = 0, value = '') => {
     return `
       <div class="array-row" data-array-row>
@@ -422,6 +479,9 @@
   });
 
   document.addEventListener('input', (event) => {
+    if (event.target.matches('input, textarea')) {
+      applyNepaliConversion(event.target);
+    }
     if (event.target.matches('input, textarea') && unitsWrap.contains(event.target)) {
       console.log("INPUT TRIGGERED on", event.target.name);
       console.log("Scope:", hasScope());
