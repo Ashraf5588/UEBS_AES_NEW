@@ -2417,12 +2417,14 @@ exports.editlessondata = async (req, res, next) => {
     if(lessonId)
     {
       const lessonData = await ScienceModel.findById(lessonId).lean();
+      const chaptername = await addChapter.find({ forClass: { $in: [classParam] }, subject: subject }).lean();
       console.log("lesson data for editing=",lessonData)
       if (!lessonData) {
       return res.status(404).send("Lesson data not found for the specified ID");
       }
       res.render("theme/sciencepracticalform", {
         lessonData,
+        chaptername,
         studentClass: classParam,
         subject,
         terminal,
