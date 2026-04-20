@@ -348,6 +348,50 @@
       color: #64748b;
    }
 
+   .health-panel {
+      background: #ecfeff;
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 20px;
+      max-height: 280px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+   }
+
+   .health-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 6px;
+   }
+
+   .health-item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: grid;
+      gap: 6px;
+   }
+
+   .health-meta {
+      font-size: 0.78rem;
+      color: #64748b;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+   }
+
+   .health-line {
+      font-size: 0.9rem;
+      color: var(--text);
+   }
+
    .details-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -638,6 +682,7 @@
         <% const roster = rosterByReg && rosterByReg[reg] ? rosterByReg[reg] : {}; %>
         <% const portfolio = portfolioByReg ? portfolioByReg[reg] : null; %>
         <% const complaints = portfolio && Array.isArray(portfolio.complaints) ? portfolio.complaints : []; %>
+      <% const healthRecords = healthRecordsByReg && Array.isArray(healthRecordsByReg[reg]) ? healthRecordsByReg[reg] : []; %>
 
         <div class="student-card"
            data-name="<%= roster.name || student.name || '' %>"
@@ -895,6 +940,29 @@
                               </form>
                            </div>
                         </div>
+                   </div>
+
+                   <div class="health-panel">
+                        <div class="complaint-header">
+                            <div class="complaint-title">Health Visits</div>
+                            <div class="complaint-count"><%= healthRecords.length %></div>
+                        </div>
+                        <% if (healthRecords.length) { %>
+                           <ul class="health-list">
+                              <% healthRecords.forEach((item) => { %>
+                                 <li class="health-item">
+                                    <div class="health-meta">
+                                       <span>Visit: <%= item.createdAt ? new Date(item.createdAt).toLocaleString() : 'N/A' %></span>
+                                    </div>
+                                    <div class="health-line"><strong>Diagnosis:</strong> <%= item.diagnosis || '-' %></div>
+                                    <div class="health-line"><strong>Treatment / Medicine:</strong> <%= item.treatment || '-' %></div>
+                                    <div class="health-line"><strong>Remarks:</strong> <%= item.remarks || '-' %></div>
+                                 </li>
+                              <% }) %>
+                           </ul>
+                        <% } else { %>
+                           <div class="complaint-empty">No health visits recorded yet.</div>
+                        <% } %>
                    </div>
              
              <% if (hasRecords) { %>

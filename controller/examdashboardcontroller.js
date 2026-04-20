@@ -23,6 +23,7 @@ const { fail } = require("assert");
 const routineModel = mongoose.model("routine", routineSchema, "routine");
 const marksheetSetup = mongoose.model("marksheetSetup", marksheetsetupschemaForAdmin, "marksheetSetup");
 const Portfolio = require("../model/portfolio");
+const HealthRecord = require("../model/nurseschema");
 app.set("view engine", "ejs");
 app.set("view", path.join(rootDir, "views"));
 const newsubject = mongoose.model("newsubject", newsubjectSchema, "newsubject");
@@ -1343,6 +1344,23 @@ for (const student of studentWisedata) {
          return acc;
        }, {});
 
+       const healthRecords = portfolioRegs.length
+         ? await HealthRecord.find({ reg: { $in: portfolioRegs } }).lean().sort({ createdAt: -1 })
+         : [];
+       const healthRecordsByReg = healthRecords.reduce((acc, item) => {
+         const key = item && item.reg ? String(item.reg) : '';
+         if (!key) {
+           return acc;
+         }
+
+         if (!acc[key]) {
+           acc[key] = [];
+         }
+
+         acc[key].push(item);
+         return acc;
+       }, {});
+
 
        console.log("Student Wise Data:", studentWisedatastructured);
        res.render("./exam/studentportfolio", {
@@ -1356,6 +1374,7 @@ for (const student of studentWisedata) {
       marksheetSetups,
         portfolioByReg,
         rosterByReg,
+        healthRecordsByReg,
     });
   }
   catch (error) {

@@ -3,6 +3,10 @@ const suggestions = document.getElementById('studentSuggestions');
 const summary = document.getElementById('studentSummary');
 const form = document.getElementById('healthRecordForm');
 const statusEl = document.getElementById('formStatus');
+const recordRange = document.getElementById('recordRange');
+const recordDate = document.getElementById('recordDate');
+const recordFilterBtn = document.getElementById('recordFilterBtn');
+const recordsTableBody = document.getElementById('recordsTableBody');
 
 const fields = {
   reg: document.getElementById('reg'),
@@ -56,6 +60,90 @@ const setStudent = (student) => {
 const clearSuggestions = () => {
   suggestions.innerHTML = '';
   suggestions.style.display = 'none';
+};
+
+const formatRecordDate = (value) => {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '-';
+  return date.toLocaleString();
+};
+
+const renderRecords = (records) => {
+  if (!recordsTableBody) {
+    return;
+  }
+
+  if (!Array.isArray(records) || records.length === 0) {
+    recordsTableBody.innerHTML = '<tr><td colspan="9" class="hm-empty">No records found.</td></tr>';
+    return;
+  }
+
+  recordsTableBody.innerHTML = records.map((record, index) => {
+    const contact = record.contact || '-';
+    const callAction = record.dialNumber
+      ? `<a class="hm-call-link" href="tel:${record.dialNumber}">Call</a>`
+      : '<span class="hm-muted">N/A</span>';
+
+    return `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${formatRecordDate(record.createdAt)}</td>
+        <td>${record.name || '-'}</td>
+        <td>${record.studentClass || '-'}-${record.section || '-'}</td>
+        <td>${record.diagnosis || '-'}</td>
+        <td>${record.treatment || '-'}</td>
+        <td>${record.remarks || '-'}</td>
+        <td>${contact}</td>
+        <td>${callAction}</td>
+      </tr>
+    `;
+  }).join('');
+};
+
+const loadRecords = async () => {
+  if (!recordsTableBody) {
+    return;
+  }
+
+  recordsTableBody.innerHTML = '<tr><td colspan="9" class="hm-empty">Loading records...</td></tr>';
+
+  const params = new URLSearchParams();
+  if (recordRange && recordRange.value) {
+    params.set('range', recordRange.value);
+  }
+  if (recordDate && recordDate.value) {
+    params.set('date', recordDate.value);
+  }
+
+  try {
+    const response = await fetch(`/healthrecord/records?${params.toString()}`);
+    const contentType = response.headers.get('content-type') || '';
+
+    if (!response.ok) {
+      let message = `Unable to fetch records (${response.status})`;
+      if (contentType.includes('application/json')) {
+        const errorBody = await response.json();
+        message = errorBody.message || message;
+      } else {
+        const textBody = await response.text();
+        if (textBody && textBody.trim()) {
+          message = textBody.slice(0, 120);
+        }
+      }
+      throw new Error(message);
+    }
+
+    if (!contentType.includes('application/json')) {
+      throw new Error('Session may be expired. Please login again.');
+    }
+
+    const records = await response.json();
+    renderRecords(records);
+  } catch (error) {
+    const safeMessage = (error && error.message) ? error.message : 'Failed to load records.';
+    recordsTableBody.innerHTML = `<tr><td colspan="9" class="hm-empty">${safeMessage}</td></tr>`;
+  }
 };
 
 const showSuggestions = (items) => {
@@ -138,10 +226,35 @@ form.addEventListener('submit', async (event) => {
 
     statusEl.textContent = 'Health record saved successfully.';
     form.reset();
+    Object.values(fields).forEach((field) => {
+      field.value = '';
+    });
+    if (recordDate) {
+      recordDate.value = '';
+    }
+    if (recordRange) {
+      recordRange.value = 'today';
+    }
     renderSummary(null);
+    await loadRecords();
   } catch (error) {
     statusEl.textContent = 'Unable to save health record. Please try again.';
   }
 });
 
+if (recordFilterBtn) {
+  recordFilterBtn.addEventListener('click', loadRecords);
+}
+
+if (recordRange) {
+  recordRange.addEventListener('change', () => {
+    loadRecords();
+  });
+}
+
+if (recordDate) {
+  recordDate.addEventListener('change', loadRecords);
+}
+
 renderSummary(null);
+loadRecords();

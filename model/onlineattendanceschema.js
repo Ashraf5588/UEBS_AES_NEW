@@ -11,6 +11,7 @@ attendance:[
     month: {type:String, required:false},
     day: {type:String, required:false},
     status: {type:String, required:false},
+    reason: {type:String, required:false},
   }
 ]
  

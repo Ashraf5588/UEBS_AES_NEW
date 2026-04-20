@@ -59,6 +59,94 @@ exports.getHealthRecords = async (req, res) => {
     }
 };
 
+const getDayRange = (dateValue) => {
+    const date = dateValue ? new Date(dateValue) : new Date();
+    if (Number.isNaN(date.getTime())) {
+        return null;
+    }
+
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const end = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+    return { start, end };
+};
+
+const sanitizePhone = (value) => String(value || '').replace(/[^\d+]/g, '');
+exports.getHealthRecordsFiltered = async (req, res) => {
+    try {
+        const range = String(req.query.range || 'today').trim();
+        const dateQuery = String(req.query.date || '').trim();
+
+        const now = new Date();
+        let startDate;
+        let endDate;
+        if (dateQuery) {
+            const dayRange = getDayRange(dateQuery);
+            if (!dayRange) {
+                return res.status(400).json({ message: 'Invalid date' });
+            }
+            startDate = dayRange.start;
+            endDate = dayRange.end;
+        } else if (range === 'last7') {
+            endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+        } else if (range === 'lastMonth') {
+            startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            endDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        } else if (range === 'thisYear') {
+            startDate = new Date(now.getFullYear(), 0, 1);
+            endDate = new Date(now.getFullYear() + 1, 0, 1);
+        } else {
+            const dayRange = getDayRange(now);
+            startDate = dayRange.start;
+            endDate = dayRange.end;
+        }
+
+        const records = await HealthRecord.find({
+            createdAt: {
+                $gte: startDate,
+                $lt: endDate
+            }
+        })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const regs = [...new Set(records.map((item) => String(item.reg || '')).filter(Boolean))];
+        let students = [];
+
+        try {
+            students = regs.length > 0
+                ? await StudentRecord.find({ reg: { $in: regs } })
+                    .select('reg numberofmobile fatherContact motherContact otherguardianContact')
+                    .lean()
+                : [];
+        } catch (lookupError) {
+            console.error('Health records contact lookup failed:', lookupError);
+            students = [];
+        }
+
+        const contactMap = new Map(
+            students.map((student) => {
+                const contact = student.numberofmobile || student.fatherContact || student.motherContact || student.otherguardianContact || '';
+                return [String(student.reg || ''), String(contact || '')];
+            })
+        );
+
+        const responseData = records.map((record) => {
+            const contact = contactMap.get(String(record.reg || '')) || '';
+            return {
+                ...record,
+                contact,
+                dialNumber: sanitizePhone(contact)
+            };
+        });
+
+        res.status(200).json(responseData);
+    } catch (error) {
+        console.error('Error fetching filtered health records:', error);
+        res.status(500).json({ message: error && error.message ? error.message : 'Internal server error' });
+    }
+};
+
 exports.searchStudents = async (req, res) => {
     try {
         const query = String(req.query.q || '').trim();

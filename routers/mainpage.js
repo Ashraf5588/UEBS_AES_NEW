@@ -271,6 +271,7 @@ student.post('/studentportfolio/record',verifytoken,authorized,examdashboardcont
 
 student.get('/healthrecord',verifytoken,authorized,isAdmin,nursecontroller.showHealthRecordForm)
 student.get('/healthrecord/students',verifytoken,authorized,isAdmin,nursecontroller.searchStudents)
+student.get('/healthrecord/records',verifytoken,authorized,isAdmin,nursecontroller.getHealthRecordsFiltered)
 student.post('/healthrecord',verifytoken,authorized,isAdmin,nursecontroller.createHealthRecord)
 
 // Theme Routes Start Here

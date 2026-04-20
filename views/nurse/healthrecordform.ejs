@@ -9,12 +9,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/health-record.css">
 </head>
-<body style="background-color: aqua !important;">
+<body class="hm-body">
   <div class="hm-bg"></div>
   <div class="hm-page">
     <header class="hm-hero">
       <div>
-        <p class="hm-kicker">School Health Management</p>
+        <p class="hm-kicker">School Health</p>
         <h1>Student Health Record</h1>
         <p class="hm-sub">Search a student, review details, and log a clinical visit in one place.</p>
       </div>
@@ -81,6 +81,53 @@
           <p>Need a faster lookup? Start typing and pick from suggestions.</p>
         </div>
       </aside>
+    </section>
+
+    <section class="hm-card hm-records">
+      <div class="hm-card-header hm-records-header">
+        <h2>Saved Records</h2>
+        <span class="hm-muted">Default: Today</span>
+      </div>
+
+      <div class="hm-record-filters">
+        <label class="hm-field hm-inline-field">
+          <span>Range</span>
+          <select id="recordRange">
+            <option value="today" selected>Today</option>
+            <option value="last7">Last 7 Days</option>
+            <option value="lastMonth">Last Month</option>
+            <option value="thisYear">This Year</option>
+          </select>
+        </label>
+
+        <label class="hm-field hm-inline-field">
+          <span>Specific Date</span>
+          <input type="date" id="recordDate" />
+        </label>
+
+        <button type="button" class="hm-button" id="recordFilterBtn">Find Records</button>
+      </div>
+
+      <div class="hm-table-wrap">
+        <table class="hm-table" id="recordsTable">
+          <thead>
+            <tr>
+              <th>SN</th>
+              <th>Date</th>
+              <th>Student</th>
+              <th>Class</th>
+              <th>Diagnosis</th>
+              <th>Treatment</th>
+              <th>Remarks</th>
+              <th>Contact</th>
+              <th>Call</th>
+            </tr>
+          </thead>
+          <tbody id="recordsTableBody">
+            <tr><td colspan="9" class="hm-empty">Loading records...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
   </div>
 

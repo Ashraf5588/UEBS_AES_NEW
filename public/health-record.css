@@ -2,9 +2,9 @@
   --hm-ink: #1a1a1a;
   --hm-muted: #6c6c6c;
   --hm-card: #ffffff;
-  --hm-accent: #0d6b5f;
-  --hm-accent-dark: #0a4c45;
-  --hm-warm: #f4efe7;
+  --hm-accent: #0e8f7a;
+  --hm-accent-dark: #0b5f52;
+  --hm-warm: #eefaf7;
   --hm-shadow: 0 20px 40px rgba(16, 24, 40, 0.12);
 }
 
@@ -24,32 +24,32 @@
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(circle at 15% 20%, rgba(13, 107, 95, 0.15), transparent 55%),
-    radial-gradient(circle at 80% 10%, rgba(204, 146, 90, 0.2), transparent 50%),
-    linear-gradient(120deg, #f4efe7 0%, #f8f5f1 100%);
+    radial-gradient(circle at 15% 20%, rgba(14, 143, 122, 0.16), transparent 55%),
+    radial-gradient(circle at 80% 10%, rgba(56, 189, 248, 0.22), transparent 50%),
+    linear-gradient(120deg, #e8f9fb 0%, #f2fffa 100%);
   z-index: -1;
 }
 
 .hm-page {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 48px 24px 64px;
+  padding: 28px 24px 44px;
   animation: hmFadeIn 0.6s ease-out both;
 }
 
 .hm-hero {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 32px;
+  margin-bottom: 18px;
 }
 
 .hm-hero h1 {
   font-family: "Fraunces", "Times New Roman", serif;
-  font-size: clamp(28px, 4vw, 44px);
-  margin: 8px 0 12px;
+  font-size: clamp(24px, 3vw, 34px);
+  margin: 4px 0 8px;
   letter-spacing: 0.5px;
 }
 
@@ -62,7 +62,7 @@
 }
 
 .hm-sub {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--hm-muted);
   max-width: 520px;
 }
@@ -135,6 +135,17 @@
   font-size: 15px;
   font-family: inherit;
   background: #fff;
+}
+
+.hm-clinical-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.hm-clinical-grid .hm-field textarea {
+  min-height: 120px;
+  border-radius: 14px;
 }
 
 .hm-field input:focus,
@@ -242,6 +253,83 @@
   line-height: 1.6;
 }
 
+.hm-records {
+  margin-top: 24px;
+  display: grid;
+  gap: 14px;
+}
+
+.hm-records-header {
+  padding-bottom: 4px;
+}
+
+.hm-record-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.hm-inline-field {
+  margin: 0;
+}
+
+.hm-inline-field select,
+.hm-inline-field input {
+  height: 44px;
+}
+
+.hm-table-wrap {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 12px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hm-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.hm-table th,
+.hm-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  text-align: left;
+  font-size: 13px;
+  vertical-align: top;
+}
+
+.hm-table th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--hm-muted);
+  background: #f7f7f7;
+}
+
+.hm-empty {
+  text-align: center !important;
+  color: var(--hm-muted);
+  font-weight: 600;
+}
+
+.hm-call-link {
+  display: inline-block;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(13, 107, 95, 0.12);
+  color: var(--hm-accent-dark);
+  font-weight: 600;
+}
+
+.hm-call-link:hover {
+  background: rgba(13, 107, 95, 0.2);
+}
+
 .hm-highlight {
   margin-top: 18px;
   padding: 16px;
@@ -266,12 +354,109 @@
 }
 
 @media (max-width: 900px) {
+  .hm-page {
+    padding: 20px 16px 30px;
+  }
+
   .hm-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .hm-card {
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  .hm-form {
+    gap: 14px;
+  }
+
+  .hm-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .hm-record-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hm-button {
+    font-size: 14px;
+    padding: 12px 14px;
+  }
+
+  .hm-table {
+    min-width: 860px;
+  }
+
+  .hm-clinical-grid {
     grid-template-columns: 1fr;
   }
 
   .hm-badge {
     width: 100%;
     text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  .hm-page {
+    padding: 14px 10px 22px;
+  }
+
+  .hm-hero {
+    margin-bottom: 12px;
+  }
+
+  .hm-hero h1 {
+    font-size: 22px;
+    margin: 2px 0 6px;
+  }
+
+  .hm-sub {
+    font-size: 13px;
+  }
+
+  .hm-kicker {
+    font-size: 11px;
+    letter-spacing: 1.3px;
+  }
+
+  .hm-field span {
+    font-size: 11px;
+    letter-spacing: 0.9px;
+  }
+
+  .hm-field input,
+  .hm-field textarea,
+  .hm-inline-field select,
+  .hm-inline-field input {
+    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
+
+  .hm-record-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .hm-record-filters .hm-button {
+    width: 100%;
+  }
+
+  .hm-table {
+    min-width: 760px;
+  }
+
+  .hm-table th,
+  .hm-table td {
+    font-size: 12px;
+    padding: 8px 9px;
+  }
+
+  .hm-summary-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -123,6 +123,26 @@
       color: #6c757d;
     }
 
+    .mark-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .mark-entry .mark-quick-option {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .mark-entry .mark-input {
+      max-width: 120px;
+    }
+
     /* Enhanced Table Styles */
     .evaluation-table, table {
       width: 100%;
@@ -697,15 +717,33 @@
 
                                           <td><%= ind.indicatorName %></td>
                                           <td>
-                                            <div class="radio-group">
-                                              <input type="radio" 
-                                                     value="<%= ind.indicatorsMarks %>||<%= ind.indicatorName %>||<%= theme.themeName %>||<%= lo.learningOutcomeName %>" 
-                                                     class="marks-radio"
-                                                     name="unit[<%= idx %>][practicals][<%= prindx %>][criteria][<%= iIndex %>]"
-                                                     data-practical="<%= idx %>-<%= prindx %>"
-                                                     id="practical_<%= idx %>_<%= prindx %>_<%= iIndex %>_<%= indIndex %>">
-                                              <label for="practical_<%= idx %>_<%= prindx %>_<%= iIndex %>_<%= indIndex %>"><%= ind.indicatorsMarks %></label>
+                                            <div class="mark-entry">
+                                              <label class="mark-quick-option" for="practical-radio-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>">
+                                                <input type="radio"
+                                                  id="practical-radio-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>"
+                                                  class="marks-radio-quick"
+                                                  data-practical="<%= idx %>-<%= prindx %>"
+                                                  data-target-id="practical-input-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>"
+                                                  data-default-mark="<%= ind.indicatorsMarks %>">
+                                                <span><%= ind.indicatorsMarks %></span>
+                                              </label>
+                                              <input type="number"
+                                                step="0.1"
+                                                min="0"
+                                                id="practical-input-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>"
+                                                class="form-control marks-input mark-input"
+                                                data-practical="<%= idx %>-<%= prindx %>"
+                                                data-default-mark="<%= ind.indicatorsMarks %>"
+                                                data-radio-id="practical-radio-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>"
+                                                data-hidden-id="practical-hidden-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>"
+                                                placeholder="अंक लेख्नुहोस्">
                                             </div>
+                                            <input type="hidden"
+                                                   id="practical-hidden-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>"
+                                                   name="unit[<%= idx %>][practicals][<%= prindx %>][criteria][<%= iIndex %>][<%= indIndex %>]"
+                                                   data-indicator="<%= ind.indicatorName %>"
+                                                   data-adhar="<%= theme.themeName %>"
+                                                   data-outcome="<%= lo.learningOutcomeName %>">
                                           </td>
                                         </tr>
                                       <% }) %>
@@ -768,20 +806,33 @@
 
                                           <td><%= ind.indicatorName %></td>
                                           <td>
-                                            <div class="radio-group">
-                                              
-     
-
-                                              <input type="radio" 
-                                                     value="<%= ind.indicatorsMarks %>||<%= ind.indicatorName %>||<%= lo.learningOutcomeName %> " 
-                                                     class="marks-radio-project"
-                                                     name="unit[<%= idx %>][projectWorks][<%= prindx %>][criteria][<%= iIndex %>]"
-                                                     data-project="<%= idx %>-<%= prindx %>"
-                                                     id="project_<%= idx %>_<%= prindx %>_<%= iIndex %>_<%= indIndex %>">
-                                              <label for="project_<%= idx %>_<%= prindx %>_<%= iIndex %>_<%= indIndex %>"><%= ind.indicatorsMarks %></label>
+                                            <div class="mark-entry">
+                                              <label class="mark-quick-option" for="project-radio-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>">
+                                                <input type="radio"
+                                                  id="project-radio-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>"
+                                                  class="marks-radio-project-quick"
+                                                  data-project="<%= idx %>-<%= prindx %>"
+                                                  data-target-id="project-input-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>"
+                                                  data-default-mark="<%= ind.indicatorsMarks %>">
+                                                <span><%= ind.indicatorsMarks %></span>
+                                              </label>
+                                              <input type="number"
+                                                step="0.1"
+                                                min="0"
+                                                id="project-input-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>"
+                                                class="form-control marks-input-project mark-input"
+                                                data-project="<%= idx %>-<%= prindx %>"
+                                                data-default-mark="<%= ind.indicatorsMarks %>"
+                                                data-radio-id="project-radio-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>"
+                                                data-hidden-id="project-hidden-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>"
+                                                placeholder="अंक लेख्नुहोस्">
                                             </div>
+                                            <input type="hidden"
+                                                   id="project-hidden-<%= idx %>-<%= prindx %>-<%= iIndex %>-<%= indIndex %>"
+                                                   name="unit[<%= idx %>][projectWorks][<%= prindx %>][criteria][<%= iIndex %>][<%= indIndex %>]"
+                                                   data-indicator="<%= ind.indicatorName %>"
+                                                   data-adhar="<%= lo.learningOutcomeName %>">
                                           </td>
-                                          <td></td>
                                         </tr>
                                       <% }) %>
                                       <% iIndex++ %>
@@ -938,40 +989,125 @@ else
       }
     }
   </script>
-<!-- script to calcualted total obtained per radio per practical -->
- <script>
-document.querySelectorAll(".marks-radio").forEach(radio => {
-  radio.addEventListener("change", e => {
-    let group = e.target.dataset.practical;   // e.g. "0-1"
-    let totalInput = document.getElementById("practical-total-" + group);
-
-    // Get all checked radios for this practical group
-    let checked = document.querySelectorAll(`input[data-practical="${group}"]:checked`);
-    let total = Array.from(checked).reduce((sum, r) => {
-      // Extract just the marks (first part before ||)
-      let marks = r.value.split('||')[0];
-      return sum + parseInt(marks);
-    }, 0);
-
-    totalInput.value = total;
-  });
-});
-  </script>
-<!-- Project total calculation -->
+<!-- script to calculate total obtained per input per practical/project -->
 <script>
-document.querySelectorAll(".marks-radio-project").forEach(radio => {
-  radio.addEventListener("change", e => {
-    let group = e.target.dataset.project;   // e.g. "0-1"
-    let totalInput = document.getElementById("project-total-" + group);
+function formatTotal(total) {
+  return Number.isInteger(total) ? total : total.toFixed(2);
+}
 
-    // सबै radio जसमा data-practical = यो group छ, र checked
-    let checked = document.querySelectorAll(`input[data-project="${group}"]:checked`);
-    let total = Array.from(checked).reduce((sum, r) => sum + parseInt(r.value), 0);
+function syncQuickRadioState(input) {
+  const radioId = input.dataset.radioId;
+  if (!radioId) return;
 
-    totalInput.value = total;
+  const radio = document.getElementById(radioId);
+  if (!radio) return;
+
+  const entered = parseFloat(input.value);
+  const defaultMark = parseFloat(input.dataset.defaultMark);
+
+  if (Number.isNaN(entered) || Number.isNaN(defaultMark)) {
+    radio.checked = false;
+    return;
+  }
+
+  radio.checked = Math.abs(entered - defaultMark) < 0.001;
+}
+
+function syncPracticalHiddenValue(input) {
+  const hidden = document.getElementById(input.dataset.hiddenId);
+  if (!hidden) return;
+
+  const marks = (input.value || '').trim();
+  if (!marks) {
+    hidden.value = '';
+    syncQuickRadioState(input);
+    return;
+  }
+
+  const indicator = hidden.dataset.indicator || '';
+  const adhar = hidden.dataset.adhar || '';
+  const outcome = hidden.dataset.outcome || '';
+  hidden.value = `${marks}||${indicator}||${adhar}||${outcome}`;
+  syncQuickRadioState(input);
+}
+
+function syncProjectHiddenValue(input) {
+  const hidden = document.getElementById(input.dataset.hiddenId);
+  if (!hidden) return;
+
+  const marks = (input.value || '').trim();
+  if (!marks) {
+    hidden.value = '';
+    syncQuickRadioState(input);
+    return;
+  }
+
+  const indicator = hidden.dataset.indicator || '';
+  const adhar = hidden.dataset.adhar || '';
+  hidden.value = `${marks}||${indicator}||${adhar}`;
+  syncQuickRadioState(input);
+}
+
+function updatePracticalTotal(group) {
+  const totalInput = document.getElementById("practical-total-" + group);
+  if (!totalInput) return;
+
+  const inputs = document.querySelectorAll(`.marks-input[data-practical="${group}"]`);
+  const total = Array.from(inputs).reduce((sum, input) => {
+    return sum + (parseFloat(input.value) || 0);
+  }, 0);
+
+  totalInput.value = formatTotal(total);
+}
+
+function updateProjectTotal(group) {
+  const totalInput = document.getElementById("project-total-" + group);
+  if (!totalInput) return;
+
+  const inputs = document.querySelectorAll(`.marks-input-project[data-project="${group}"]`);
+  const total = Array.from(inputs).reduce((sum, input) => {
+    return sum + (parseFloat(input.value) || 0);
+  }, 0);
+
+  totalInput.value = formatTotal(total);
+}
+
+document.querySelectorAll(".marks-input").forEach(input => {
+  input.addEventListener("input", e => {
+    const group = e.target.dataset.practical;
+    syncPracticalHiddenValue(e.target);
+    updatePracticalTotal(group);
   });
 });
-  </script>
+
+document.querySelectorAll(".marks-input-project").forEach(input => {
+  input.addEventListener("input", e => {
+    const group = e.target.dataset.project;
+    syncProjectHiddenValue(e.target);
+    updateProjectTotal(group);
+  });
+});
+
+document.querySelectorAll(".marks-radio-quick").forEach(radio => {
+  radio.addEventListener("change", e => {
+    const input = document.getElementById(e.target.dataset.targetId);
+    if (!input) return;
+    input.value = e.target.dataset.defaultMark || '';
+    syncPracticalHiddenValue(input);
+    updatePracticalTotal(e.target.dataset.practical);
+  });
+});
+
+document.querySelectorAll(".marks-radio-project-quick").forEach(radio => {
+  radio.addEventListener("change", e => {
+    const input = document.getElementById(e.target.dataset.targetId);
+    if (!input) return;
+    input.value = e.target.dataset.defaultMark || '';
+    syncProjectHiddenValue(input);
+    updateProjectTotal(e.target.dataset.project);
+  });
+});
+</script>
 
 
 
@@ -1027,51 +1163,19 @@ document.querySelectorAll(".marks-radio-project").forEach(radio => {
               unit.practicals.forEach((practical, practicalIdx) => {
               // ...existing code...
 if (practical.criteria && Array.isArray(practical.criteria)) {
-  // Get all radios for this practical
-  let allRadios = document.querySelectorAll(`input[data-practical="${unitIdx}-${practicalIdx}"]`);
-  
-  // Group radios by their name attribute
-  let radioGroups = {};
-  allRadios.forEach(radio => {
-    if (!radioGroups[radio.name]) {
-      radioGroups[radio.name] = [];
-    }
-    radioGroups[radio.name].push(radio);
-  });
-  
-  // Match criteria with radio groups
-  let groupNames = Object.keys(radioGroups);
-  practical.criteria.forEach((c, criteriaIdx) => {
-    if (criteriaIdx < groupNames.length) {
-      let mark = c.practicalIndicatorMarks.toString().trim();
-      let indicator = c.practicalIndicator || '';
-      let adhar = c.practicalAdhar || '';
-      let outcome = c.practicalOutcome || '';
-      
-      let radiosInGroup = radioGroups[groupNames[criteriaIdx]];
-      
-      // Find matching radio by comparing all parts
-      let matchingRadio = radiosInGroup.find(radio => {
-        let parts = radio.value.split('||');
-        return parts[0].trim() === mark && 
-               parts[1].trim() === indicator.trim() && 
-               parts[2].trim() === adhar.trim();
-      });
-      
-      if (matchingRadio) {
-        matchingRadio.checked = true;
-      }
-    }
+  let allInputs = document.querySelectorAll(`.marks-input[data-practical="${unitIdx}-${practicalIdx}"]`);
+
+  allInputs.forEach((input, index) => {
+    const criteria = practical.criteria[index];
+    input.value = criteria ? (criteria.practicalIndicatorMarks || '') : '';
+    syncPracticalHiddenValue(input);
   });
 }
 // ...existing code...
 
 
                 // Update total for this practical
-                let totalInput = document.getElementById(`practical-total-${unitIdx}-${practicalIdx}`);
-                let checked = document.querySelectorAll(`input[data-practical="${unitIdx}-${practicalIdx}"]:checked`);
-                let total = Array.from(checked).reduce((sum, r) => sum + parseInt(r.value), 0);
-                totalInput.value = total;
+                updatePracticalTotal(`${unitIdx}-${practicalIdx}`);
               });
             }
 
@@ -1081,42 +1185,17 @@ if (practical.criteria && Array.isArray(practical.criteria)) {
 if(unit.projectWorks && Array.isArray(unit.projectWorks)) {
   unit.projectWorks.forEach((project, projectIdx) => {
     if (project.criteria && Array.isArray(project.criteria)) {
-      // Get all radios for this project
-      let allRadios = document.querySelectorAll(`input[data-project="${unitIdx}-${projectIdx}"]`);
-      
-      // Group radios by their name attribute
-      let radioGroups = {};
-      allRadios.forEach(radio => {
-        if (!radioGroups[radio.name]) {
-          radioGroups[radio.name] = [];
-        }
-        radioGroups[radio.name].push(radio);
-      });
-      
-      // Match criteria with radio groups (in order)
-      let groupNames = Object.keys(radioGroups);
-      project.criteria.forEach((c, criteriaIdx) => {
-        if (criteriaIdx < groupNames.length) {
-          let mark = c.projectIndicatorMarks.toString().trim();
-          let radiosInGroup = radioGroups[groupNames[criteriaIdx]];
-          
-          // Find and check the matching radio in this specific group
-          let matchingRadio = radiosInGroup.find(radio => 
-            radio.value.split('||')[0].trim() === mark
-          );
-          
-          if (matchingRadio) {
-            matchingRadio.checked = true;
-          }
-        }
+      let allInputs = document.querySelectorAll(`.marks-input-project[data-project="${unitIdx}-${projectIdx}"]`);
+
+      allInputs.forEach((input, index) => {
+        const criteria = project.criteria[index];
+        input.value = criteria ? (criteria.projectIndicatorMarks || '') : '';
+        syncProjectHiddenValue(input);
       });
     }
 
     // Update total
-    let totalInput = document.getElementById(`project-total-${unitIdx}-${projectIdx}`);
-    let checked = document.querySelectorAll(`input[data-project="${unitIdx}-${projectIdx}"]:checked`);
-    let total = Array.from(checked).reduce((sum, r) => sum + parseInt(r.value), 0);
-    totalInput.value = total;
+    updateProjectTotal(`${unitIdx}-${projectIdx}`);
 
     // Load Project Images
     const previewDiv = document.getElementById(`imagePreview_${unitIdx}_${projectIdx}`);
@@ -1209,16 +1288,18 @@ if(unit.projectWorks && Array.isArray(unit.projectWorks)) {
     // Clear practicals
     unit.practicals.forEach((practical,practicalIdx)=> {
       document.getElementById(`practical-total-${unitIdx}-${practicalIdx}`).value = '0';
-      document.querySelectorAll(`input[data-practical="${unitIdx}-${practicalIdx}"]`).forEach(radio => {
-        radio.checked = false;
+      document.querySelectorAll(`.marks-input[data-practical="${unitIdx}-${practicalIdx}"]`).forEach(input => {
+        input.value = '';
+        syncPracticalHiddenValue(input);
       });
     });
 
     // Clear projects
     unit.projectWorks.forEach((project, projectIdx) => {
       document.getElementById(`project-total-${unitIdx}-${projectIdx}`).value = '0';
-      document.querySelectorAll(`input[data-project="${unitIdx}-${projectIdx}"]`).forEach(radio => {
-        radio.checked = false;
+      document.querySelectorAll(`.marks-input-project[data-project="${unitIdx}-${projectIdx}"]`).forEach(input => {
+        input.value = '';
+        syncProjectHiddenValue(input);
       });
     });
   });
@@ -1280,6 +1361,16 @@ function clearForm() {
   // ✅ Uncheck all radios properly
   document.querySelectorAll('input[type="radio"]').forEach(radio => {
     radio.checked = false;
+  });
+
+  // Clear practical/project mark inputs and hidden values
+  document.querySelectorAll('.marks-input').forEach(input => {
+    input.value = '';
+    syncPracticalHiddenValue(input);
+  });
+  document.querySelectorAll('.marks-input-project').forEach(input => {
+    input.value = '';
+    syncProjectHiddenValue(input);
   });
 
   // (Optional) Reset practical/project totals if you have them

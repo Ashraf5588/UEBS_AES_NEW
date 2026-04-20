@@ -19,6 +19,9 @@ const { verify } = require('jsonwebtoken');
 
 attendance.get('/onlineattendance',verifytoken,authorized,attendancecontroller.onlineAttendancePage)
 attendance.post('/saveonlineattendance',verifytoken,authorized,attendancecontroller.saveOnlineAttendance)
+attendance.get('/getOnlineAttendanceData',verifytoken,authorized,attendancecontroller.getOnlineAttendanceData)
+attendance.get('/frontdesk',verifytoken,authorized,attendancecontroller.frontdeskPage)
+attendance.post('/frontdesk/reason',verifytoken,authorized,attendancecontroller.saveFrontdeskReason)
 attendance.get('/setholiday',verifytoken,authorized,isAdmin,attendancecontroller.setHoliday)
 attendance.post('/setholiday',verifytoken,authorized,isAdmin,attendancecontroller.savesetHoliday)
 
