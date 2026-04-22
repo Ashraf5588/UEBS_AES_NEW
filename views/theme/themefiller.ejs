@@ -1617,16 +1617,6 @@ const response = await fetch(`/datafromanotherclass?studentClass=${encodeURIComp
     };
   </script>
 <script src="/js/preeti.js"></script>
-<script>
-  function toggleLanguage(checkbox) {
-    if (checkbox.checked) {
-      window.isNepaliMode = true;
-      if (typeof showSaveStatus === 'function') showSaveStatus("Nepali Typing Enabled (Preeti)", "success");
-    } else {
-      window.isNepaliMode = false;
-      if (typeof showSaveStatus === 'function') showSaveStatus("English Typing Enabled", "info");
-    }
-  }
-</script>
+<script src="/js/preeti-input-toggle.js"></script>
 </body>
 </html>

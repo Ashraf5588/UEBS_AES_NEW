@@ -28,6 +28,25 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage })
 
+const marksheetImageStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './public/');
+  },
+  filename: function (req, file, cb) {
+    if (file.fieldname === 'schoolImage') {
+      cb(null, 'school.jpg');
+      return;
+    }
+    if (file.fieldname === 'schoolLogo') {
+      cb(null, 'image.png');
+      return;
+    }
+    cb(null, file.originalname);
+  }
+});
+
+const uploadMarksheetImages = multer({ storage: marksheetImageStorage });
+
 
 const {authenticateToken} = require('../middleware/loginmiddleware')
 
@@ -52,7 +71,7 @@ student.get('/reportprint',verifytoken,authorized,isAdmin,admincontrol.reportpri
 student.get('/newform',verifytoken,authorized,controller.newform)
 
 student.get('/admin/marksheetsetup',verifytoken,authorized,isAdmin,admincontrol.marksheetSetupForm)
-student.post('/admin/marksheetsetup',verifytoken,authorized,isAdmin,admincontrol.marksheetSetupSave)
+student.post('/admin/marksheetsetup',verifytoken,authorized,isAdmin,uploadMarksheetImages.fields([{ name: 'schoolImage', maxCount: 1 }, { name: 'schoolLogo', maxCount: 1 }]),admincontrol.marksheetSetupSave)
 
 student.get('/admin/subject/:subId?',verifytoken,authorized,admincontrol.showSubject)
 
@@ -292,7 +311,7 @@ student.get('/themeslip', verifytoken, authorized, themecontroller.themeslip);
 student.get('/theme/previous-data', verifytoken, authorized, themecontroller.getPreviousThemeData);
 student.get('/theme/student-themes', verifytoken, authorized, themecontroller.getStudentThemes);
 student.get('/marksheetsetup',verifytoken,authorized,isAdmin,admincontrol.showmarksheetSetupForm);
-student.post('/marksheetsetup',verifytoken,authorized,isAdmin,admincontrol.savemarksheetSetupForm);
+student.post('/marksheetsetup',verifytoken,authorized,isAdmin,uploadMarksheetImages.fields([{ name: 'schoolImage', maxCount: 1 }, { name: 'schoolLogo', maxCount: 1 }]),admincontrol.savemarksheetSetupForm);
 student.get('/marksheetsetup/delete/:id',verifytoken,authorized,isAdmin,admincontrol.deletemarksheetSetup);
 
 

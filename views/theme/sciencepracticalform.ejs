@@ -331,6 +331,15 @@
     <div class="header-card">
       <h2><span class="science-icon"></span><%= subject %> Practicals/Project Configuration</h2>
       <p>Set up units and practicals for science evaluation</p>
+      <div style="display: inline-flex; align-items: center; gap: 10px; margin-top: 12px; padding: 8px 12px; border-radius: 999px; background: #ffffff; border: 1px solid #dbe7f5;">
+        <span style="font-weight: 600; color: #2c3e50;">English</span>
+        <label style="position: relative; display: inline-block; width: 50px; height: 24px;">
+          <input type="checkbox" id="nepaliToggle" style="opacity: 0; width: 0; height: 0;">
+          <span id="scienceToggleTrack" style="position: absolute; cursor: pointer; inset: 0; background-color: #cfd8dc; transition: 0.3s; border-radius: 24px;"></span>
+          <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; top: 3px; background: white; transition: 0.3s; border-radius: 50%;" id="scienceToggleThumb"></span>
+        </label>
+        <span style="font-weight: 600; color: #2c3e50;">Nepali (Preeti)</span>
+      </div>
       <% if (typeof studentClass !== 'undefined') { %>
         <div style="background-color: #c9e2ff; padding: 10px; margin-top: 15px; border-radius: 8px; font-weight: bold; color: #4a90e2;">
           Configuring <%= subject %> Practicals for Class <%= studentClass %>- <%= terminal %> Terminal
@@ -829,5 +838,24 @@
       }
     });
   </script>
+  <script>
+    (function () {
+      const checkbox = document.getElementById('nepaliToggle');
+      const track = document.getElementById('scienceToggleTrack');
+      const thumb = document.getElementById('scienceToggleThumb');
+      if (!checkbox || !thumb || !track) return;
+
+      const syncVisual = () => {
+        thumb.style.transform = checkbox.checked ? 'translateX(26px)' : 'translateX(0)';
+        track.style.backgroundColor = checkbox.checked ? '#4caf50' : '#cfd8dc';
+      };
+
+      checkbox.addEventListener('change', syncVisual);
+      document.addEventListener('DOMContentLoaded', syncVisual);
+      syncVisual();
+    })();
+  </script>
+  <script src="/js/preeti.js"></script>
+  <script src="/js/preeti-input-toggle.js"></script>
 </body>
 </html>

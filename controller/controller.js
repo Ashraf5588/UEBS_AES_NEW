@@ -195,6 +195,7 @@ exports.homePage = async (req, res, next) => {
   
   const subject = await subjectlist.find({}).lean();
   const studentClassdata = await studentClass.find({}).lean();
+  const marksheetSetups = await marksheetSetup.find({}).lean();
   const terminals = await terminal.find({}).lean();
   const user = req.user;
   let accessibleSubject =[];
@@ -223,6 +224,7 @@ exports.homePage = async (req, res, next) => {
     subjects: accessibleSubject, 
     studentClassdata:accessibleClass,
     terminals,
+    marksheetSetups,
     userrole: user.role,
   });
 };

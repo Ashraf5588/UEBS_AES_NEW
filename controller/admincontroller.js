@@ -3015,6 +3015,7 @@ exports.showmarksheetSetupForm = async (req, res) => {
       currentPage: 'marksheetsetup',
       marksheetData: marksheetData,
       editData: editData,
+      previewVersion: Date.now(),
       ...sidenavData
     });
   } catch (err) {
@@ -3027,6 +3028,10 @@ exports.savemarksheetSetupForm = async (req, res) => {
     const total = req.body.totalTerminals;
     const terminals = [];
 
+    const files = req.files || {};
+    const hasSchoolImage = Array.isArray(files.schoolImage) && files.schoolImage.length > 0;
+    const hasSchoolLogo = Array.isArray(files.schoolLogo) && files.schoolLogo.length > 0;
+
     for (let i = 1; i <= total; i++) {
       const name = req.body[`name${i}`];
       const workingDays = req.body[`workingDays${i}`];
@@ -3038,8 +3043,9 @@ exports.savemarksheetSetupForm = async (req, res) => {
 
     // Check if we're updating an existing setup
     if (req.query.edit === 'true' && req.query.id) {
-      // Update existing setup
-      await marksheetSetup.findByIdAndUpdate(req.query.id, {
+      const existingSetup = await marksheetSetup.findById(req.query.id).lean();
+
+      const updatePayload = {
         schoolName: req.body.schoolName,
         address: req.body.address,
         phone: req.body.phone,
@@ -3047,8 +3053,13 @@ exports.savemarksheetSetupForm = async (req, res) => {
         website: req.body.website,
         academicYear: req.body.academicYear,
         totalTerminals: total,
-        terminals
-      });
+        terminals,
+        schoolImage: hasSchoolImage ? '/school.jpg' : (existingSetup && existingSetup.schoolImage ? existingSetup.schoolImage : '/school.jpg'),
+        schoolLogo: hasSchoolLogo ? '/image.png' : (existingSetup && existingSetup.schoolLogo ? existingSetup.schoolLogo : '/image.png')
+      };
+
+      // Update existing setup
+      await marksheetSetup.findByIdAndUpdate(req.query.id, updatePayload);
     } else {
       // Create new setup
       await marksheetSetup.create({
@@ -3059,7 +3070,9 @@ exports.savemarksheetSetupForm = async (req, res) => {
         website: req.body.website,
         academicYear: req.body.academicYear,
         totalTerminals: total,
-        terminals
+        terminals,
+        schoolImage: '/school.jpg',
+        schoolLogo: '/image.png'
       });
     }
 

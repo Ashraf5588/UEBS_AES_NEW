@@ -383,7 +383,7 @@
     </div>
 
     <div class="form-card">
-      <form action="/marksheetsetup<% if (typeof editData !== 'undefined' && editData) { %>?edit=true&id=<%= editData._id %><% } %>" method="POST" id="marksheetForm">
+      <form action="/marksheetsetup<% if (typeof editData !== 'undefined' && editData) { %>?edit=true&id=<%= editData._id %><% } %>" method="POST" enctype="multipart/form-data" id="marksheetForm">
         <h2 style="color: #4a90e2; margin-bottom: 1.5rem; text-align: center;">School Information</h2>
         
         <div class="form-row">
@@ -416,6 +416,21 @@
           <div class="form-group">
             <label for="website">Website URL</label>
             <input type="text" name="website" id="website" placeholder="Enter Website URL" value="<%= typeof editData !== 'undefined' && editData ? editData.website : '' %>">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="schoolImage">School Image Upload (saved as school.jpg)</label>
+            <input type="file" name="schoolImage" id="schoolImage" accept="image/*">
+            <small style="display:block; margin-top: 6px; color:#7f8c8d;">Uploading a new file replaces public/school.jpg.</small>
+            <img src="/school.jpg?v=<%= typeof previewVersion !== 'undefined' ? previewVersion : Date.now() %>" alt="School Image Preview" style="margin-top:8px; max-width: 120px; max-height: 120px; border-radius: 8px; border:1px solid #e9ecef; object-fit: cover;" onerror="this.style.display='none'">
+          </div>
+          <div class="form-group">
+            <label for="schoolLogo">School Logo Upload (saved as image.png)</label>
+            <input type="file" name="schoolLogo" id="schoolLogo" accept="image/*">
+            <small style="display:block; margin-top: 6px; color:#7f8c8d;">Uploading a new file replaces public/image.png.</small>
+            <img src="/image.png?v=<%= typeof previewVersion !== 'undefined' ? previewVersion : Date.now() %>" alt="School Logo Preview" style="margin-top:8px; max-width: 120px; max-height: 120px; border-radius: 8px; border:1px solid #e9ecef; object-fit: cover;" onerror="this.style.display='none'">
           </div>
         </div>
 
