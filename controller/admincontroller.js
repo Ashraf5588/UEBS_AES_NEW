@@ -158,6 +158,102 @@ const admin = mongoose.model("admin", adminSchema, "admin");
 const superadmin = mongoose.model("superadmin", superadminSchema, "superadmin");
 let entryArray = [];
 
+const CLASS_ORDER = {
+  nursery: 1,
+  lkg: 2,
+  ukg: 3,
+  one: 4,
+  two: 5,
+  three: 6,
+  four: 7,
+  five: 8,
+  six: 9,
+  seven: 10,
+  eight: 11,
+  nine: 12,
+  ten: 13
+};
+
+const normalizeClassName = (value) => {
+  let raw = String(value || '').trim().replace(/\s+/g, ' ');
+  if (!raw) return '';
+
+  // Remove common prefixes/suffixes that leak from CSV formatting.
+  raw = raw.replace(/^class\s+/i, '').replace(/\s+section$/i, '').trim();
+
+  // Normalize common misspelling variants for nursery.
+  raw = raw.replace(/^nurser$/i, 'nursery').replace(/^nursary$/i, 'nursery');
+
+  const lower = raw.toLowerCase();
+
+  const numberWordMap = {
+    '1': 'one',
+    '2': 'two',
+    '3': 'three',
+    '4': 'four',
+    '5': 'five',
+    '6': 'six',
+    '7': 'seven',
+    '8': 'eight',
+    '9': 'nine',
+    '10': 'ten'
+  };
+
+  if (numberWordMap[lower]) {
+    raw = numberWordMap[lower];
+  }
+
+  if (lower === 'lkg') return 'LKG';
+  if (lower === 'ukg') return 'UKG';
+
+  const words = raw.split(' ').map((word) => {
+    const w = word.toLowerCase();
+    if (w === 'lkg') return 'LKG';
+    if (w === 'ukg') return 'UKG';
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  });
+
+  return words.join(' ');
+};
+
+const classSortWeight = (className) => {
+  const raw = String(className || '').trim();
+  if (!raw) return 9999;
+  const lower = raw.toLowerCase();
+  const words = lower.split(/\s+/);
+
+  for (const token of words) {
+    if (Object.prototype.hasOwnProperty.call(CLASS_ORDER, token)) {
+      return CLASS_ORDER[token];
+    }
+  }
+
+  const numeric = Number(raw);
+  if (Number.isFinite(numeric)) {
+    return 100 + numeric;
+  }
+
+  return 9000;
+};
+
+const sortClassSectionList = (items) => {
+  return [...(items || [])].sort((a, b) => {
+    const classA = normalizeClassName(a.studentClass);
+    const classB = normalizeClassName(b.studentClass);
+    const weightA = classSortWeight(classA);
+    const weightB = classSortWeight(classB);
+
+    if (weightA !== weightB) return weightA - weightB;
+
+    const classCmp = classA.localeCompare(classB, undefined, { sensitivity: 'base' });
+    if (classCmp !== 0) return classCmp;
+
+    const sectionA = String(a.section || '').trim();
+    const sectionB = String(b.section || '').trim();
+    return sectionA.localeCompare(sectionB, undefined, { sensitivity: 'base' });
+  });
+};
+
 /**
  * Transform entry array data into a pivoted format for better data visualization
  * 
@@ -978,7 +1074,7 @@ exports.addSubject = async (req, res, next) => {
 
 
 exports.showClass = async (req, res, next) => {
-  const studentClasslist = await studentClass.find({});
+  const studentClasslist = sortClassSectionList(await studentClass.find({}).lean());
 
   
   // Get sidenav data
@@ -1358,7 +1454,7 @@ exports.editClass = async (req, res, next) => {
   const editing = req.query.editing === "true";
   const classedit = await studentClass.findOne({ _id: `${classId}` });
   console.log(classedit)
-  const studentClasslist = await studentClass.find({});
+  const studentClasslist = sortClassSectionList(await studentClass.find({}).lean());
   
   // Get sidenav data
   const sidenavData = await getSidenavData(req);
@@ -1478,22 +1574,199 @@ try
 const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecord");
 //insert new record, delete old record from studentrecord collection when new file is uploaded csv,
 
-
-  if (!req.file || req.file.mimetype !== 'text/csv') {
+  if (!req.file) {
     return res.status(400).send("Please upload a valid CSV file");
   }
+
+  const normalizeHeader = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const parseBoolLike = (value) => {
+    const normalized = String(value || '').toLowerCase().trim();
+    if (['yes', 'true', '1'].includes(normalized)) return true;
+    if (['no', 'false', '0'].includes(normalized)) return false;
+    return undefined;
+  };
+  const parseDateSafe = (value) => {
+    if (!value) return undefined;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? undefined : date;
+  };
+
+  const headerMap = {
+    sn: 'sn',
+    regno: 'reg',
+    regdno: 'regdNo',
+    registrationno: 'reg',
+    nameofstudent: 'name',
+    name: 'name',
+    gender: 'gender',
+    class: 'studentClass',
+    section: 'section',
+    rollno: 'roll',
+    rollnumber: 'roll',
+    classgroup: 'classGroup',
+    asmissionstatus: 'admissionStatus',
+    admissionstatus: 'admissionStatus',
+    district: 'district',
+    address: 'address',
+    dobnepali: 'dobNepali',
+    dobenglish: 'dob',
+    age: 'age',
+    contactno: 'numberofmobile',
+    contactnumber: 'numberofmobile',
+    fathersname: 'fatherName',
+    mothersname: 'motherName',
+    guardianname: 'otherguardianName',
+    religion: 'religion',
+    ethnicity: 'ethnicity',
+    busstop: 'busStop',
+    house: 'house',
+    status: 'status',
+    registrationdate: 'registrationDate',
+    fathersmobile: 'fatherMobile',
+    mothersmobile: 'motherMobile',
+    handicap: 'handicap',
+    iemisno: 'iemisNo',
+    previousschool: 'previousSchool',
+    bloodgroup: 'bloodGroup',
+
+    height: 'height',
+    weight: 'weight',
+    mothertongue: 'mothersToungue',
+    motherstoungue: 'mothersToungue',
+    fatheroccupation: 'fatheroccupation',
+    motheroccupation: 'motheroccupation',
+    guardianoccupation: 'otherguardianOccupation',
+    fathercontact: 'fatherContact',
+    mothercontact: 'motherContact',
+    guardiancontact: 'otherguardianContact',
+    yearlyincome: 'yearlyIncome',
+    anymedicalcondition: 'anyMedicalCondition',
+    behaviouralcondition: 'otherbehaviouralCondition',
+    otherbehaviouralcondition: 'otherbehaviouralCondition',
+    eyeproblem: 'eyeproblem',
+    earproblem: 'earproblem',
+    hairproblem: 'hairproblem',
+    livewithfather: 'liveWithFather',
+    livewithmother: 'liveWithMother',
+    parentviewtowardsschool: 'parentViewTowardsSchool',
+    parentvisitfrequency: 'parentVisitFrequency',
+    tvathome: 'tvatHome',
+    internetathome: 'internetAtHome',
+    feepaidduration: 'feepaidduration'
+  };
   
   // Read the CSV file
   const csvFilePath = req.file.path;
   const csv = require('csvtojson');
   
   // Convert CSV to JSON
-  const jsonArray = await csv().fromFile(csvFilePath);
+  const rawRows = await csv().fromFile(csvFilePath);
+
+  const jsonArray = rawRows.map((row) => {
+    const mapped = {};
+
+    Object.keys(row || {}).forEach((key) => {
+      const schemaKey = headerMap[normalizeHeader(key)];
+      if (!schemaKey) return;
+
+      let value = row[key];
+      if (typeof value === 'string') {
+        value = value.trim();
+      }
+
+      if (schemaKey === 'roll') {
+        const parsedRoll = Number(value);
+        mapped.roll = Number.isFinite(parsedRoll) ? parsedRoll : undefined;
+        return;
+      }
+
+      if (schemaKey === 'dob' || schemaKey === 'registrationDate') {
+        mapped[schemaKey] = parseDateSafe(value);
+        return;
+      }
+
+      if (schemaKey === 'anyMedicalCondition') {
+        mapped.anyMedicalCondition = String(value || '')
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean);
+        return;
+      }
+
+      if (['eyeproblem', 'earproblem', 'hairproblem', 'liveWithFather', 'liveWithMother'].includes(schemaKey)) {
+        mapped[schemaKey] = parseBoolLike(value);
+        return;
+      }
+
+      mapped[schemaKey] = value;
+    });
+
+    if (!mapped.reg && mapped.regdNo) {
+      mapped.reg = mapped.regdNo;
+    }
+
+    if (!mapped.fatherContact && mapped.fatherMobile) {
+      mapped.fatherContact = mapped.fatherMobile;
+    }
+
+    if (!mapped.motherContact && mapped.motherMobile) {
+      mapped.motherContact = mapped.motherMobile;
+    }
+
+    // If class and section come combined (e.g. "Nursery Section A" or "Class Six SITA"), split safely.
+    if ((!mapped.section || String(mapped.section).trim() === '') && mapped.studentClass) {
+      const combined = String(mapped.studentClass).trim().replace(/\s+/g, ' ');
+      const sectionPattern = /^(.*)\s+section\s+(.+)$/i;
+      const match = combined.match(sectionPattern);
+
+      if (match) {
+        mapped.studentClass = match[1];
+        mapped.section = match[2];
+      } else {
+        const parts = combined.split(' ');
+        if (parts.length >= 2) {
+          mapped.section = parts.pop();
+          mapped.studentClass = parts.join(' ');
+        }
+      }
+    }
+
+    if (mapped.studentClass) {
+      mapped.studentClass = normalizeClassName(String(mapped.studentClass).trim().replace(/\s+/g, ' '));
+    }
+    if (mapped.section) {
+      mapped.section = String(mapped.section).trim().replace(/\s+/g, ' ').toUpperCase();
+    }
+
+    Object.keys(mapped).forEach((key) => {
+      if (mapped[key] === '' || mapped[key] === undefined) {
+        delete mapped[key];
+      }
+    });
+
+    return mapped;
+  }).filter((row) => row && row.reg && row.name);
   
   // Insert JSON data into MongoDB
   await modal.deleteMany({});
 
   await modal.insertMany(jsonArray);
+
+  // Keep classlist in sync with unique studentClass + section pairs from uploaded records.
+  const uniqueClassSections = new Map();
+  jsonArray.forEach((row) => {
+    const cls = normalizeClassName(String(row.studentClass || '').trim());
+    const sec = String(row.section || '').trim().toUpperCase();
+    if (!cls || !sec) return;
+    uniqueClassSections.set(`${cls}__${sec}`, { studentClass: cls, section: sec });
+  });
+
+  if (uniqueClassSections.size > 0) {
+    await studentClass.deleteMany({});
+    await studentClass.insertMany(Array.from(uniqueClassSections.values()));
+  } else {
+    await studentClass.deleteMany({});
+  }
  
   // Delete the uploaded file after processing
   fs.unlinkSync(csvFilePath);
@@ -1516,7 +1789,69 @@ const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecor
   console.log(err);
   res.status(500).send("Error processing student records: " + err.message);
 }
-}
+};
+
+exports.downloadStudentRecordTemplate = async (req, res) => {
+  try {
+    const headers = [
+      'SN',
+      'Reg No',
+      'Name of Student',
+      'Gender',
+      'Class',
+      'Section',
+      'Roll No',
+      'Class Group',
+      'Asmission Status',
+      'District',
+      'Address',
+      'DOB Nepali',
+      'DOB English',
+      'Age',
+      'Contact No',
+      "Father's Name",
+      "Mother's Name",
+      'Guardian Name',
+      'Religion',
+      'Ethnicity',
+      'Bus Stop',
+      'House',
+      'Regd.No',
+      'Status',
+      'Registration Date',
+      "Father's Mobile",
+      "Mother's Mobile",
+      'Handicap',
+      'IEMIS No',
+      'Previous School',
+      'Blood Group',
+
+      'Height',
+      'Weight',
+      'Any Medical Condition',
+      'Behavioural Condition',
+      'Eye Problem',
+      'Ear Problem',
+      'Hair Problem',
+      'Live With Father',
+      'Live With Mother',
+      'Parent View Towards School',
+      'Parent Visit Frequency',
+      'TV At Home',
+      'Internet At Home',
+      'Fee Paid Duration'
+    ];
+
+    const csvContent = `${headers.join(',')}\n`;
+    const fileName = 'studentrecord_template.csv';
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    return res.status(200).send(csvContent);
+  } catch (error) {
+    console.error('Error downloading student record template:', error);
+    return res.status(500).send('Failed to download template.');
+  }
+};
 exports.studentrecordadd = async (req, res, next) => {
   try {
       const { studentrecordschema } = require("../model/adminschema");

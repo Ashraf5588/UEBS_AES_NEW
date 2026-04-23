@@ -1243,8 +1243,18 @@ exports.formatChooseStudent = async (req, res, next) => {
 exports.studentPortfolio = async (req, res, next) => {
   try {
     const {studentClass,section,terminal,academicYear,reg} = req.query;
-    const studentClassdata = await studentClassModel.find({}).lean().sort({roll:1});
-     const user = req.user;
+    const user = req.user;
+    const allClassData = await studentClassModel.find({}).lean().sort({ studentClass: 1, section: 1 });
+
+    const normalize = (value) => String(value || '').trim().toLowerCase();
+    const studentClassdata = user && user.role !== 'ADMIN'
+      ? allClassData.filter((item) =>
+          (user.allowedSubjects || []).some((allowed) =>
+            normalize(allowed.studentClass) === normalize(item.studentClass)
+            && normalize(allowed.section) === normalize(item.section)
+          )
+        )
+      : allClassData;
     
     
        const marksheetSetups = await marksheetSetup.find({}).lean();
@@ -1387,6 +1397,11 @@ exports.addComplaint = async (req, res) => {
   try {
     const reg = String(req.body && req.body.reg ? req.body.reg : '').trim();
     const reason = String(req.body && req.body.complaint ? req.body.complaint : '').trim();
+    const rawImages = req.body && req.body.images;
+    const imageUrls = (Array.isArray(rawImages) ? rawImages : [rawImages])
+      .filter((item) => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter(Boolean);
     const teacherName = req.user && req.user.teacherName ? String(req.user.teacherName).trim() : '';
 
     if (!reg || !reason) {
@@ -1400,7 +1415,8 @@ exports.addComplaint = async (req, res) => {
           complaints: {
             by: teacherName,
             date: new Date(),
-            reason
+            reason,
+            imageUrls
           }
         }
       },
@@ -1425,6 +1441,9 @@ exports.saveStudentRecordFromPortfolio = async (req, res) => {
       'studentClass',
       'section',
       'gender',
+      'age',
+      'height',
+      'weight',
       'mothersToungue',
       'previousSchool',
       'fatherName',
@@ -1441,6 +1460,8 @@ exports.saveStudentRecordFromPortfolio = async (req, res) => {
       'yearlyIncome',
       'bloodGroup',
       'otherbehaviouralCondition',
+      'parentViewTowardsSchool',
+      'parentVisitFrequency',
       'numberofmobile',
       'tvatHome',
       'internetAtHome',
@@ -1478,6 +1499,25 @@ exports.saveStudentRecordFromPortfolio = async (req, res) => {
           .filter(Boolean);
       }
     }
+
+    const booleanFields = [
+      'eyeproblem',
+      'earproblem',
+      'hairproblem',
+      'liveWithFather',
+      'liveWithMother'
+    ];
+
+    booleanFields.forEach((field) => {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+        const value = String(req.body[field] || '').toLowerCase().trim();
+        if (value === 'true' || value === 'yes' || value === '1') {
+          update[field] = true;
+        } else if (value === 'false' || value === 'no' || value === '0') {
+          update[field] = false;
+        }
+      }
+    });
 
     Object.keys(update).forEach((key) => {
       if (update[key] === undefined) {

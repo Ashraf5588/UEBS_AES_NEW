@@ -176,6 +176,7 @@ student.get('/debug/subjects', verifytoken,authorized,async (req, res) => {
 });
 student.get('/studentrecord',verifytoken,authorized,isAdmin,upload.single('studentRecords'),admincontrol.studentrecord)
 student.post('/studentrecord',verifytoken,authorized,isAdmin,upload.single('studentRecords'),admincontrol.studentrecordpost)
+student.get('/studentrecord/template',verifytoken,authorized,isAdmin,admincontrol.downloadStudentRecordTemplate)
 student.post('/studentrecord/add',verifytoken,authorized,isAdmin,admincontrol.studentrecordadd)
 student.get('/studentrecord/edit/:studentId/:editing?',verifytoken,authorized,isAdmin,admincontrol.studentrecordedit)
 student.post('/studentrecord/delete/:studentId',verifytoken,authorized,isAdmin,admincontrol.studentrecorddelete)

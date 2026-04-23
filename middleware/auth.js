@@ -62,15 +62,27 @@ const subjectValue = req.params.subject || req.params.subjectinput || req.query.
 const studentClass = req.params.studentClass || req.query.studentClass || req.body.studentClass;
 const section = req.params.section || req.query.section || req.body.section;
 
+const normalize = (value) => String(value || '').trim().toLowerCase();
+
+const normalizedSubject = normalize(subjectValue);
+const normalizedClass = normalize(studentClass);
+const normalizedSection = normalize(section);
+
     if (user.role === "ADMIN") return next();
     if (!subjectValue && !studentClass && !section) return next();
 
   // ✅ Match allowedSubjects array of objects
-  const hasAccess = user.allowedSubjects?.some(allowed =>
-    allowed.subject === subjectValue &&
-    (!studentClass || allowed.studentClass === studentClass) &&
-    (!section || allowed.section === section)
-  );
+  const hasAccess = user.allowedSubjects?.some((allowed) => {
+    const allowedSubject = normalize(allowed.subject);
+    const allowedClass = normalize(allowed.studentClass);
+    const allowedSection = normalize(allowed.section);
+
+    const subjectMatches = !normalizedSubject || allowedSubject === normalizedSubject;
+    const classMatches = !normalizedClass || allowedClass === normalizedClass;
+    const sectionMatches = !normalizedSection || allowedSection === normalizedSection;
+
+    return subjectMatches && classMatches && sectionMatches;
+  });
 
   if (!hasAccess) {
     return res.render("block", {

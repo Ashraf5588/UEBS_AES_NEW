@@ -82,6 +82,68 @@
       flex-wrap: wrap;
    }
 
+   .filter-multi {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+   }
+
+   .filter-multi summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 10px;
+      font-size: 0.85rem;
+      color: #475569;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+   }
+
+   .filter-multi summary::-webkit-details-marker {
+      display: none;
+   }
+
+   .filter-multi[open] summary {
+      border-bottom: 1px solid var(--border);
+      background: #f8fafc;
+   }
+
+   .filter-multi-content {
+      display: grid;
+      gap: 10px;
+      padding: 10px;
+      max-height: 230px;
+      overflow-y: auto;
+   }
+
+   .filter-multi-group {
+      display: grid;
+      gap: 6px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 8px;
+      background: #f8fafc;
+   }
+
+   .filter-multi-title {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #64748b;
+      font-weight: 700;
+   }
+
+   .filter-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: #475569;
+      margin: 0;
+   }
+
    .filter-count {
       font-size: 0.85rem;
       color: #64748b;
@@ -343,6 +405,37 @@
       font-weight: 600;
    }
 
+   .complaint-images {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+   }
+
+   .complaint-images img {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      cursor: pointer;
+   }
+
+   .complaint-images::-webkit-scrollbar {
+      height: 6px;
+   }
+
+   .complaint-images::-webkit-scrollbar-thumb {
+      background: rgba(248, 171, 77, 0.5);
+      border-radius: 999px;
+   }
+
+   .complaint-images::-webkit-scrollbar-track {
+      background: rgba(248, 171, 77, 0.15);
+      border-radius: 999px;
+   }
+
    .complaint-empty {
       font-size: 0.9rem;
       color: #64748b;
@@ -495,6 +588,194 @@
 
    .modal-field textarea { min-height: 70px; resize: vertical; }
 
+   .radio-inline-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 4px;
+   }
+
+   .radio-inline-group label {
+      font-weight: 500;
+      color: #64748b;
+      margin: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+   }
+
+   .toggle-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+   }
+
+   .toggle-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+   }
+
+   .toggle-track {
+      --toggle-width: 72px;
+      width: var(--toggle-width);
+      height: 32px;
+      border-radius: 999px;
+      background: #cbd5e1;
+      border: 1px solid #94a3b8;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 8px 0 32px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #475569;
+      transition: all 0.2s ease;
+      justify-content: flex-end;
+      user-select: none;
+   }
+
+   .toggle-track::before {
+      content: attr(data-off);
+      line-height: 1;
+      letter-spacing: 0.3px;
+   }
+
+   .toggle-track::after {
+      content: '';
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s ease;
+   }
+
+   .toggle-input:checked + .toggle-track {
+      background: #16a34a;
+      border-color: #15803d;
+      color: #fff;
+      padding: 0 32px 0 8px;
+      justify-content: flex-start;
+   }
+
+   .toggle-input:checked + .toggle-track::before {
+      content: attr(data-on);
+   }
+
+   .toggle-input:checked + .toggle-track::after {
+      transform: translateX(calc(var(--toggle-width) - 32px));
+   }
+
+   .toggle-input[data-danger='true']:checked + .toggle-track {
+      background: #dc2626;
+      border-color: #b91c1c;
+   }
+
+   .toggle-input[data-positive='true'] + .toggle-track {
+      --toggle-width: 124px;
+      width: var(--toggle-width);
+   }
+
+   .toggle-input[data-positive='true']:checked + .toggle-track {
+      background: #16a34a;
+      border-color: #15803d;
+   }
+
+   .toggle-input[data-positive='true']:not(:checked) + .toggle-track {
+      background: #dc2626;
+      border-color: #b91c1c;
+      color: #fff;
+   }
+
+   .upload-box {
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 12px;
+      background: #f8fafc;
+   }
+
+   .upload-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+   }
+
+   .upload-controls button {
+      background: #0f766e;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      border-radius: 8px;
+   }
+
+   .upload-controls button.capture-btn {
+      background: #0ea5e9;
+   }
+
+   .visually-hidden {
+      position: absolute !important;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+   }
+
+   .upload-status {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-weight: 600;
+      margin-top: 6px;
+      min-height: 18px;
+   }
+
+   .upload-preview {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+   }
+
+   .upload-preview-item {
+      position: relative;
+      flex-shrink: 0;
+   }
+
+   .upload-preview-item img {
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+   }
+
+   .upload-remove-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 22px;
+      height: 22px;
+      border: 2px solid #fff;
+      border-radius: 999px;
+      background: #ef4444;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+   }
+
    @media (max-width: 900px) {
       body { padding: 16px; }
       .filter-container { padding: 16px; }
@@ -524,6 +805,10 @@
       table { font-size: 0.82rem; }
       th, td { padding: 8px 6px; }
       .complaint-panel { max-height: none; }
+      .modal-card { border-radius: 12px; }
+      .modal-header, .modal-body, .modal-footer { padding: 14px; }
+      .modal-footer { flex-direction: column; }
+      .modal-footer button { width: 100%; }
    }
 
    @media (max-width: 480px) {
@@ -575,16 +860,6 @@
       <div class="filter-tools-row">
          <input id="filterSearch" type="text" placeholder="Search name, reg, roll, family..." />
          <input id="filterFamily" type="text" placeholder="Family keyword (parent/guardian/occupation)" />
-         <select id="filterMedical">
-            <option value="any" selected>Medical Condition: Any</option>
-            <option value="yes">Medical Condition: Yes</option>
-            <option value="no">Medical Condition: No</option>
-         </select>
-         <select id="filterBehavior">
-            <option value="any" selected>Behavioral Condition: Any</option>
-            <option value="yes">Behavioral Condition: Yes</option>
-            <option value="no">Behavioral Condition: No</option>
-         </select>
          <select id="filterBlood">
             <option value="any" selected>Blood Group: Any</option>
             <option value="A+">A+</option>
@@ -596,16 +871,42 @@
             <option value="AB+">AB+</option>
             <option value="AB-">AB-</option>
          </select>
-         <select id="filterTv">
-            <option value="any" selected>TV at Home: Any</option>
-            <option value="yes">TV at Home: Yes</option>
-            <option value="no">TV at Home: No</option>
-         </select>
-         <select id="filterInternet">
-            <option value="any" selected>Internet at Home: Any</option>
-            <option value="yes">Internet at Home: Yes</option>
-            <option value="no">Internet at Home: No</option>
-         </select>
+         <details class="filter-multi" id="medicalMultiFilter">
+            <summary>Medical Condition Filters</summary>
+            <div class="filter-multi-content">
+               <label class="filter-checkbox"><input type="checkbox" class="filter-medical-check" value="eye" /> Eye problem</label>
+               <label class="filter-checkbox"><input type="checkbox" class="filter-medical-check" value="ear" /> Ear problem</label>
+               <label class="filter-checkbox"><input type="checkbox" class="filter-medical-check" value="hair" /> Hair problem</label>
+               <label class="filter-checkbox"><input type="checkbox" class="filter-medical-check" value="behaviour" /> Behavioural condition</label>
+            </div>
+         </details>
+         <details class="filter-multi" id="parentHomeMultiFilter">
+            <summary>Parent & Home Filters</summary>
+            <div class="filter-multi-content">
+               <div class="filter-multi-group">
+                  <div class="filter-multi-title">Parent Visit</div>
+                  <label class="filter-checkbox"><input type="checkbox" class="filter-parent-visit" value="frequent" /> Frequent</label>
+                  <label class="filter-checkbox"><input type="checkbox" class="filter-parent-visit" value="occasional" /> Occasional</label>
+                  <label class="filter-checkbox"><input type="checkbox" class="filter-parent-visit" value="rare" /> Rare</label>
+                  <label class="filter-checkbox"><input type="checkbox" class="filter-parent-visit" value="not-visiting" /> Not visiting</label>
+               </div>
+               <div class="filter-multi-group">
+                  <div class="filter-multi-title">Parents View</div>
+                  <label class="filter-checkbox"><input type="checkbox" class="filter-parent-view" value="positive" /> Positive</label>
+                  <label class="filter-checkbox"><input type="checkbox" class="filter-parent-view" value="negative" /> Negative</label>
+               </div>
+               <div class="filter-multi-group">
+                  <div class="filter-multi-title">TV At Home</div>
+                  <label class="filter-checkbox"><input type="checkbox" class="filter-tv" value="yes" /> Yes</label>
+                  <label class="filter-checkbox"><input type="checkbox" class="filter-tv" value="no" /> No</label>
+               </div>
+               <div class="filter-multi-group">
+                  <div class="filter-multi-title">Internet At Home</div>
+                  <label class="filter-checkbox"><input type="checkbox" class="filter-internet" value="yes" /> Yes</label>
+                  <label class="filter-checkbox"><input type="checkbox" class="filter-internet" value="no" /> No</label>
+               </div>
+            </div>
+         </details>
       </div>
       <div class="filter-actions">
          <span id="filterCount" class="filter-count"></span>
@@ -700,6 +1001,11 @@
            data-mother-occ="<%= roster.motheroccupation || '' %>"
            data-guardian-occ="<%= roster.otherguardianOccupation || '' %>"
            data-income="<%= roster.yearlyIncome || '' %>"
+           data-eye="<%= roster.eyeproblem ? 'yes' : 'no' %>"
+           data-ear="<%= roster.earproblem ? 'yes' : 'no' %>"
+           data-hair="<%= roster.hairproblem ? 'yes' : 'no' %>"
+           data-parent-view="<%= (roster.parentViewTowardsSchool || '').toLowerCase() %>"
+           data-parent-visit="<%= (roster.parentVisitFrequency || '').toLowerCase() %>"
            data-tv="<%= roster.tvatHome || '' %>"
            data-internet="<%= roster.internetAtHome || '' %>">
           <header class="profile-header">
@@ -735,6 +1041,7 @@
                          <div class="detail-item"><strong>Class:</strong> <%= roster.studentClass || student.studentClass || '-' %></div>
                          <div class="detail-item"><strong>Section:</strong> <%= roster.section || student.section || '-' %></div>
                          <div class="detail-item"><strong>Gender:</strong> <%= roster.gender || '-' %></div>
+                         <div class="detail-item"><strong>Age:</strong> <%= roster.age || '-' %></div>
                          <div class="detail-item"><strong>Date of Birth:</strong> <%= roster.dob ? new Date(roster.dob).toLocaleDateString() : '-' %></div>
                          <div class="detail-item"><strong>Class Started:</strong> <%= roster.classStartedAt ? new Date(roster.classStartedAt).toLocaleDateString() : '-' %></div>
                          <div class="detail-item"><strong>Mother Tongue:</strong> <%= roster.mothersToungue || '-' %></div>
@@ -760,6 +1067,11 @@
                          <div class="detail-item"><strong>Blood Group:</strong> <%= roster.bloodGroup || '-' %></div>
                          <div class="detail-item"><strong>Medical Condition:</strong> <%= Array.isArray(roster.anyMedicalCondition) ? roster.anyMedicalCondition.join(', ') : (roster.anyMedicalCondition || '-') %></div>
                          <div class="detail-item"><strong>Behavioral Condition:</strong> <%= roster.otherbehaviouralCondition || '-' %></div>
+                         <div class="detail-item"><strong>Eye Problem:</strong> <%= roster.eyeproblem ? 'Yes' : 'No' %></div>
+                         <div class="detail-item"><strong>Ear Problem:</strong> <%= roster.earproblem ? 'Yes' : 'No' %></div>
+                         <div class="detail-item"><strong>Hair Problem:</strong> <%= roster.hairproblem ? 'Yes' : 'No' %></div>
+                         <div class="detail-item"><strong>Height:</strong> <%= roster.height || '-' %></div>
+                         <div class="detail-item"><strong>Weight:</strong> <%= roster.weight || '-' %></div>
                       </div>
                       <div class="details-group">
                          <div class="details-title">Contact Info</div>
@@ -767,6 +1079,9 @@
                       </div>
                       <div class="details-group">
                          <div class="details-title">Home & Fees</div>
+                         <div class="detail-item"><strong>Lives with Father/Mother:</strong> <%= (roster.liveWithFather === false || roster.liveWithMother === false) ? 'No' : 'Yes' %></div>
+                         <div class="detail-item"><strong>Parent View Towards School:</strong> <%= roster.parentViewTowardsSchool || 'Positive' %></div>
+                         <div class="detail-item"><strong>Parent Visit Frequency:</strong> <%= roster.parentVisitFrequency || '-' %></div>
                          <div class="detail-item"><strong>TV at Home:</strong> <%= roster.tvatHome || '-' %></div>
                          <div class="detail-item"><strong>Internet at Home:</strong> <%= roster.internetAtHome || '-' %></div>
                          <div class="detail-item"><strong>Fee Paid Duration:</strong> <%= roster.feepaidduration || '-' %></div>
@@ -787,159 +1102,19 @@
                                        <span>Date: <%= item.date ? new Date(item.date).toLocaleDateString() : 'N/A' %></span>
                                     </div>
                                     <div class="complaint-reason"><%= item.reason || '-' %></div>
+                                    <% if (Array.isArray(item.imageUrls) && item.imageUrls.length) { %>
+                                      <div class="complaint-images">
+                                        <% item.imageUrls.forEach((img, index) => { %>
+                                          <img src="<%= img %>" alt="Complaint image <%= index + 1 %>" onclick="window.open('<%= img %>', '_blank')" />
+                                        <% }) %>
+                                      </div>
+                                    <% } %>
                                  </li>
                               <% }) %>
                            </ul>
                         <% } else { %>
                            <div class="complaint-empty">No complaints recorded yet.</div>
                         <% } %>
-
-                        <div id="infoModal" class="modal-backdrop" aria-hidden="true">
-                           <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
-                              <div class="modal-header">
-                                 <div class="modal-title" id="infoModalTitle">Student Information</div>
-                                 <button type="button" class="btn-secondary" onclick="closeInfoModal()">Close</button>
-                              </div>
-                              <form id="infoForm">
-                                 <div class="modal-body">
-                                    <div class="modal-field">
-                                       <label for="info_reg">Reg No</label>
-                                       <input id="info_reg" name="reg" type="text" readonly />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_name">Name</label>
-                                       <input id="info_name" name="name" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_roll">Roll</label>
-                                       <input id="info_roll" name="roll" type="number" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_class">Class</label>
-                                       <input id="info_class" name="studentClass" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_section">Section</label>
-                                       <input id="info_section" name="section" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_gender">Gender</label>
-                                       <input id="info_gender" name="gender" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_dob">Date of Birth</label>
-                                       <input id="info_dob" name="dob" type="date" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_class_started">Class Started At</label>
-                                       <input id="info_class_started" name="classStartedAt" type="date" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_mother_tongue">Mother Tongue</label>
-                                       <input id="info_mother_tongue" name="mothersToungue" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_previous_school">Previous School</label>
-                                       <input id="info_previous_school" name="previousSchool" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_father_name">Father Name</label>
-                                       <input id="info_father_name" name="fatherName" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_father_occupation">Father Occupation</label>
-                                       <input id="info_father_occupation" name="fatheroccupation" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_father_contact">Father Contact</label>
-                                       <input id="info_father_contact" name="fatherContact" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_father_qualification">Father Qualification</label>
-                                       <input id="info_father_qualification" name="fatherqualification" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_mother_name">Mother Name</label>
-                                       <input id="info_mother_name" name="motherName" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_mother_occupation">Mother Occupation</label>
-                                       <input id="info_mother_occupation" name="motheroccupation" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_mother_contact">Mother Contact</label>
-                                       <input id="info_mother_contact" name="motherContact" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_mother_qualification">Mother Qualification</label>
-                                       <input id="info_mother_qualification" name="motherqualification" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_guardian_name">Other Guardian Name</label>
-                                       <input id="info_guardian_name" name="otherguardianName" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_guardian_occupation">Other Guardian Occupation</label>
-                                       <input id="info_guardian_occupation" name="otherguardianOccupation" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_guardian_contact">Other Guardian Contact</label>
-                                       <input id="info_guardian_contact" name="otherguardianContact" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_yearly_income">Yearly Income</label>
-                                       <input id="info_yearly_income" name="yearlyIncome" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_blood_group">Blood Group</label>
-                                       <input id="info_blood_group" name="bloodGroup" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_medical">Any Medical Condition (comma separated)</label>
-                                       <textarea id="info_medical" name="anyMedicalCondition"></textarea>
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_behaviour">Other Behavioural Condition</label>
-                                       <textarea id="info_behaviour" name="otherbehaviouralCondition"></textarea>
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_mobile">Contact Number</label>
-                                       <input id="info_mobile" name="numberofmobile" type="text" />
-                                    </div>
-                                    <div class="modal-field">
-                                       <label>TV at Home</label>
-                                       <div style="display: flex; gap: 12px; align-items: center;">
-                                          <label style="font-weight: 500; color: #64748b;">
-                                             <input type="radio" name="tvatHome" value="Yes" /> Yes
-                                          </label>
-                                          <label style="font-weight: 500; color: #64748b;">
-                                             <input type="radio" name="tvatHome" value="No" /> No
-                                          </label>
-                                       </div>
-                                    </div>
-                                    <div class="modal-field">
-                                       <label>Internet at Home</label>
-                                       <div style="display: flex; gap: 12px; align-items: center;">
-                                          <label style="font-weight: 500; color: #64748b;">
-                                             <input type="radio" name="internetAtHome" value="Yes" /> Yes
-                                          </label>
-                                          <label style="font-weight: 500; color: #64748b;">
-                                             <input type="radio" name="internetAtHome" value="No" /> No
-                                          </label>
-                                       </div>
-                                    </div>
-                                    <div class="modal-field">
-                                       <label for="info_fee_paid">Fee Paid Duration</label>
-                                       <input id="info_fee_paid" name="feepaidduration" type="text" />
-                                    </div>
-                                 </div>
-                                 <div class="modal-footer">
-                                    <button type="button" class="btn-secondary" onclick="closeInfoModal()">Cancel</button>
-                                    <button type="submit">Save</button>
-                                 </div>
-                              </form>
-                           </div>
-                        </div>
                    </div>
 
                    <div class="health-panel">
@@ -1213,17 +1388,274 @@
 
       <% }) %>
    <% } %>
+
+<div id="infoModal" class="modal-backdrop" aria-hidden="true">
+   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+      <div class="modal-header">
+         <div class="modal-title" id="infoModalTitle">Student Information</div>
+         <button type="button" class="btn-secondary" onclick="closeInfoModal()">Close</button>
+      </div>
+      <form id="infoForm">
+         <div class="modal-body">
+            <div class="modal-field">
+               <label for="info_reg">Reg No</label>
+               <input id="info_reg" name="reg" type="text" readonly />
+            </div>
+            <div class="modal-field">
+               <label for="info_name">Name</label>
+               <input id="info_name" name="name" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_roll">Roll</label>
+               <input id="info_roll" name="roll" type="number" />
+            </div>
+            <div class="modal-field">
+               <label for="info_class">Class</label>
+               <input id="info_class" name="studentClass" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_section">Section</label>
+               <input id="info_section" name="section" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_gender">Gender</label>
+               <input id="info_gender" name="gender" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_age">Age</label>
+               <input id="info_age" name="age" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_dob">Date of Birth</label>
+               <input id="info_dob" name="dob" type="date" />
+            </div>
+            <div class="modal-field">
+               <label for="info_class_started">Class Started At</label>
+               <input id="info_class_started" name="classStartedAt" type="date" />
+            </div>
+            <div class="modal-field">
+               <label for="info_mother_tongue">Mother Tongue</label>
+               <input id="info_mother_tongue" name="mothersToungue" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_previous_school">Previous School</label>
+               <input id="info_previous_school" name="previousSchool" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_father_name">Father Name</label>
+               <input id="info_father_name" name="fatherName" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_father_occupation">Father Occupation</label>
+               <input id="info_father_occupation" name="fatheroccupation" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_father_contact">Father Contact</label>
+               <input id="info_father_contact" name="fatherContact" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_father_qualification">Father Qualification</label>
+               <input id="info_father_qualification" name="fatherqualification" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_mother_name">Mother Name</label>
+               <input id="info_mother_name" name="motherName" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_mother_occupation">Mother Occupation</label>
+               <input id="info_mother_occupation" name="motheroccupation" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_mother_contact">Mother Contact</label>
+               <input id="info_mother_contact" name="motherContact" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_mother_qualification">Mother Qualification</label>
+               <input id="info_mother_qualification" name="motherqualification" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_guardian_name">Other Guardian Name</label>
+               <input id="info_guardian_name" name="otherguardianName" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_guardian_occupation">Other Guardian Occupation</label>
+               <input id="info_guardian_occupation" name="otherguardianOccupation" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_guardian_contact">Other Guardian Contact</label>
+               <input id="info_guardian_contact" name="otherguardianContact" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_yearly_income">Yearly Income</label>
+               <input id="info_yearly_income" name="yearlyIncome" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_blood_group">Blood Group</label>
+               <input id="info_blood_group" name="bloodGroup" type="text" />
+            </div>
+            <div class="modal-field">
+               <label for="info_height">Height</label>
+               <input id="info_height" name="height" type="text" placeholder="e.g. 145 cm" />
+            </div>
+            <div class="modal-field">
+               <label for="info_weight">Weight</label>
+               <input id="info_weight" name="weight" type="text" placeholder="e.g. 38 kg" />
+            </div>
+            <div class="modal-field">
+               <label for="info_medical">Any Medical Condition (comma separated)</label>
+               <textarea id="info_medical" name="anyMedicalCondition"></textarea>
+            </div>
+            <div class="modal-field">
+               <label for="info_behaviour">Other Behavioural Condition</label>
+               <textarea id="info_behaviour" name="otherbehaviouralCondition"></textarea>
+            </div>
+            <div class="modal-field">
+               <label>Eye Problem</label>
+               <div class="toggle-control">
+                  <label>
+                     <input type="checkbox" id="toggle_eyeproblem" class="toggle-input" data-danger="true" />
+                     <span class="toggle-track" data-on="YES" data-off="NO"></span>
+                  </label>
+               </div>
+            </div>
+            <div class="modal-field">
+               <label>Ear Problem</label>
+               <div class="toggle-control">
+                  <label>
+                     <input type="checkbox" id="toggle_earproblem" class="toggle-input" data-danger="true" />
+                     <span class="toggle-track" data-on="YES" data-off="NO"></span>
+                  </label>
+               </div>
+            </div>
+            <div class="modal-field">
+               <label>Hair Problem</label>
+               <div class="toggle-control">
+                  <label>
+                     <input type="checkbox" id="toggle_hairproblem" class="toggle-input" data-danger="true" />
+                     <span class="toggle-track" data-on="YES" data-off="NO"></span>
+                  </label>
+               </div>
+            </div>
+            <div class="modal-field">
+               <label>Lives with Father/Mother</label>
+               <div class="toggle-control">
+                  <label>
+                     <input type="checkbox" id="toggle_livewithparents" class="toggle-input" checked />
+                     <span class="toggle-track" data-on="YES" data-off="NO"></span>
+                  </label>
+               </div>
+            </div>
+            <div class="modal-field">
+               <label>Parent View Towards School</label>
+               <div class="toggle-control">
+                  <label>
+                     <input type="checkbox" id="toggle_parentview" class="toggle-input" data-positive="true" checked />
+                     <span class="toggle-track" data-on="POSITIVE" data-off="NEGATIVE"></span>
+                  </label>
+               </div>
+            </div>
+            <div class="modal-field">
+               <label>Parent Visit Frequency</label>
+               <div class="radio-inline-group">
+                  <label><input type="radio" name="parentVisitFrequency" value="frequent" /> Frequent</label>
+                  <label><input type="radio" name="parentVisitFrequency" value="occasional" checked /> Occasional</label>
+                  <label><input type="radio" name="parentVisitFrequency" value="rare" /> Rare</label>
+                  <label><input type="radio" name="parentVisitFrequency" value="not-visiting" /> Not Visiting</label>
+               </div>
+            </div>
+            <div class="modal-field">
+               <label for="info_mobile">Contact Number</label>
+               <input id="info_mobile" name="numberofmobile" type="text" />
+            </div>
+            <div class="modal-field">
+               <label>TV at Home</label>
+               <div class="toggle-control">
+                  <label>
+                     <input type="checkbox" id="toggle_tvathome" class="toggle-input" checked />
+                     <span class="toggle-track" data-on="YES" data-off="NO"></span>
+                  </label>
+               </div>
+            </div>
+            <div class="modal-field">
+               <label>Internet at Home</label>
+               <div class="toggle-control">
+                  <label>
+                     <input type="checkbox" id="toggle_internetathome" class="toggle-input" checked />
+                     <span class="toggle-track" data-on="YES" data-off="NO"></span>
+                  </label>
+               </div>
+            </div>
+            <div class="modal-field">
+               <label for="info_fee_paid">Fee Paid Duration</label>
+               <input id="info_fee_paid" name="feepaidduration" type="text" />
+            </div>
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeInfoModal()">Cancel</button>
+            <button type="submit">Save</button>
+         </div>
+      </form>
+   </div>
+</div>
+
+<div id="complaintModal" class="modal-backdrop" aria-hidden="true">
+   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="complaintModalTitle">
+      <div class="modal-header">
+         <div class="modal-title" id="complaintModalTitle">Add Complaint</div>
+         <button type="button" class="btn-secondary" onclick="closeComplaintModal()">Close</button>
+      </div>
+      <form id="complaintForm">
+         <div class="modal-body" style="grid-template-columns: 1fr;">
+            <div class="modal-field">
+               <label for="complaint_reg">Reg No</label>
+               <input id="complaint_reg" name="reg" type="text" readonly />
+            </div>
+            <div class="modal-field">
+               <label for="complaint_reason">Complaint / Feedback</label>
+               <textarea id="complaint_reason" name="complaint" placeholder="Write complaint details..."></textarea>
+            </div>
+            <div class="modal-field">
+               <label>Complaint Images (Multiple)</label>
+               <div class="upload-box">
+                  <div class="upload-controls">
+                     <button type="button" id="complaint_pick_btn">Upload Images</button>
+                     <button type="button" id="complaint_capture_btn" class="capture-btn">Capture Image</button>
+                  </div>
+                  <input id="complaint_images_picker" class="visually-hidden" type="file" accept="image/*" multiple />
+                  <input id="complaint_images_capture" class="visually-hidden" type="file" accept="image/*" capture="environment" />
+                  <div id="complaint_upload_status" class="upload-status"></div>
+                  <div id="complaint_upload_preview" class="upload-preview"></div>
+               </div>
+            </div>
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeComplaintModal()">Cancel</button>
+            <button type="submit">Save Complaint</button>
+         </div>
+      </form>
+   </div>
+</div>
+
 <script>
    const rosterByReg = <%- JSON.stringify(rosterByReg || {}) %>;
    const studentCards = Array.from(document.querySelectorAll('.student-card'));
    const filterSearch = document.getElementById('filterSearch');
    const filterFamily = document.getElementById('filterFamily');
-   const filterMedical = document.getElementById('filterMedical');
-   const filterBehavior = document.getElementById('filterBehavior');
+   const filterMedicalChecks = Array.from(document.querySelectorAll('.filter-medical-check'));
+   const filterParentVisitChecks = Array.from(document.querySelectorAll('.filter-parent-visit'));
+   const filterParentViewChecks = Array.from(document.querySelectorAll('.filter-parent-view'));
+   const filterTvChecks = Array.from(document.querySelectorAll('.filter-tv'));
+   const filterInternetChecks = Array.from(document.querySelectorAll('.filter-internet'));
    const filterBlood = document.getElementById('filterBlood');
-   const filterTv = document.getElementById('filterTv');
-   const filterInternet = document.getElementById('filterInternet');
    const filterCount = document.getElementById('filterCount');
+   const complaintForm = document.getElementById('complaintForm');
+   const complaintImageInput = document.getElementById('complaint_images_picker');
+   const complaintCaptureInput = document.getElementById('complaint_images_capture');
+   const complaintPickButton = document.getElementById('complaint_pick_btn');
+   const complaintCaptureButton = document.getElementById('complaint_capture_btn');
+   const complaintUploadStatus = document.getElementById('complaint_upload_status');
+   const complaintUploadPreview = document.getElementById('complaint_upload_preview');
+   let complaintImageUrls = [];
 
    function normalize(value) {
       return String(value || '').toLowerCase().trim();
@@ -1242,15 +1674,25 @@
       return true;
    }
 
+   function isYesValue(value) {
+      const normalized = normalize(value);
+      return normalized === 'yes' || normalized === 'true' || normalized === '1';
+   }
+
+   function getCheckedValues(elements) {
+      return elements.filter((el) => el.checked).map((el) => normalize(el.value));
+   }
+
    function applyPortfolioFilters() {
       if (!studentCards.length) return;
       const searchValue = normalize(filterSearch && filterSearch.value);
       const familyValue = normalize(filterFamily && filterFamily.value);
-      const medicalValue = filterMedical ? filterMedical.value : 'any';
-      const behaviorValue = filterBehavior ? filterBehavior.value : 'any';
       const bloodValue = normalize(filterBlood && filterBlood.value);
-      const tvValue = filterTv ? filterTv.value : 'any';
-      const internetValue = filterInternet ? filterInternet.value : 'any';
+      const selectedMedical = getCheckedValues(filterMedicalChecks);
+      const selectedParentVisit = getCheckedValues(filterParentVisitChecks);
+      const selectedParentView = getCheckedValues(filterParentViewChecks);
+      const selectedTv = getCheckedValues(filterTvChecks);
+      const selectedInternet = getCheckedValues(filterInternetChecks);
 
       let visibleCount = 0;
 
@@ -1277,13 +1719,32 @@
 
          const matchesSearch = !searchValue || searchBlob.includes(searchValue);
          const matchesFamily = !familyValue || familyBlob.includes(familyValue);
-         const matchesMedical = matchesYesNo(data.medical, medicalValue);
-         const matchesBehavior = matchesYesNo(data.behaviour, behaviorValue);
          const matchesBlood = !bloodValue || bloodValue === 'any' || normalize(data.blood) === bloodValue;
-         const matchesTv = matchesYesNo(data.tv, tvValue);
-         const matchesInternet = matchesYesNo(data.internet, internetValue);
 
-         const visible = matchesSearch && matchesFamily && matchesMedical && matchesBehavior && matchesBlood && matchesTv && matchesInternet;
+         const hasBehaviour = !isEmptyValue(data.behaviour);
+         const medicalChecks = {
+            eye: isYesValue(data.eye),
+            ear: isYesValue(data.ear),
+            hair: isYesValue(data.hair),
+            behaviour: hasBehaviour
+         };
+
+         const matchesMedical = selectedMedical.every((key) => medicalChecks[key]);
+         const matchesParentVisit = !selectedParentVisit.length || selectedParentVisit.includes(normalize(data.parentVisit));
+         const matchesParentView = !selectedParentView.length || selectedParentView.includes(normalize(data.parentView));
+         const tvNormalized = isYesValue(data.tv) ? 'yes' : 'no';
+         const internetNormalized = isYesValue(data.internet) ? 'yes' : 'no';
+         const matchesTv = !selectedTv.length || selectedTv.includes(tvNormalized);
+         const matchesInternet = !selectedInternet.length || selectedInternet.includes(internetNormalized);
+
+         const visible = matchesSearch
+            && matchesFamily
+            && matchesMedical
+            && matchesBlood
+            && matchesParentVisit
+            && matchesParentView
+            && matchesTv
+            && matchesInternet;
          card.style.display = visible ? '' : 'none';
          if (visible) visibleCount += 1;
       });
@@ -1296,21 +1757,23 @@
    function resetPortfolioFilters() {
       if (filterSearch) filterSearch.value = '';
       if (filterFamily) filterFamily.value = '';
-      if (filterMedical) filterMedical.value = 'any';
-      if (filterBehavior) filterBehavior.value = 'any';
+      filterMedicalChecks.forEach((el) => { el.checked = false; });
+      filterParentVisitChecks.forEach((el) => { el.checked = false; });
+      filterParentViewChecks.forEach((el) => { el.checked = false; });
+      filterTvChecks.forEach((el) => { el.checked = false; });
+      filterInternetChecks.forEach((el) => { el.checked = false; });
       if (filterBlood) filterBlood.value = 'any';
-      if (filterTv) filterTv.value = 'any';
-      if (filterInternet) filterInternet.value = 'any';
       applyPortfolioFilters();
    }
 
    if (filterSearch) filterSearch.addEventListener('input', applyPortfolioFilters);
    if (filterFamily) filterFamily.addEventListener('input', applyPortfolioFilters);
-   if (filterMedical) filterMedical.addEventListener('change', applyPortfolioFilters);
-   if (filterBehavior) filterBehavior.addEventListener('change', applyPortfolioFilters);
+   filterMedicalChecks.forEach((el) => el.addEventListener('change', applyPortfolioFilters));
+   filterParentVisitChecks.forEach((el) => el.addEventListener('change', applyPortfolioFilters));
+   filterParentViewChecks.forEach((el) => el.addEventListener('change', applyPortfolioFilters));
+   filterTvChecks.forEach((el) => el.addEventListener('change', applyPortfolioFilters));
+   filterInternetChecks.forEach((el) => el.addEventListener('change', applyPortfolioFilters));
    if (filterBlood) filterBlood.addEventListener('change', applyPortfolioFilters);
-   if (filterTv) filterTv.addEventListener('change', applyPortfolioFilters);
-   if (filterInternet) filterInternet.addEventListener('change', applyPortfolioFilters);
    applyPortfolioFilters();
 
    function formatDateInput(value) {
@@ -1326,14 +1789,40 @@
       el.value = value || '';
    }
 
-   function setRadio(name, value) {
+   function setRadio(name, value, fallbackValue) {
       const radios = document.querySelectorAll(`input[name="${name}"]`);
       if (!radios.length) return;
       const normalized = String(value || '').toLowerCase();
+      let matched = false;
       radios.forEach((radio) => {
          const radioValue = String(radio.value || '').toLowerCase();
-         radio.checked = normalized === radioValue;
+         const shouldCheck = normalized && normalized === radioValue;
+         radio.checked = shouldCheck;
+         if (shouldCheck) matched = true;
       });
+
+      if (!matched && fallbackValue !== undefined) {
+         const fallbackNormalized = String(fallbackValue).toLowerCase();
+         radios.forEach((radio) => {
+            const radioValue = String(radio.value || '').toLowerCase();
+            radio.checked = radioValue === fallbackNormalized;
+         });
+      }
+   }
+
+   function toBoolean(value, fallback) {
+      if (value === true || value === false) return value;
+      const normalized = String(value || '').toLowerCase().trim();
+      if (normalized === 'true' || normalized === 'yes' || normalized === '1') return true;
+      if (normalized === 'false' || normalized === 'no' || normalized === '0') return false;
+      return fallback;
+   }
+
+   function setToggle(id, value, fallbackChecked) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const next = toBoolean(value, fallbackChecked);
+      el.checked = !!next;
    }
 
    function openInfoModal(reg) {
@@ -1344,6 +1833,7 @@
       setField('info_class', data.studentClass);
       setField('info_section', data.section);
       setField('info_gender', data.gender);
+      setField('info_age', data.age);
       setField('info_dob', formatDateInput(data.dob));
       setField('info_class_started', formatDateInput(data.classStartedAt));
       setField('info_mother_tongue', data.mothersToungue);
@@ -1361,11 +1851,20 @@
       setField('info_guardian_contact', data.otherguardianContact);
       setField('info_yearly_income', data.yearlyIncome);
       setField('info_blood_group', data.bloodGroup);
+      setField('info_height', data.height);
+      setField('info_weight', data.weight);
       setField('info_medical', Array.isArray(data.anyMedicalCondition) ? data.anyMedicalCondition.join(', ') : data.anyMedicalCondition);
       setField('info_behaviour', data.otherbehaviouralCondition);
+      setToggle('toggle_eyeproblem', data.eyeproblem, false);
+      setToggle('toggle_earproblem', data.earproblem, false);
+      setToggle('toggle_hairproblem', data.hairproblem, false);
+      const liveWithParents = !(toBoolean(data.liveWithFather, true) === false || toBoolean(data.liveWithMother, true) === false);
+      setToggle('toggle_livewithparents', liveWithParents, true);
+      setToggle('toggle_parentview', String(data.parentViewTowardsSchool || 'positive').toLowerCase() !== 'negative', true);
+      setRadio('parentVisitFrequency', data.parentVisitFrequency, 'occasional');
       setField('info_mobile', data.numberofmobile);
-      setRadio('tvatHome', data.tvatHome);
-      setRadio('internetAtHome', data.internetAtHome);
+      setToggle('toggle_tvathome', data.tvatHome, true);
+      setToggle('toggle_internetathome', data.internetAtHome, true);
       setField('info_fee_paid', data.feepaidduration);
       document.getElementById('infoModal').classList.add('is-open');
       document.getElementById('infoModal').setAttribute('aria-hidden', 'false');
@@ -1381,6 +1880,88 @@
       openInfoModal(reg);
    }
 
+   function setComplaintUploadStatus(message, color) {
+      if (!complaintUploadStatus) return;
+      complaintUploadStatus.textContent = message || '';
+      complaintUploadStatus.style.color = color || '#64748b';
+   }
+
+   function renderComplaintPreview() {
+      if (!complaintUploadPreview) return;
+      complaintUploadPreview.innerHTML = '';
+
+      complaintImageUrls.forEach((url) => {
+         const wrapper = document.createElement('div');
+         wrapper.className = 'upload-preview-item';
+
+         const img = document.createElement('img');
+         img.src = url;
+         img.alt = 'Complaint image';
+
+         const removeBtn = document.createElement('button');
+         removeBtn.type = 'button';
+         removeBtn.className = 'upload-remove-btn';
+         removeBtn.innerHTML = 'x';
+         removeBtn.addEventListener('click', () => {
+            complaintImageUrls = complaintImageUrls.filter((item) => item !== url);
+            renderComplaintPreview();
+         });
+
+         wrapper.appendChild(img);
+         wrapper.appendChild(removeBtn);
+         complaintUploadPreview.appendChild(wrapper);
+      });
+   }
+
+   async function uploadComplaintImages(files) {
+      if (!files || !files.length) return;
+      const formData = new FormData();
+      Array.from(files).forEach((file) => formData.append('image', file));
+
+      setComplaintUploadStatus(`Uploading ${files.length} image(s)...`, '#0369a1');
+
+      try {
+         const response = await fetch('/upload-project-image', {
+            method: 'POST',
+            body: formData
+         });
+         const result = await response.json();
+
+         if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Image upload failed');
+         }
+
+         const urls = Array.isArray(result.filePaths)
+            ? result.filePaths
+            : (result.filePath ? [result.filePath] : []);
+
+         complaintImageUrls = complaintImageUrls.concat(urls);
+         renderComplaintPreview();
+         setComplaintUploadStatus('Images uploaded.', '#16a34a');
+      } catch (error) {
+         console.error('Complaint image upload error:', error);
+         setComplaintUploadStatus('Image upload failed.', '#dc2626');
+      }
+   }
+
+   function openComplaintModal(reg) {
+      setField('complaint_reg', reg);
+      setField('complaint_reason', '');
+      complaintImageUrls = [];
+      renderComplaintPreview();
+      setComplaintUploadStatus('');
+
+      const modal = document.getElementById('complaintModal');
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+   }
+
+   function closeComplaintModal() {
+      const modal = document.getElementById('complaintModal');
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+   }
+
    document.getElementById('infoForm').addEventListener('submit', function (event) {
       event.preventDefault();
       const formData = new FormData(event.target);
@@ -1388,6 +1969,23 @@
       formData.forEach((value, key) => {
          payload[key] = value;
       });
+
+      const eyeProblem = document.getElementById('toggle_eyeproblem').checked;
+      const earProblem = document.getElementById('toggle_earproblem').checked;
+      const hairProblem = document.getElementById('toggle_hairproblem').checked;
+      const liveWithParents = document.getElementById('toggle_livewithparents').checked;
+      const parentViewPositive = document.getElementById('toggle_parentview').checked;
+      const tvAtHome = document.getElementById('toggle_tvathome').checked;
+      const internetAtHome = document.getElementById('toggle_internetathome').checked;
+
+      payload.eyeproblem = eyeProblem;
+      payload.earproblem = earProblem;
+      payload.hairproblem = hairProblem;
+      payload.liveWithFather = liveWithParents;
+      payload.liveWithMother = liveWithParents;
+      payload.parentViewTowardsSchool = parentViewPositive ? 'positive' : 'negative';
+      payload.tvatHome = tvAtHome ? 'Yes' : 'No';
+      payload.internetAtHome = internetAtHome ? 'Yes' : 'No';
 
       fetch('/studentportfolio/record', {
          method: 'POST',
@@ -1411,27 +2009,66 @@
    });
 
    function addComplaint(reg) {
-      const complaint = prompt("Enter your complaint or feedback for this student:");
-      if (complaint) {
-         // Send complaint to server (you can use fetch or AJAX)
+      openComplaintModal(reg);
+   }
+
+   if (complaintImageInput) {
+      complaintImageInput.addEventListener('change', async function (event) {
+         await uploadComplaintImages(event.target.files);
+         event.target.value = '';
+      });
+   }
+
+   if (complaintCaptureInput) {
+      complaintCaptureInput.addEventListener('change', async function (event) {
+         await uploadComplaintImages(event.target.files);
+         event.target.value = '';
+      });
+   }
+
+   if (complaintPickButton && complaintImageInput) {
+      complaintPickButton.addEventListener('click', function () {
+         complaintImageInput.click();
+      });
+   }
+
+   if (complaintCaptureButton && complaintCaptureInput) {
+      complaintCaptureButton.addEventListener('click', function () {
+         complaintCaptureInput.click();
+      });
+   }
+
+   if (complaintForm) {
+      complaintForm.addEventListener('submit', function (event) {
+         event.preventDefault();
+         const reg = (document.getElementById('complaint_reg').value || '').trim();
+         const complaint = (document.getElementById('complaint_reason').value || '').trim();
+
+         if (!reg || !complaint) {
+            alert('Reg and complaint are required.');
+            return;
+         }
+
          fetch('/addComplaint', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reg, complaint })
+            body: JSON.stringify({ reg, complaint, images: complaintImageUrls })
          })
          .then(response => response.json())
-         .then(data => {
+         .then((data) => {
             if (data.success) {
-               alert("Complaint added successfully!");
+               alert('Complaint added successfully!');
+               closeComplaintModal();
+               window.location.reload();
             } else {
-               alert("Failed to add complaint. Please try again.");
+               alert(data.message || 'Failed to add complaint. Please try again.');
             }
          })
-         .catch(error => {
+         .catch((error) => {
             console.error('Error:', error);
-            alert("An error occurred while adding the complaint.");
+            alert('An error occurred while adding the complaint.');
          });
-      }
+      });
    }
 </script>
 </body>
