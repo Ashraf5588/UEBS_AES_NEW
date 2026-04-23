@@ -287,8 +287,6 @@ student.get('/studentportfolio',verifytoken,authorized,examdashboardcontroller.s
 student.post('/addComplaint',verifytoken,authorized,examdashboardcontroller.addComplaint)
 student.post('/studentportfolio/record',verifytoken,authorized,examdashboardcontroller.saveStudentRecordFromPortfolio)
 
-  
-
 student.get('/healthrecord',verifytoken,authorized,isAdmin,nursecontroller.showHealthRecordForm)
 student.get('/healthrecord/students',verifytoken,authorized,isAdmin,nursecontroller.searchStudents)
 student.get('/healthrecord/records',verifytoken,authorized,isAdmin,nursecontroller.getHealthRecordsFiltered)
