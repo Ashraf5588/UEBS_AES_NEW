@@ -287,10 +287,10 @@ student.get('/studentportfolio',verifytoken,authorized,examdashboardcontroller.s
 student.post('/addComplaint',verifytoken,authorized,examdashboardcontroller.addComplaint)
 student.post('/studentportfolio/record',verifytoken,authorized,examdashboardcontroller.saveStudentRecordFromPortfolio)
 
-student.get('/healthrecord',verifytoken,authorized,isAdmin,nursecontroller.showHealthRecordForm)
-student.get('/healthrecord/students',verifytoken,authorized,isAdmin,nursecontroller.searchStudents)
-student.get('/healthrecord/records',verifytoken,authorized,isAdmin,nursecontroller.getHealthRecordsFiltered)
-student.post('/healthrecord',verifytoken,authorized,isAdmin,nursecontroller.createHealthRecord)
+student.get('/healthrecord',verifytoken,authorized,nursecontroller.showHealthRecordForm)
+student.get('/healthrecord/students',verifytoken,authorized,nursecontroller.searchStudents)
+student.get('/healthrecord/records',verifytoken,authorized,nursecontroller.getHealthRecordsFiltered)
+student.post('/healthrecord',verifytoken,authorized,nursecontroller.createHealthRecord)
 
 // Theme Routes Start Here
 student.get('/theme', verifytoken, authorized, themecontroller.themeopener);
