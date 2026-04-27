@@ -366,7 +366,7 @@
      
 <% terminal.unit.forEach(unitdata=>{%>
          <% unitdata.practicals.forEach(practicaldata=>{%>
-          <% if(studentClass>8){ %>
+          <% if(studentClass>8 || studentClass=="Nine" || studentClass=="9" || studentClass=="NINE" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN"){ %>
              <p><% ((practicaldata.practicalMarks / 8) * 8)/unitdata.practicals.length %></p>
 
              <% totalPracticalFinal += (((practicaldata.practicalMarks / 8) * 8)/unitdata.practicals.length) %>
@@ -381,7 +381,7 @@
           <%})%>
          
           <% unitdata.projectWorks.forEach(projectdata=>{%>
-            <%if(studentClass>8){%>
+            <%if(studentClass>8 || studentClass=="Nine" || studentClass=="9" || studentClass=="NINE" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN"){%>
             <p><% ((projectdata.projectMarks / 8) * 8)/unitdata.projectWorks.length %></p>
 
             <% totalProjectFinal += (((projectdata.projectMarks / 8) * 8)/unitdata.projectWorks.length) %>

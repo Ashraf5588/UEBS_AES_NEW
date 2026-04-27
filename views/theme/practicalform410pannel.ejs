@@ -471,13 +471,13 @@
              Create Practical Rubriks <br><b>(10 marks)</b>
               <% }else if(subject==="MATHEMATICS"){%>
                 Create कार्य सञ्चालन र कार्यसम्पादन Rubriks
-                <%if(studentClass>8){%>
+                <%if(studentClass>8 || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN"){%>
                   (10 marks)
                 <%}else{%>
                   (20 marks)
                 <%}%>
               <%}else if(subject==="SOCIAL"){%>
-                <% if(studentClass>8){%>
+                <% if(studentClass>8 || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN"){%>
                   Create Practical/ProjectWork Rubriks (16 marks)
                 <%}else{%>
                   Create Practical/ProjectWork Rubriks (18 marks)
@@ -488,7 +488,7 @@
 
                Create प्रयोगात्मक कार्य (शारीरिक र सिर्जनात्मक कला) को मूल्याङ्कन (रुब्रिक्स)
               <%} else if(subject==="NEPALI"){%>
-                 <%if(studentClass>8){%>
+                 <%if(studentClass>8 || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN"){%>
                    Create सुनाइ,बोलाइ र पढाई भाषिक सिपको आन्तरिक मूल्याङ्कनका आधार (12 marks)
                   <%}
                     else { %>
@@ -521,7 +521,7 @@
               <%}%>
               <% }else if(subject==="MATHEMATICS"){%>
                 Create प्रस्तुतीकरण र अभिलेखीकरण Rubriks 
-                <%if(studentClass>8){%>
+                <%if(studentClass>8 || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN"){%>
                   (6 marks)
                 <%}else{%>
                   (12 marks)
@@ -531,13 +531,13 @@
               <%}else if(subject==="HEALTH"){%>
                     Create परियोजना कार्य (स्वास्थ्य) को मूल्याङ्कन (रुब्रिक्स) 
                 <%}else if(subject==="NEPALI"){%>
-                  <% if (studentClass>8) { %>
+                  <% if (studentClass>8 || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN") { %>
                     सिर्जनात्मक र परियोजना कार्यको मूल्याङ्कनमुल्यान्ग्कन आधार Rubriks (4 marks)
                   <%}else {%>
                   Create पढाई र लेखाइको मूल्याङ्कनमुल्यान्ग्कन आधार  Rubriks (16 marks)
                   <%}%>
               <%}else if(subject==="ENGLISH"){%>
-                <% if (studentClass>8) { %>
+                <% if (studentClass>8 || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN") { %>
                    Create Speaking Test Criteria(8)
                 <%}else{%>
                   Create Reading & Writing Rubriks (16 marks)

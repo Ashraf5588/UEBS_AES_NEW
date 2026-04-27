@@ -919,7 +919,14 @@
         <div id="themes-container"></div>
 
         <div class="btn-group" style="justify-content: center; margin-bottom: 2rem;">
-          <button type="button" class="btn btn-primary" onclick="addTheme()"><% if(studentClass<=3) { %>+ Add Theme<% }else{ %>+ मुल्याङ्कनका आधार थप्नुहोस (Add evaluation Criteria)<% } %></button>
+          <button type="button" class="btn btn-primary" onclick="addTheme()"><% if(studentClass<=3 ||studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="Two" || studentClass=="TWO" || 
+            studentClass=="two" ||
+            studentClass=="2" ||
+            studentClass=="Three" ||
+
+              studentClass=="three" || studentClass=="THREE"
+              studentClass=="3"
+            ) { %>+ Add Theme<% }else{ %>+ मुल्याङ्कनका आधार थप्नुहोस (Add evaluation Criteria)<% } %></button>
         </div>
 
         <div class="submit-section">
@@ -1078,19 +1085,23 @@
 
       themeDiv.innerHTML = `
         <div class="theme-header">
-          <h3><% if(studentClass<=3) { %>थीम ${themeIndex + 1}<% }else{ %> मुल्याङ्कन आधार ${themeIndex + 1} (Evaluation Criteria-${themeIndex + 1})<% } %></h3>
+          <h3><% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+            ) { %>थीम ${themeIndex + 1}<% }else{ %> मुल्याङ्कन आधार ${themeIndex + 1} (Evaluation Criteria-${themeIndex + 1})<% } %></h3>
           <button type="button" class="btn btn-danger" onclick="removeTheme(this)">Remove Theme</button>
         </div>
         <div class="form-group">
-          <label for="themeName_${themeIndex}"><% if(studentClass<=3){ %>Theme Name<% }else{ %>मुल्याङ्कन आधारको नाम (Evaluation Criteria Name)<% } %></label>
+          <label for="themeName_${themeIndex}"><% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+            ) { %>Theme Name<% }else{ %>मुल्याङ्कन आधारको नाम (Evaluation Criteria Name)<% } %></label>
           <textarea name="themes[${themeIndex}][themeName]" id="themeName_${themeIndex}" 
-                 placeholder="<% if(studentClass<=3){ %>Enter Theme Name<% }else{ %>Enter मुल्याङ्कन आधारको नाम (Enter Evaluation Criteria Name)<% } %>" 
+                 placeholder="<% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+            ) { %>Enter Theme Name<% }else{ %>Enter मुल्याङ्कन आधारको नाम (Enter Evaluation Criteria Name)<% } %>" 
                  required rows="1" 
                  oninput="autoResize(this); scheduleAutoSave();">${themeData ? themeData.themeName || '' : ''}</textarea>
         </div>
         <div class="outcomes-container" id="outcomes-${themeIndex}"></div>
         <div class="btn-group">
-          <button type="button" class="btn btn-primary" onclick="addOutcome(${themeIndex})">+ <% if(studentClass<=3){ %>+ Add Learning Outcome<% }else{ %>परिक्षण पक्षको नाम थप्नुहोस (Add Examination Criteria Name)<% } %></button>
+          <button type="button" class="btn btn-primary" onclick="addOutcome(${themeIndex})">+ <% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+            ) { %>+ Add Learning Outcome<% }else{ %>परिक्षण पक्षको नाम थप्नुहोस (Add Examination Criteria Name)<% } %></button>
         </div>
       `;
 
@@ -1125,14 +1136,17 @@
 
       outcomeDiv.innerHTML = `
         <div class="outcome-header">
-          <h4><% if(studentClass<=3){ %>मुख्य सिकाइ उपलब्धि ${outcomeIndex + 1}<% }else{ %>परिक्षण पक्ष (Examination Criteria) ${outcomeIndex + 1}<% } %></h4>
+          <h4><% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+            ) { %>मुख्य सिकाइ उपलब्धि ${outcomeIndex + 1}<% }else{ %>परिक्षण पक्ष (Examination Criteria) ${outcomeIndex + 1}<% } %></h4>
           <button type="button" class="btn btn-warning" onclick="removeOutcome(this)">Remove</button>
         </div>
         <div class="form-group">
-          <label for="outcomeName_${themeIdx}_${outcomeIndex}"><% if(studentClass<=3){ %>Learning Outcome Name<% }else{ %>परिक्षण पक्षको नाम (Examination Criteria Name)<% } %></label>
+          <label for="outcomeName_${themeIdx}_${outcomeIndex}"><% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+            ) { %>Learning Outcome Name<% }else{ %>परिक्षण पक्षको नाम (Examination Criteria Name)<% } %></label>
           <textarea name="themes[${themeIdx}][learningOutcome][${outcomeIndex}][learningOutcomeName]" 
                  id="outcomeName_${themeIdx}_${outcomeIndex}" 
-                 placeholder="Enter <% if(studentClass<=3){ %>Learning Outcome Name<% }else{ %>परिक्षण पक्षको नाम (Examination Criteria Name)<% } %>" 
+                 placeholder="Enter <% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+            ) { %>Learning Outcome Name<% }else{ %>परिक्षण पक्षको नाम (Examination Criteria Name)<% } %>" 
                   rows="1"
                  oninput="autoResize(this); scheduleAutoSave();">${outcomeData ? outcomeData.learningOutcomeName || '' : ''}</textarea>
         </div>

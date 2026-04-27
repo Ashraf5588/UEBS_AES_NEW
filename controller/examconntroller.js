@@ -101,11 +101,11 @@ exports.entryform = async (req,res,next)=>
   const {studentClass,section,subject,academicYear,terminal}= req.query;
   const model = getSubjectModel(subject, studentClass, section, terminal);
 const theoryData = await model.find({}).lean();
-console.log("Theory Data:", theoryData);
+
 
   const studentData = await studentRecord.find({studentClass:studentClass,section:section})
      const marksheetSetups = await marksheetSetup.find({}).lean();
-     console.log("studentData",studentData);
+     
   const subjectData = await newsubject.find({forClass:studentClass,newsubject:subject}).lean();
  
   const subjects = await newsubject.find({}).lean();
@@ -131,12 +131,12 @@ console.log("Theory Data:", theoryData);
         )
       );
     }
-  if(studentClass>3)
+  if(studentClass>3 || studentClass=="FOUR" || studentClass=="Four" || studentClass=="four" || studentClass=="4" || studentClass=="FIVE" || studentClass=="Five" || studentClass=="five" || studentClass=="5" || studentClass=="SIX" || studentClass=="Six" || studentClass=="six" || studentClass=="6" || studentClass=="SEVEN" || studentClass=="Seven" || studentClass=="seven" || studentClass=="7" || studentClass=="EIGHT" || studentClass=="Eight" || studentClass=="eight" || studentClass=="8" || studentClass=="NINE" || studentClass=="Nine" || studentClass=="nine" || studentClass=="9" || studentClass=="TEN" || studentClass=="Ten" || studentClass=="ten" || studentClass=="10")
   {
 
   res.render("./exam/entryform",{studentData,studentClass,section,subject,academicYear,terminal,subjectData,subjects:accessibleSubject,studentClassdata:accessibleClass,terminals, marksheetSetups,theoryData});
   }
-  else if (studentClass<=3)
+  else if (studentClass<=3 || studentClass=="THREE" || studentClass=="Three" || studentClass=="three" || studentClass=="3" || studentClass=="TWO" || studentClass=="Two" || studentClass=="two" || studentClass=="2" || studentClass=="ONE" || studentClass=="One" || studentClass=="one" || studentClass=="1" || studentClass=="NURSERY" || studentClass=="Nursery" || studentClass=="nursery" || studentClass=="LKG" || studentClass=="Lkg" || studentClass=="lkg" || studentClass=="UKG" || studentClass=="Ukg" || studentClass=="ukg" || studentClass=="PLAYGROUP" || studentClass=="Playgroup" || studentClass=="playgroup" )
   {
     res.render("./exam/entryformprimary",{studentData,studentClass:studentClass,section,subject,academicYear,terminal,subjectData,subjects:accessibleSubject,studentClassdata:accessibleClass,terminals, marksheetSetups,user,theoryData});
   }
@@ -238,7 +238,7 @@ fs.createReadStream(req.file.path) //it read the content of file chunk by chunk
 .pipe(csv( { separator: ",",mapHeaders: ({ header }) => header.trim()  }))//it convert line itno comma separated value
 .on("data",(row)=>{ // for every uunique data it will call function
 
-  console.log("Row Data:", row); // Debug logging
+ 
   result.push(
     {
 

@@ -653,7 +653,7 @@
         <div class="section">
           
           <div class="section-header">
-            <% if(studentClass > 8){ %>
+            <% if(studentClass > 8 || studentClass == "NINE" || studentClass=="9" || studentClass=="Nine" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN"){ %>
               सुनाइ, बोलाइ र पढाइ (१२)
             <% } else { %>
             सुनाइ र बोलाइ (२०)
@@ -924,7 +924,7 @@ function calculateTerminalMarks() {
       document.getElementById('obtainedconvertedmarks').value = '';
       return;
     }
-if(studentClass>8)
+if(studentClass>8 || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN")
 {
     document.getElementById('obtainedconvertedmarks').value = ((theoryMarks/fullMarks)*6).toFixed(2);
 }
@@ -944,7 +944,7 @@ else
       console.log(attendancePercentage);
 
       if(attendancePercentage >=90 && attendancePercentage <=100) {
-        if(studentClass>8)
+        if(studentClass>8 || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN")
         {
           document.getElementById('attendanceMarks').value = 1;
         }
@@ -955,7 +955,7 @@ else
       }
       else if(attendancePercentage >= 85 && attendancePercentage < 90) {
       
-        if(studentClass>8)
+        if(studentClass>8 || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN")
         {
           document.getElementById('attendanceMarks').value = 0.75;
         }
@@ -965,7 +965,7 @@ else
         }
       }
       else if(attendancePercentage >= 80 && attendancePercentage < 85) {
-        if(studentClass>8)
+        if(studentClass>8 || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN")
         {
           document.getElementById('attendanceMarks').value = 0.5;
         }
@@ -975,7 +975,7 @@ else
         }
       }
       else if(attendancePercentage >=75 && attendancePercentage < 80) {
-        if(studentClass>8)
+        if(studentClass>8 || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN")
         {
           document.getElementById('attendanceMarks').value = 0.25;
         }

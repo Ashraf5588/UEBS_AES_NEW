@@ -376,7 +376,10 @@
 
         <% }) %>
       <% }) %>
-<%if(studentClass>8){%>
+<%if(studentClass>8 ||    studentClass=="nine" || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine"
+          ||
+          studentClass=="ten" || studentClass=="TEN" || studentClass=="10" || studentClass=="Ten"
+          ){%>
            <% totalPracticalproject = ((((totalObtainedAllPractical/16)*16) )/ lessonData[0].units.length) %>
            <%}else{%>
 <% totalPracticalproject = ((((totalObtainedAllPractical/18)*36) )/ lessonData[0].units.length) %>
@@ -384,7 +387,10 @@
           <td><%= totalPracticalproject %></td>
 
            <td><%= student.terminalMarks %></td>
-           <%if(studentClass>8){%>
+           <%if(studentClass>8 ||    studentClass=="nine" || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine"
+          ||
+          studentClass=="ten" || studentClass=="TEN" || studentClass=="10" || studentClass=="Ten"
+          ){%>
            <% totalPractical = ((student.attendanceMarks+student.participationMarks+ 
            ((((totalObtainedAllPractical/16)*16))) / lessonData[0].units.length
            +student.attendanceMarks+student.terminalMarks)/50)*100 %>
@@ -395,7 +401,10 @@
             <%}%>
 
           
-          <%if(studentClass>8){%>
+          <%if(studentClass>8 ||    studentClass=="nine" || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine"
+          ||
+          studentClass=="ten" || studentClass=="TEN" || studentClass=="10" || studentClass=="Ten"
+          ){%>
           
            <td><%=student.attendanceMarks+student.participationMarks+
             ((((totalObtainedAllPractical/16)*16)) 

@@ -80,19 +80,22 @@
       
           <td><%= totalGivenAllPractical %></td>
           <td><%= totalDoneAllPractical %></td>
-          <%if(studentClass>8){%>
-          <td><%= ((totalObtainedAllPractical)/16)*16 %></td>
-          <%}else{%>
-           <td><%= ((totalObtainedAllPractical)/18)*36 %></td>
-          <%}%>
-     
+          <%if(studentClass>8 ||  studentClass=="nine" || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine"
+          ||
+          studentClass=="ten" || studentClass=="TEN" || studentClass=="10" || studentClass=="Ten"
+          ){%>
+        
         </tr>
         <tr>
           <td></td>
           <td>Average</td>
           <td></td>
           <td></td>
-          <%if(studentClass>8){%>
+          <%if(studentClass>8 ||  studentClass=="nine" || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine"
+          ||
+          studentClass=="ten" || studentClass=="TEN" || studentClass=="10" || studentClass=="Ten"
+        
+          ){%>
           <td><%= (((totalObtainedAllPractical)/16)*16) / lessonData[0].units.length %></td>
           <%}else{%>
           <td><%= (((totalObtainedAllPractical)/18)*36) / lessonData[0].units.length %></td>

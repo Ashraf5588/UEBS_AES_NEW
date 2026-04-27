@@ -1372,7 +1372,7 @@ for (const student of studentWisedata) {
        }, {});
 
 
-       console.log("Student Wise Data:", studentWisedatastructured);
+      
        res.render("./exam/studentportfolio", {
       currentPage: "exammanagement",
       studentClassdata,

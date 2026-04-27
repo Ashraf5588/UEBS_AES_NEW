@@ -133,6 +133,7 @@ const BS_MONTH_ORDER = {
 };
 
 const normalizeText = (value) => String(value || '').trim().toLowerCase();
+const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const getBsMonthOrder = (monthName) => {
   return BS_MONTH_ORDER[normalizeText(monthName)] || 0;
@@ -221,7 +222,8 @@ exports.onlineAttendancePage = async (req, res) => {
           , marksheetSetups,studentClassdata:sidenavData.studentClassdata,month,
           HolidayData: HolidayData[0] || null,
           absentHistory,
-          todayBs });
+          todayBs,
+          todayMonthName });
 
     } catch (error) {
         console.error('Error fetching attendance page:', error);
@@ -257,6 +259,27 @@ exports.saveOnlineAttendance = async (req, res) => {
            );
 
        if (day && month && academicYear) {
+         const existingDoc = await model.findOne(
+           {
+             reg: req.body.reg,
+             academicYear: academicYear,
+             studentClass: studentClass,
+             section: section,
+           },
+           { attendance: 1 }
+         ).lean();
+
+         const previousEntry = (Array.isArray(existingDoc && existingDoc.attendance)
+           ? existingDoc.attendance
+           : []
+         ).find((entry) => (
+           String(entry && entry.academicYear) === String(academicYear) &&
+           normalizeText(entry && entry.month) === normalizeText(month) &&
+           String(entry && entry.day) === String(day)
+         ));
+
+         const preservedReason = String(previousEntry && previousEntry.reason || '').trim();
+
          await model.updateOne(
            {
              reg: req.body.reg,
@@ -288,7 +311,8 @@ exports.saveOnlineAttendance = async (req, res) => {
                  academicYear: academicYear,
                  month: month,
                  day: String(day),
-                 status: status === 'present' ? 'present' : 'absent'
+                 status: status === 'absent' ? 'absent' : 'present',
+                 reason: status === 'absent' ? preservedReason : ''
                }
              }
            }
@@ -327,29 +351,36 @@ exports.saveFrontdeskReason = async (req, res) => {
     }
 
     const trimmedReason = String(reason || '').trim();
+    const monthVariants = getMonthVariants(month);
+    const monthRegex = monthVariants.length > 0
+      ? new RegExp(`^(${monthVariants.map((variant) => escapeRegex(variant)).join('|')})$`, 'i')
+      : new RegExp(`^${escapeRegex(month)}$`, 'i');
 
     const updateResult = await onlineAttendance.updateOne(
       {
         reg: String(reg),
         studentClass: String(studentClass),
         section: String(section),
-        academicYear: String(academicYear),
-        attendance: {
-          $elemMatch: {
-            academicYear: String(academicYear),
-            month: String(month),
-            day: String(day)
-          }
-        }
+        academicYear: String(academicYear)
       },
       {
         $set: {
-          'attendance.$.reason': trimmedReason
+          'attendance.$[entry].reason': trimmedReason
         }
+      },
+      {
+        arrayFilters: [
+          {
+            'entry.academicYear': String(academicYear),
+            'entry.day': String(day),
+            'entry.month': { $regex: monthRegex },
+            'entry.status': { $in: ['absent', 'a', 'false'] }
+          }
+        ]
       }
     );
 
-    if (updateResult.matchedCount === 0) {
+    if (!updateResult || updateResult.modifiedCount === 0) {
       return res.status(404).json({ success: false, message: 'Attendance entry not found' });
     }
 
@@ -397,7 +428,7 @@ exports.frontdeskPage = async (req, res) => {
       }
     }
 
-    const presentCandidates = [];
+    const absentCandidates = [];
 
     attendanceDocs.forEach((doc) => {
       const attendanceEntries = Array.isArray(doc && doc.attendance) ? doc.attendance : [];
@@ -411,10 +442,10 @@ exports.frontdeskPage = async (req, res) => {
         const isSameYear = entryYear === targetAcademicYear;
         const isSameMonth = monthVariants.includes(entryMonth);
         const isSameDay = Number.isFinite(selectedDay) && entryDay === selectedDay;
-        const isPresent = entryStatus === 'present' || entryStatus === 'p' || entryStatus === 'true';
+        const isAbsent = entryStatus === 'absent' || entryStatus === 'a' || entryStatus === 'false';
 
-        if (isSameYear && isSameMonth && isSameDay && isPresent) {
-          presentCandidates.push({
+        if (isSameYear && isSameMonth && isSameDay && isAbsent) {
+          absentCandidates.push({
             reg: String(doc && doc.reg || ''),
             name: String(doc && doc.name || ''),
             studentClass: String(doc && doc.studentClass || ''),
@@ -427,7 +458,7 @@ exports.frontdeskPage = async (req, res) => {
     });
 
     const uniqueByReg = new Map();
-    presentCandidates.forEach((student) => {
+    absentCandidates.forEach((student) => {
       if (student.reg && !uniqueByReg.has(student.reg)) {
         uniqueByReg.set(student.reg, student);
       }
@@ -442,7 +473,7 @@ exports.frontdeskPage = async (req, res) => {
       studentRecords.map((student) => [String(student.reg || ''), getPreferredContact(student)])
     );
 
-    const presentStudents = Array.from(uniqueByReg.values())
+    const absentStudents = Array.from(uniqueByReg.values())
       .map((student, index) => {
         const contact = contactByReg.get(student.reg) || '';
         const dialNumber = toDialableNumber(contact);
@@ -482,7 +513,7 @@ exports.frontdeskPage = async (req, res) => {
     const dayOptions = Array.from({ length: 32 }, (_, index) => index + 1);
 
     res.render('./frontdesk/frontdesk', {
-      presentStudents,
+      absentStudents,
       todayBs,
       todayDay: selectedDay,
       currentMonthName: selectedMonthName,

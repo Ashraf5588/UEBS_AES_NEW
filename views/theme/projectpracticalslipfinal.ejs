@@ -366,7 +366,7 @@
 <% terminal.unit.forEach(unitdata=>{%>
          <% unitdata.practicals.forEach(practicaldata=>{%>
              <p>
-               <%if(studentClass>8){%>
+               <%if(studentClass>8 || studentClass=="Nine" || studentClass=="Ten" || studentClass=="TEN" || studentClass=="9" || studentClass=="10" || studentClass=="nine" || studentClass=="ten" ){%>
               <% ((practicaldata.practicalMarks / 10) * 10)/unitdata.practicals.length %>
               <%}else{%>
                <% ((practicaldata.practicalMarks / 10) * 20)/unitdata.practicals.length %>

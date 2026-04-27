@@ -368,7 +368,11 @@
          <% unitdata.practicals.forEach(practicaldata=>{%>
 
              <p>
-              <% if(studentClass>8){%>
+              <% if(studentClass>8 ||    studentClass=="nine" || studentClass=="NINE" || studentClass=="9" || studentClass=="Nine"
+          ||
+          studentClass=="ten" || studentClass=="TEN" || studentClass=="10" || studentClass=="Ten"
+           )
+          { %>
               <% ((practicaldata.practicalMarks / 16) * 16)/unitdata.practicals.length %></p>
 
              <% totalPracticalFinal += (((practicaldata.practicalMarks / 16) * 16)/unitdata.practicals.length) %>

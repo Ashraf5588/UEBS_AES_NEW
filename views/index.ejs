@@ -176,17 +176,17 @@
         
         .action-buttons {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-            gap: 0.5rem;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.65rem;
             margin-bottom: 0;
         }
 
         .action-buttons.answeranalysis {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .action-buttons.academic {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .action-buttons.more {
@@ -205,6 +205,7 @@
             transition: all 0.3s ease;
             color: var(--dark) !important;
             gap: 0.6rem;
+            min-width: 0;
            
             min-height: 110px;
        
@@ -238,6 +239,14 @@
         .card-emerald .icon-wrapper { background: linear-gradient(135deg, #14b8a6 0%, #0f766e 100%); color: #fff; }
         .card-slate .icon-wrapper { background: linear-gradient(135deg, #475569 0%, #1e293b 100%); color: #fff; }
         .card-rose .icon-wrapper { background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); color: #fff; }
+
+        .text-wrapper {
+            width: 100%;
+            text-align: center;
+            line-height: 1.25;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
         
         .subject-grid {
             display: grid;
@@ -379,8 +388,8 @@
             }
             
             .action-buttons {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
-                gap: 0.5rem;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.6rem;
             }
 
             .action-card {
@@ -467,7 +476,19 @@
         @media (min-width: 769px) {
             .action-buttons.answeranalysis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
             .action-buttons.academic { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-            .action-buttons.more { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .action-buttons.more { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (min-width: 992px) {
+            .quick-groups {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 991px) {
+            .quick-groups {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
         }
 
         @media (max-width: 420px) {
@@ -517,7 +538,7 @@
     
     <div class="container">
         <div class="action-section">
-            <div class="action-buttons">
+            <div class="quick-groups">
                
                 <div class="quick-group">
                     <h3 class="group-title">Academic</h3>

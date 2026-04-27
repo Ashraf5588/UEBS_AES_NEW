@@ -390,13 +390,14 @@
 
         <% }) %>
       <% }) %>
-<% if(studentClass > 8) { %>
+<% if(studentClass > 8 || studentClass=="Nine" || studentClass=="9" || studentClass=="NINE" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN") { %>
 <% totalPracticalproject = (((((totalObtainedAllPractical/12)*12) + (((totalObtainedAllProject)/8)*8))) / lessonData[0].units.length) %>
 <% } else { %>
   <% totalPracticalproject = (((((totalObtainedAllPractical/20)*20) + (((totalObtainedAllProject)/8)*8))) / lessonData[0].units.length) %>
 <% } %>
 
-      <% if(studentClass > 8) { %>
+      <% if(studentClass > 8 || studentClass=="Nine" || studentClass=="9" || studentClass=="NINE" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN"
+      ) { %>
            <td><%=((totalObtainedAllPractical/8)*12)/ (lessonData[0].units.length) %></td>
 
            <td><%=(((totalObtainedAllProject)/8)*8)/ (lessonData[0].units.length) %></td>
@@ -408,7 +409,7 @@
 
            <td><%= student.terminalMarks %></td>
 
-           <% if(studentClass > 8) { %>
+           <% if(studentClass > 8 || studentClass=="Nine" || studentClass=="9" || studentClass=="NINE" || studentClass=="10" || studentClass=="Ten" || studentClass=="TEN") { %>
            <% totalPractical = (student.attendanceMarks+student.participationMarks+
            ((((totalObtainedAllPractical/8)*8)) + (((totalObtainedAllProject)/8)*8)) / lessonData[0].units.length
            +student.terminalMarks)/25*100 %>

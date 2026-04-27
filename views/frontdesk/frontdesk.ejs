@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Frontdesk Present Students</title>
+	<title>Frontdesk Absent Students</title>
 	<style>
 		*{margin:0;padding:0;box-sizing:border-box}
 		:root{--primary:#0b6bcb;--primary-dark:#084f98;--secondary:#1f2937;--bg:#f3f6fb;--card:#fff;--border:#d8e1ea;--text:#243444;--muted:#6b7280;--danger:#b91c1c;--row:#f8fbff}
@@ -44,7 +44,7 @@
 <body>
 	<div class="container">
 		<div class="header">
-			<div class="title">Today Present Students</div>
+			<div class="title">Today Absent Students</div>
 			<div class="meta">
 				Date (BS): <strong><%= todayBs %></strong>
 				| Academic Year: <strong><%= academicYear %></strong>
@@ -87,7 +87,7 @@
 				<thead>
 					<tr>
 						<th class="num">SN</th>
-						<th>Present Name</th>
+						<th>Absent Name</th>
 						<th>Contact</th>
 						<th class="class-col">Class</th>
 						<th class="section-col">Section</th>
@@ -96,8 +96,8 @@
 					</tr>
 				</thead>
 				<tbody>
-					<% if (presentStudents && presentStudents.length > 0) { %>
-						<% presentStudents.forEach((student) => { %>
+					<% if (absentStudents && absentStudents.length > 0) { %>
+						<% absentStudents.forEach((student) => { %>
 							<tr>
 								<td class="num"><%= student.sn %></td>
 								<td><%= student.name || '-' %></td>
@@ -135,7 +135,7 @@
 						<% }) %>
 					<% } else { %>
 						<tr>
-							<td colspan="7" class="empty">No present students found for today.</td>
+							<td colspan="7" class="empty">No absent students found for selected date.</td>
 						</tr>
 					<% } %>
 				</tbody>

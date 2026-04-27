@@ -384,7 +384,20 @@ const token = generateToken(user);
   return res.redirect('/newsadmin');
 } else if (user.role === "ADMIN") {
   return res.redirect('/admin/term/FIRST');
-} else {
+}
+  else if (user.role === "NURSE") {
+  return res.redirect('/healthrecord');
+  }
+  else if (user.role === "FRONTDESKOFFICER") {
+  return res.redirect('/frontdesk');
+  }
+  else if (user.role === "LIBRARY") {
+  return res.redirect('/library');
+  }
+  else if (user.role === "STUDENT") {
+  return res.redirect('/student');
+  }
+ else {
   return res.redirect('/');
 }
 }

@@ -876,7 +876,7 @@ function calculateTerminalMarks() {
       document.getElementById('obtainedconvertedmarks').value = '';
       return;
     }
-if(studentClass>8)
+if(studentClass>8 || studentClass=="Nine" || studentClass=="Ten" || studentClass=="TEN" || studentClass=="9" || studentClass=="10" || studentClass=="nine" || studentClass=="ten" )
 {
     document.getElementById('obtainedconvertedmarks').value = ((theoryMarks/fullMarks)*6).toFixed(2);
 }
