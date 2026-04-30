@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-url = "mongodb://localhost:27017/aes"
+const url = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/aes';
 
 const connectDB = async () => {
   try {

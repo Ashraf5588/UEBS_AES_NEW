@@ -15,4 +15,4 @@ const healthrecordschema = new mongoose.Schema({
     remarks: { type: String },
 })
 
-module.exports = mongoose.model('HealthRecord', healthrecordschema)
+module.exports = mongoose.models.HealthRecord || mongoose.model('HealthRecord', healthrecordschema, 'healthrecords')

@@ -2,7 +2,7 @@
 
 var mongoose = require('mongoose');
 
-url = "mongodb://0.0.0.0/aes";
+var url = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/aes';
 
 var connectDB = function connectDB() {
   var conn;
