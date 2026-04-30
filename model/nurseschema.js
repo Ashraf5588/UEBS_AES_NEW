@@ -8,6 +8,7 @@ const healthrecordschema = new mongoose.Schema({
     roll: { type: String, required: false },
     fatherName: { type: String, required: false },
     address: { type: String, required: false },
+    contactNumber: { type: String, required: false },
     createdAt: { type: Date, default: Date.now },
     diagnosis: { type: String, required: true },
     treatment: { type: String, required: true },

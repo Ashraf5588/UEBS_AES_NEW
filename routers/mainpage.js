@@ -291,6 +291,23 @@ student.get('/healthrecord',verifytoken,authorized,nursecontroller.showHealthRec
 student.get('/healthrecord/students',verifytoken,authorized,nursecontroller.searchStudents)
 student.get('/healthrecord/records',verifytoken,authorized,nursecontroller.getHealthRecordsFiltered)
 student.post('/healthrecord',verifytoken,authorized,nursecontroller.createHealthRecord)
+student.get('/healthrecord/bmi', verifytoken, authorized, nursecontroller.showBmiForm)
+student.get('/healthrecord/bmi/filter-options', verifytoken, authorized, nursecontroller.getBmiFilterOptions)
+student.get('/healthrecord/bmi/students', verifytoken, authorized, nursecontroller.getBmiStudents)
+student.post('/healthrecord/bmi/save', verifytoken, authorized, nursecontroller.saveBmiRows)
+student.get('/healthrecord/medicine', verifytoken, authorized, nursecontroller.showMedicineForm)
+student.get('/healthrecord/medicine/list', verifytoken, authorized, nursecontroller.getMedicineNames)
+student.post('/healthrecord/medicine', verifytoken, authorized, nursecontroller.saveMedicineName)
+student.post('/healthrecord/medicine/update/:id', verifytoken, authorized, nursecontroller.updateMedicineName)
+student.post('/healthrecord/medicine/delete/:id', verifytoken, authorized, nursecontroller.deleteMedicineName)
+student.get('/healthrecord/medicine/distributed', verifytoken, authorized, nursecontroller.showMedicineDistributedRecordForm)
+student.get('/healthrecord/medicine/distributed/options', verifytoken, authorized, nursecontroller.getMedicineDistributionOptions)
+student.get('/healthrecord/medicine/distributed/students', verifytoken, authorized, nursecontroller.getMedicineDistributionStudents)
+student.post('/healthrecord/medicine/distributed/save', verifytoken, authorized, nursecontroller.saveMedicineDistributionRecords)
+student.get('/healthrecord/padrecord', verifytoken, authorized, nursecontroller.showPadRecordForm)
+student.get('/healthrecord/padrecord/records', verifytoken, authorized, nursecontroller.getPadRecordsFiltered)
+student.post('/healthrecord/padrecord', verifytoken, authorized, nursecontroller.savePadRecord)
+student.get('/healthrecord/analytics', verifytoken, authorized, nursecontroller.showHealthAnalytics)
 
 // Theme Routes Start Here
 student.get('/theme', verifytoken, authorized, themecontroller.themeopener);

@@ -18,6 +18,7 @@
   color: var(--hm-ink);
   background: #f8f5f1;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .hm-bg {
@@ -35,6 +36,83 @@
   margin: 0 auto;
   padding: 28px 24px 44px;
   animation: hmFadeIn 0.6s ease-out both;
+}
+
+.hm-shell {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.hm-main-wrap {
+  min-width: 0;
+}
+
+.hm-sidenav {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  padding: 22px 16px;
+  background: linear-gradient(180deg, #0f172a 0%, #111c33 100%);
+  color: #e2e8f0;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  gap: 18px;
+}
+
+.hm-sidenav-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hm-sidenav-kicker {
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 11px;
+  color: #93c5fd;
+}
+
+.hm-sidenav h2 {
+  margin: 0;
+  font-family: "Fraunces", "Times New Roman", serif;
+  color: #fff;
+  font-size: 24px;
+}
+
+.hm-sidenav-nav {
+  display: grid;
+  gap: 10px;
+}
+
+.hm-nav-link {
+  display: block;
+  padding: 12px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.hm-nav-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(2px);
+}
+
+.hm-nav-link:first-child {
+  background: #0f4c81;
+  border-color: #0f4c81;
+}
+
+.hm-menu-toggle,
+.hm-sidenav-close {
+  display: none;
 }
 
 .hm-hero {
@@ -105,6 +183,12 @@
 .hm-form {
   display: grid;
   gap: 18px;
+}
+
+.hm-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .hm-card-header {
@@ -241,6 +325,190 @@
   box-shadow: 0 12px 24px rgba(13, 107, 95, 0.25);
 }
 
+.hm-button-secondary {
+  background: #e2e8f0;
+  color: #0f172a;
+  box-shadow: none;
+}
+
+.hm-button-secondary:hover {
+  background: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: none;
+}
+
+.hm-medicine-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hm-row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hm-table-action {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  background: #0f4c81;
+  color: #fff;
+  cursor: pointer;
+}
+
+.hm-table-action-danger {
+  background: #b91c1c;
+}
+
+.hm-table-action:hover {
+  filter: brightness(1.05);
+}
+
+.hm-analytics-page {
+  display: grid;
+  gap: 18px;
+}
+
+.hm-analytics-launcher {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.hm-bmi-grouping-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.hm-bmi-group-card {
+  display: grid;
+  gap: 14px;
+  min-height: 260px;
+}
+
+.hm-bmi-group-header {
+  align-items: flex-start;
+}
+
+.hm-bmi-group-kicker {
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.hm-bmi-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-weight: 700;
+}
+
+.hm-bmi-student-list {
+  display: grid;
+  gap: 10px;
+}
+
+.hm-bmi-student-row {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 12px 14px;
+  color: #fff;
+}
+
+.hm-bmi-student-name {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.hm-bmi-student-meta {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.hm-bmi-empty {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.hm-bmi-blue {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.hm-bmi-green {
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+.hm-bmi-orange {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+.hm-bmi-red {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.hm-distribution-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.hm-distribution-summary {
+  margin-top: 18px;
+}
+
+.hm-distribution-table-card {
+  margin-top: 18px;
+}
+
+.hm-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.hm-summary-grid div {
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.hm-summary-grid strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--hm-muted);
+}
+
+.hm-summary-grid span {
+  display: block;
+  color: var(--hm-ink);
+}
+
+.distribution-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--hm-accent);
+}
+
 .hm-status {
   margin: 0;
   font-size: 14px;
@@ -257,6 +525,40 @@
   margin-top: 24px;
   display: grid;
   gap: 14px;
+}
+
+.hm-bmi-panel,
+.hm-bmi-table-card {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.hm-bmi-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.hm-bmi-table .hm-bmi-input {
+  width: 100%;
+  min-width: 86px;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+  background: #fff;
+}
+
+.hm-bmi-output {
+  background: #f8fafc;
+  font-weight: 600;
+}
+
+.hm-bmi-actions {
+  margin-top: 6px;
+  justify-content: flex-end;
 }
 
 .hm-records-header {
@@ -354,8 +656,83 @@
 }
 
 @media (max-width: 900px) {
+  .hm-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .hm-menu-toggle {
+    display: inline-flex;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 40;
+    border: none;
+    border-radius: 12px;
+    background: #0f172a;
+    color: #fff;
+    padding: 12px 14px;
+    font: inherit;
+    font-weight: 600;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.2);
+  }
+
+  .hm-sidenav-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 24px;
+    line-height: 1;
+  }
+
+  .hm-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 30;
+  }
+
+  .hm-sidenav {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(84vw, 300px);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 35;
+    height: 100vh;
+    box-shadow: 24px 0 48px rgba(15, 23, 42, 0.24);
+  }
+
+  .hm-shell.is-nav-open .hm-sidenav {
+    transform: translateX(0);
+  }
+
+  .hm-shell.is-nav-open + .hm-backdrop,
+  .hm-backdrop.is-visible {
+    display: block;
+  }
+
   .hm-page {
-    padding: 20px 16px 30px;
+    padding: 72px 16px 30px;
+  }
+
+  .hm-hero {
+    align-items: stretch;
+  }
+
+  .hm-hero > div,
+  .hm-badge {
+    width: 100%;
+  }
+
+  .hm-badge {
+    text-align: left;
+    min-width: 0;
   }
 
   .hm-grid {
@@ -372,6 +749,19 @@
     gap: 14px;
   }
 
+  .hm-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hm-bmi-filters {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .hm-distribution-filters,
+  .hm-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .hm-card-header {
     flex-direction: column;
     align-items: flex-start;
@@ -382,6 +772,13 @@
     grid-template-columns: 1fr 1fr;
   }
 
+  .hm-record-filters .hm-button,
+  .hm-actions .hm-button,
+  .hm-medicine-actions .hm-button,
+  .hm-analytics-launcher .hm-button {
+    width: 100%;
+  }
+
   .hm-button {
     font-size: 14px;
     padding: 12px 14px;
@@ -389,6 +786,10 @@
 
   .hm-table {
     min-width: 860px;
+  }
+
+  .hm-table-wrap {
+    border-radius: 10px;
   }
 
   .hm-clinical-grid {
@@ -404,6 +805,19 @@
 @media (max-width: 640px) {
   .hm-page {
     padding: 14px 10px 22px;
+  }
+
+  .hm-hero {
+    gap: 10px;
+  }
+
+  .hm-hero > div,
+  .hm-badge {
+    width: 100%;
+  }
+
+  .hm-badge {
+    padding: 12px 14px;
   }
 
   .hm-hero {
@@ -446,8 +860,32 @@
     width: 100%;
   }
 
+  .hm-record-filters,
+  .hm-bmi-filters,
+  .hm-distribution-filters,
+  .hm-summary-grid,
+  .hm-form-grid,
+  .hm-actions,
+  .hm-medicine-actions,
+  .hm-analytics-launcher {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .hm-actions,
+  .hm-medicine-actions {
+    gap: 8px;
+  }
+
+  .hm-actions .hm-button,
+  .hm-medicine-actions .hm-button,
+  .hm-analytics-launcher .hm-button,
+  .hm-record-filters .hm-button {
+    width: 100%;
+  }
+
   .hm-table {
-    min-width: 760px;
+    min-width: 720px;
   }
 
   .hm-table th,
@@ -458,5 +896,32 @@
 
   .hm-summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .hm-distribution-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .hm-bmi-grouping-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .hm-analytics-launcher {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hm-bmi-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .hm-card-header,
+  .hm-records-header {
+    align-items: flex-start;
+  }
+
+  .hm-card-header h2,
+  .hm-records-header h2 {
+    font-size: 18px;
   }
 }

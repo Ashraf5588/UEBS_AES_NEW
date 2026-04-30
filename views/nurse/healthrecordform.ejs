@@ -10,6 +10,27 @@
   <link rel="stylesheet" href="/health-record.css">
 </head>
 <body class="hm-body">
+  <button class="hm-menu-toggle" type="button" aria-controls="hmSidebar" aria-expanded="false">Menu</button>
+  <div class="hm-backdrop" id="hmBackdrop" hidden></div>
+  <div class="hm-shell">
+    <aside class="hm-sidenav" id="hmSidebar" aria-label="Nurse tools navigation">
+      <div class="hm-sidenav-header">
+        <div>
+          <p class="hm-sidenav-kicker">Nurse Tools</p>
+          <h2>Health Module</h2>
+        </div>
+        <button class="hm-sidenav-close" type="button" aria-label="Close menu">×</button>
+      </div>
+      <nav class="hm-sidenav-nav">
+        <a href="/healthrecord" class="hm-nav-link">Dashboard</a>
+        <a href="/healthrecord/bmi" class="hm-nav-link">Add height, weight and MUAQ</a>
+        <a href="/healthrecord/medicine" class="hm-nav-link">Add medicine name</a>
+        <a href="/healthrecord/medicine/distributed" class="hm-nav-link">Add medicine distributed record</a>
+          <a href="/healthrecord/analytics" class="hm-nav-link">Generate analytics</a>
+          <a href="/healthrecord/padrecord" class="hm-nav-link">Add pad record</a>
+      </nav>
+    </aside>
+    <div class="hm-main-wrap">
   <div class="hm-bg"></div>
   <div class="hm-page">
     <header class="hm-hero">
@@ -43,15 +64,17 @@
 
         <div class="hm-divider"></div>
 
-        <label class="hm-field">
-          <span>Diagnosis</span>
-          <input name="diagnosis" type="text" placeholder="Primary diagnosis" required>
-        </label>
+        <div class="hm-form-grid">
+          <label class="hm-field">
+            <span>Diagnosis</span>
+            <input name="diagnosis" type="text" placeholder="Primary diagnosis" required>
+          </label>
 
-        <label class="hm-field">
-          <span>Treatment Plan</span>
-          <textarea name="treatment" rows="4" placeholder="Medication, procedures, advice" required></textarea>
-        </label>
+          <label class="hm-field">
+            <span>Treatment Plan</span>
+            <textarea name="treatment" rows="4" placeholder="Medication, procedures, advice" required></textarea>
+          </label>
+        </div>
 
         <label class="hm-field">
           <span>Remarks</span>
@@ -70,30 +93,21 @@
         <p id="formStatus" class="hm-status" aria-live="polite"></p>
       </form>
 
-      <aside class="hm-card hm-guide">
-        <h3>Quick Tips</h3>
-        <ul>
-          <li>Use student name to pull verified class, roll, and guardian info.</li>
-          <li>Record diagnosis and treatment in concise, clear language.</li>
-          <li>Remarks are optional but useful for follow-up visits.</li>
-        </ul>
-        <div class="hm-highlight">
-          <p>Need a faster lookup? Start typing and pick from suggestions.</p>
-        </div>
-      </aside>
+  
     </section>
 
     <section class="hm-card hm-records">
       <div class="hm-card-header hm-records-header">
         <h2>Saved Records</h2>
-        <span class="hm-muted">Default: Today</span>
+        <span class="hm-muted">Default: All</span>
       </div>
 
       <div class="hm-record-filters">
         <label class="hm-field hm-inline-field">
           <span>Range</span>
           <select id="recordRange">
-            <option value="today" selected>Today</option>
+            <option value="all" selected>All</option>
+            <option value="today">Today</option>
             <option value="last7">Last 7 Days</option>
             <option value="lastMonth">Last Month</option>
             <option value="thisYear">This Year</option>
@@ -130,7 +144,8 @@
       </div>
     </section>
   </div>
-
+  </div>
+  </div>
   <script src="/health-record.js"></script>
 </body>
 </html>

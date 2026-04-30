@@ -8,21 +8,22 @@ const navLinks = document.querySelectorAll('.hm-nav-link');
 const studentSearch = document.getElementById('studentSearch');
 const suggestions = document.getElementById('studentSuggestions');
 const summary = document.getElementById('studentSummary');
-const form = document.getElementById('healthRecordForm');
+const form = document.getElementById('padRecordForm');
 const statusEl = document.getElementById('formStatus');
+const quantityInput = document.getElementById('quantity');
+const studentIdField = document.getElementById('studentId');
 const recordRange = document.getElementById('recordRange');
 const recordDate = document.getElementById('recordDate');
 const recordFilterBtn = document.getElementById('recordFilterBtn');
 const recordsTableBody = document.getElementById('recordsTableBody');
+const padDateDisplay = document.getElementById('padDateDisplay');
 
 const fields = {
   reg: document.getElementById('reg'),
   name: document.getElementById('name'),
   studentClass: document.getElementById('studentClass'),
   section: document.getElementById('section'),
-  roll: document.getElementById('roll'),
-  fatherName: document.getElementById('fatherName'),
-  address: document.getElementById('address')
+  roll: document.getElementById('roll')
 };
 
 const debounce = (fn, delay) => {
@@ -39,6 +40,20 @@ const escapeHtml = (value) => String(value || '')
   .replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&#39;');
+
+const formatKathmanduDate = (value) => {
+  const date = value ? new Date(value) : new Date();
+  if (Number.isNaN(date.getTime())) {
+    return '-';
+  }
+
+  return date.toLocaleDateString('en-GB', {
+    timeZone: 'Asia/Kathmandu',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+};
 
 const openNav = () => {
   if (!shell || !sidenav || !backdrop || !menuToggle) {
@@ -107,20 +122,18 @@ const renderSummary = (student) => {
       <div><strong>Class</strong><span>${student.studentClass || '-'}</span></div>
       <div><strong>Section</strong><span>${student.section || '-'}</span></div>
       <div><strong>Roll</strong><span>${student.roll || '-'}</span></div>
-      <div><strong>Father</strong><span>${student.fatherName || '-'}</span></div>
-      <div><strong>Address</strong><span>${student.address || '-'}</span></div>
+      <div><strong>Quantity</strong><span>${quantityInput && quantityInput.value ? quantityInput.value : '-'}</span></div>
     </div>
   `;
 };
 
 const setStudent = (student) => {
+  studentIdField.value = student._id || '';
   fields.reg.value = student.reg || '';
   fields.name.value = student.name || '';
   fields.studentClass.value = student.studentClass || '';
   fields.section.value = student.section || '';
   fields.roll.value = student.roll || '';
-  fields.fatherName.value = student.fatherName || '';
-  fields.address.value = student.address || '';
   studentSearch.value = student.name || '';
   renderSummary(student);
 };
@@ -131,10 +144,21 @@ const clearSuggestions = () => {
 };
 
 const formatRecordDate = (value) => {
-  if (!value) return '-';
+  if (!value) {
+    return '-';
+  }
+
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '-';
-  return date.toLocaleString();
+  if (Number.isNaN(date.getTime())) {
+    return '-';
+  }
+
+  return date.toLocaleDateString('en-GB', {
+    timeZone: 'Asia/Kathmandu',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
 };
 
 const renderRecords = (records) => {
@@ -143,30 +167,20 @@ const renderRecords = (records) => {
   }
 
   if (!Array.isArray(records) || records.length === 0) {
-    recordsTableBody.innerHTML = '<tr><td colspan="9" class="hm-empty">No records found.</td></tr>';
+    recordsTableBody.innerHTML = '<tr><td colspan="6" class="hm-empty">No records found.</td></tr>';
     return;
   }
 
-  recordsTableBody.innerHTML = records.map((record, index) => {
-    const contact = record.contact || '-';
-    const callAction = record.dialNumber
-      ? `<a class="hm-call-link" href="tel:${record.dialNumber}">Call</a>`
-      : '<span class="hm-muted">N/A</span>';
-
-    return `
-      <tr>
-        <td>${index + 1}</td>
-        <td>${formatRecordDate(record.createdAt)}</td>
-        <td>${record.name || '-'}</td>
-        <td>${record.studentClass || '-'}-${record.section || '-'}</td>
-        <td>${record.diagnosis || '-'}</td>
-        <td>${record.treatment || '-'}</td>
-        <td>${record.remarks || '-'}</td>
-        <td>${contact}</td>
-        <td>${callAction}</td>
-      </tr>
-    `;
-  }).join('');
+  recordsTableBody.innerHTML = records.map((record, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${formatRecordDate(record.createdAt)}</td>
+      <td>${escapeHtml(record.name || '-')}</td>
+      <td>${escapeHtml(record.studentClass || '-')}</td>
+      <td>${escapeHtml(record.section || '-')}</td>
+      <td>${escapeHtml(record.quantity != null ? String(record.quantity) : '-')}</td>
+    </tr>
+  `).join('');
 };
 
 const loadRecords = async () => {
@@ -174,7 +188,7 @@ const loadRecords = async () => {
     return;
   }
 
-  recordsTableBody.innerHTML = '<tr><td colspan="9" class="hm-empty">Loading records...</td></tr>';
+  recordsTableBody.innerHTML = '<tr><td colspan="6" class="hm-empty">Loading records...</td></tr>';
 
   const params = new URLSearchParams();
   if (recordRange && recordRange.value) {
@@ -185,7 +199,7 @@ const loadRecords = async () => {
   }
 
   try {
-    const response = await fetch(`/healthrecord/records?${params.toString()}`);
+    const response = await fetch(`/healthrecord/padrecord/records?${params.toString()}`);
     const contentType = response.headers.get('content-type') || '';
 
     if (!response.ok) {
@@ -193,11 +207,6 @@ const loadRecords = async () => {
       if (contentType.includes('application/json')) {
         const errorBody = await response.json();
         message = errorBody.message || message;
-      } else {
-        const textBody = await response.text();
-        if (textBody && textBody.trim()) {
-          message = textBody.slice(0, 120);
-        }
       }
       throw new Error(message);
     }
@@ -210,7 +219,7 @@ const loadRecords = async () => {
     renderRecords(records);
   } catch (error) {
     const safeMessage = (error && error.message) ? error.message : 'Failed to load records.';
-    recordsTableBody.innerHTML = `<tr><td colspan="9" class="hm-empty">${safeMessage}</td></tr>`;
+    recordsTableBody.innerHTML = `<tr><td colspan="6" class="hm-empty">${safeMessage}</td></tr>`;
   }
 };
 
@@ -225,7 +234,7 @@ const showSuggestions = (items) => {
     const meta = `Class ${student.studentClass || '-'} | Roll ${student.roll || '-'} | Section ${student.section || '-'}`;
     const guardian = `Father: ${student.fatherName || '-'} | Address: ${student.address || '-'}`;
     return `
-      <div class="hm-suggestion-item" data-student='${JSON.stringify(student)}'>
+      <div class="hm-suggestion-item" data-student="${encodeURIComponent(JSON.stringify(student))}">
         <span class="hm-suggestion-name">${student.name || '-'}</span>
         <span class="hm-suggestion-meta">${meta}</span>
         <span class="hm-suggestion-meta">${guardian}</span>
@@ -257,12 +266,24 @@ const fetchStudents = async () => {
 
 studentSearch.addEventListener('input', debounce(fetchStudents, 200));
 
+if (quantityInput) {
+  quantityInput.addEventListener('input', () => {
+    renderSummary(studentIdField.value ? {
+      name: fields.name.value,
+      reg: fields.reg.value,
+      studentClass: fields.studentClass.value,
+      section: fields.section.value,
+      roll: fields.roll.value
+    } : null);
+  });
+}
+
 suggestions.addEventListener('click', (event) => {
   const item = event.target.closest('.hm-suggestion-item');
   if (!item || !item.dataset.student) {
     return;
   }
-  const student = JSON.parse(item.dataset.student);
+  const student = JSON.parse(decodeURIComponent(item.dataset.student));
   setStudent(student);
   clearSuggestions();
 });
@@ -275,17 +296,24 @@ document.addEventListener('click', (event) => {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (!fields.reg.value || !fields.name.value) {
+
+  if (!studentIdField.value || !fields.name.value) {
     statusEl.textContent = 'Select a student from the suggestions first.';
     return;
   }
-  statusEl.textContent = 'Saving health record...';
+
+  if (!quantityInput.value || Number(quantityInput.value) <= 0) {
+    statusEl.textContent = 'Enter a valid quantity.';
+    return;
+  }
+
+  statusEl.textContent = 'Saving pad record...';
 
   const formData = new FormData(form);
   const payload = new URLSearchParams(formData);
 
   try {
-    const response = await fetch('/healthrecord', {
+    const response = await fetch('/healthrecord/padrecord', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: payload
@@ -295,21 +323,27 @@ form.addEventListener('submit', async (event) => {
       throw new Error('Failed');
     }
 
-    statusEl.textContent = 'Health record saved successfully.';
+    statusEl.textContent = 'Pad record saved successfully.';
     form.reset();
     Object.values(fields).forEach((field) => {
       field.value = '';
     });
+    studentIdField.value = '';
+    studentSearch.value = '';
+    clearSuggestions();
+    renderSummary(null);
+    if (padDateDisplay) {
+      padDateDisplay.value = formatKathmanduDate(new Date());
+    }
+    if (recordRange) {
+      recordRange.value = 'today';
+    }
     if (recordDate) {
       recordDate.value = '';
     }
-    if (recordRange) {
-      recordRange.value = 'all';
-    }
-    renderSummary(null);
     await loadRecords();
   } catch (error) {
-    statusEl.textContent = 'Unable to save health record. Please try again.';
+    statusEl.textContent = 'Unable to save pad record. Please try again.';
   }
 });
 
@@ -325,6 +359,10 @@ if (recordRange) {
 
 if (recordDate) {
   recordDate.addEventListener('change', loadRecords);
+}
+
+if (padDateDisplay) {
+  padDateDisplay.value = formatKathmanduDate(new Date());
 }
 
 renderSummary(null);
