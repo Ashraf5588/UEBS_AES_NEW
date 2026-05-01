@@ -450,7 +450,7 @@ subjectMappings.forEach(sub => {
           const studentClass = stuclass.studentClass;
 
           // Skip if subject not allowed for this class
-          if (!allowedSubjectsMap[sub.subject]?.includes(studentClass.toString())) {
+          if (!allowedSubjectsMap[sub.subject] || !allowedSubjectsMap[sub.subject].includes(studentClass.toString())) {
             entryArray.push({
               studentClass,
               section,
@@ -3197,7 +3197,7 @@ exports.reportprint = async (req, res, next) => {
               total = Object.keys(subData[0]).slice(7).map(qno=>
              {
              const t = subData.reduce((sum,obtainedmarks)=>{
-                 return sum + (obtainedmarks[qno] ?? 0);
+                 return sum + (obtainedmarks[qno] == null ? 0 : obtainedmarks[qno]);
              },0)
              return {qno,t};
              }

@@ -242,14 +242,14 @@ fs.createReadStream(req.file.path) //it read the content of file chunk by chunk
   result.push(
     {
 
-      reg: row.reg?.trim() || row['reg ']?.trim(),
-      roll: row.roll?.trim(),
-      name: row.name?.trim(),
-      studentClass: row.studentClass?.trim(),
-      section: row.section?.trim(),
-      academicYear: row.academicYear?.trim(),
-      terminal: row.terminal?.trim(),
-      subject: row.subject?.trim(),
+      reg: row.reg ? row.reg.trim() : (row['reg '] ? row['reg '].trim() : ''),
+      roll: row.roll ? row.roll.trim() : '',
+      name: row.name ? row.name.trim() : '',
+      studentClass: row.studentClass ? row.studentClass.trim() : '',
+      section: row.section ? row.section.trim() : '',
+      academicYear: row.academicYear ? row.academicYear.trim() : '',
+      terminal: row.terminal ? row.terminal.trim() : '',
+      subject: row.subject ? row.subject.trim() : '',
       theorymarks: Number(row.theorymarks) || 0,
       practicalmarks: Number(row.practicalmarks) || 0,
       attendance: Number(row.attendance) || 0,

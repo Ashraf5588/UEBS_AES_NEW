@@ -497,8 +497,13 @@ exports.createHealthRecord = async (req, res) => {
             treatment,
             remarks
         });
-        await healthRecord.save();
-        res.status(201).json({ message: 'Health record created successfully', healthRecord });
+        const savedHealthRecord = await healthRecord.save();
+        console.log('Health record saved to:', {
+            database: mongoose.connection.db ? mongoose.connection.db.databaseName : '',
+            collection: HealthRecord.collection ? HealthRecord.collection.name : '',
+            id: savedHealthRecord && savedHealthRecord._id ? String(savedHealthRecord._id) : ''
+        });
+        res.status(201).json({ message: 'Health record created successfully', healthRecord: savedHealthRecord });
     } catch (error) {
         console.error('Error creating health record:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -534,9 +539,14 @@ exports.savePadRecord = async (req, res) => {
             createdAt: new Date()
         });
 
-        await padRecord.save();
+        const savedPadRecord = await padRecord.save();
+        console.log('Pad record saved to:', {
+            database: mongoose.connection.db ? mongoose.connection.db.databaseName : '',
+            collection: PadDistribution.collection ? PadDistribution.collection.name : '',
+            id: savedPadRecord && savedPadRecord._id ? String(savedPadRecord._id) : ''
+        });
 
-        res.status(201).json({ message: 'Pad record created successfully', padRecord });
+        res.status(201).json({ message: 'Pad record created successfully', padRecord: savedPadRecord });
     } catch (error) {
         console.error('Error creating pad record:', error);
         res.status(500).json({ message: 'Internal server error' });

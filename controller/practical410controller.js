@@ -216,9 +216,9 @@ exports.showpracticalDetailForm = async (req, res) => {
 const subjectMarksData = await newsubject.findOne({ newsubject: subject ,forClass: studentClass}).lean();
 console.log("result variable=", result);
 const marksheetSetting = await marksheetSetup.find();
-const workingDays = result?.terminals?.[0]?.workingDays || 0;
-console.log("year", marksheetSetting[0]?.academicYear);
-const attendancemodel = attendanceModel(studentClass, section, marksheetSetting[0]?.academicYear);
+const workingDays = result && result.terminals && result.terminals[0] ? (result.terminals[0].workingDays || 0) : 0;
+console.log("year", marksheetSetting[0] ? marksheetSetting[0].academicYear : undefined);
+const attendancemodel = attendanceModel(studentClass, section, marksheetSetting[0] ? marksheetSetting[0].academicYear : undefined);
 const attendanceData = await attendancemodel.find({}).lean();
 
 

@@ -23,7 +23,7 @@ console.log("Payload:", payload); // Debugging line to check payload content
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 const verifytoken = async (req, res, next) => {
-  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+  const token = req.cookies.token || (req.headers.authorization ? req.headers.authorization.split(" ")[1] : undefined);
 
   if (!token) {
     return res.redirect("/admin/login");
@@ -51,7 +51,7 @@ const verifytoken = async (req, res, next) => {
   }
 };
 const authorized = (req, res, next) => {
-  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+  const token = req.cookies.token || (req.headers.authorization ? req.headers.authorization.split(" ")[1] : undefined);
   const user = req.user;
   
   console.log("Middleware Debug - URL:", req.originalUrl);
@@ -72,7 +72,7 @@ const normalizedSection = normalize(section);
     if (!subjectValue && !studentClass && !section) return next();
 
   // ✅ Match allowedSubjects array of objects
-  const hasAccess = user.allowedSubjects?.some((allowed) => {
+  const hasAccess = Array.isArray(user.allowedSubjects) && user.allowedSubjects.some((allowed) => {
     const allowedSubject = normalize(allowed.subject);
     const allowedClass = normalize(allowed.studentClass);
     const allowedSection = normalize(allowed.section);

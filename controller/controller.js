@@ -712,7 +712,7 @@ if (sub && sub.length > 0) {
  total = Object.keys(sub[0]).slice(7).map(qno=>
 {
   const t = sub.reduce((sum,obtainedmarks)=>{
-      return sum + (obtainedmarks[qno] ?? 0);
+      return sum + (obtainedmarks[qno] == null ? 0 : obtainedmarks[qno]);
   },0)
   return {qno,t};
 }
@@ -984,7 +984,7 @@ classlistData,
       CorrectBelow50,
       file, 
       fileStatus, // Pass file status to view
-      originalFile: paper?.questionPaperOfClass || '', // Pass original filename for display
+      originalFile: paper && paper.questionPaperOfClass ? paper.questionPaperOfClass : '', // Pass original filename for display
       total,
       ...(await getSidenavData(req))
     });
@@ -1270,7 +1270,7 @@ exports.updateQuestion = async (req, res, next) => {
 exports.studentrecord = async (req, res, next) => {
   
   
-   const roll = parseInt(req.query.roll?.trim());
+  const roll = parseInt(req.query.roll ? req.query.roll.trim() : '');
    
    const { studentClass, section, terminal } = req.params;
    let dbSection = section.toUpperCase();
