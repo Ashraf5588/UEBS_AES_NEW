@@ -15,6 +15,8 @@ const recordDate = document.getElementById('recordDate');
 const recordFilterBtn = document.getElementById('recordFilterBtn');
 const recordsTableBody = document.getElementById('recordsTableBody');
 
+console.log('[HealthRecord] client script loaded');
+
 const fields = {
   reg: document.getElementById('reg'),
   name: document.getElementById('name'),
@@ -275,14 +277,19 @@ document.addEventListener('click', (event) => {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
+  console.log('[HealthRecord] submit triggered');
+
   if (!fields.reg.value || !fields.name.value) {
+    console.warn('[HealthRecord] submit blocked: student not selected');
     statusEl.textContent = 'Select a student from the suggestions first.';
     return;
   }
+
   statusEl.textContent = 'Saving health record...';
 
   const formData = new FormData(form);
   const payload = new URLSearchParams(formData);
+  console.log('[HealthRecord] submitting payload', Object.fromEntries(payload.entries()));
 
   try {
     const response = await fetch('/healthrecord', {
@@ -291,10 +298,20 @@ form.addEventListener('submit', async (event) => {
       body: payload
     });
 
+    console.log('[HealthRecord] save response', {
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText,
+      contentType: response.headers.get('content-type') || ''
+    });
+
     if (!response.ok) {
+      const responseText = await response.text();
+      console.error('[HealthRecord] save failed response body', responseText);
       throw new Error('Failed');
     }
 
+    console.log('[HealthRecord] save succeeded');
     statusEl.textContent = 'Health record saved successfully.';
     form.reset();
     Object.values(fields).forEach((field) => {
@@ -309,6 +326,7 @@ form.addEventListener('submit', async (event) => {
     renderSummary(null);
     await loadRecords();
   } catch (error) {
+    console.error('[HealthRecord] save request failed', error);
     statusEl.textContent = 'Unable to save health record. Please try again.';
   }
 });
