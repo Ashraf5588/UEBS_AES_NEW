@@ -472,6 +472,15 @@ exports.saveMedicineDistributionRecords = async (req, res) => {
 
 exports.createHealthRecord = async (req, res) => {
     try {
+        console.log('Health record save request received:', {
+            bodyKeys: Object.keys(req.body || {}),
+            reg: req.body && req.body.reg ? req.body.reg : '',
+            name: req.body && req.body.name ? req.body.name : '',
+            studentClass: req.body && req.body.studentClass ? req.body.studentClass : '',
+            section: req.body && req.body.section ? req.body.section : '',
+            roll: req.body && req.body.roll ? req.body.roll : ''
+        });
+
         const {
             reg,
             name,
@@ -485,6 +494,15 @@ exports.createHealthRecord = async (req, res) => {
             remarks
         } = req.body;
 
+        if (!reg || !name || !diagnosis || !treatment) {
+            console.log('Health record validation failed:', {
+                hasReg: Boolean(reg),
+                hasName: Boolean(name),
+                hasDiagnosis: Boolean(diagnosis),
+                hasTreatment: Boolean(treatment)
+            });
+        }
+
         const healthRecord = new HealthRecord({
             reg,
             name,
@@ -497,6 +515,7 @@ exports.createHealthRecord = async (req, res) => {
             treatment,
             remarks
         });
+        console.log('Saving health record document...');
         const savedHealthRecord = await healthRecord.save();
         console.log('Health record saved to:', {
             database: mongoose.connection.db ? mongoose.connection.db.databaseName : '',
@@ -505,7 +524,7 @@ exports.createHealthRecord = async (req, res) => {
         });
         res.status(201).json({ message: 'Health record created successfully', healthRecord: savedHealthRecord });
     } catch (error) {
-        console.error('Error creating health record:', error);
+        console.error('Error creating health record:', error && error.stack ? error.stack : error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
