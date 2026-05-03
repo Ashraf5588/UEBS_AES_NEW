@@ -1941,6 +1941,124 @@ exports.studentrecorddelete = async (req, res, next) => {
     res.status(500).send("Error deleting student record: " + err.message);
   }
 };
+exports.showStudentTransfer = async (req, res) => {
+  try {
+    const [studentRecords, classSections] = await Promise.all([
+      modal.find({}, { reg: 1, name: 1, studentClass: 1, section: 1, roll: 1, gender: 1 }).lean(),
+      studentClass.find({}, { studentClass: 1, section: 1 }).lean()
+    ]);
+
+    const combinedClassSections = new Map();
+    [...studentRecords, ...classSections].forEach((item) => {
+      const normalizedClass = normalizeClassName(item.studentClass);
+      const normalizedSection = String(item.section || '').trim().toUpperCase();
+
+      if (!normalizedClass || !normalizedSection) return;
+      combinedClassSections.set(`${normalizedClass}__${normalizedSection}`, {
+        studentClass: normalizedClass,
+        section: normalizedSection
+      });
+    });
+
+    const availableClassSections = sortClassSectionList(Array.from(combinedClassSections.values()));
+    const availableClasses = [...new Set(availableClassSections.map((item) => item.studentClass))].sort((a, b) => {
+      const weightA = classSortWeight(a);
+      const weightB = classSortWeight(b);
+      if (weightA !== weightB) return weightA - weightB;
+      return a.localeCompare(b, undefined, { sensitivity: 'base' });
+    });
+
+    const sidenavData = await getSidenavData(req);
+
+    return res.render('admin/studenttransfer', {
+      currentPage: 'studentTransfer',
+      availableClasses,
+      availableClassSections,
+      studentRecords,
+      ...sidenavData
+    });
+  } catch (error) {
+    console.error('Error loading student transfer page:', error);
+    return res.status(500).send('Error loading student transfer page: ' + error.message);
+  }
+};
+
+exports.transferStudentRecords = async (req, res) => {
+  try {
+    const selectedIds = Array.isArray(req.body.studentIds)
+      ? req.body.studentIds
+      : req.body.studentIds
+        ? [req.body.studentIds]
+        : [];
+    const selectionOrderRaw = String(req.body.selectionOrder || '').trim();
+    let selectionOrder = [];
+
+    if (selectionOrderRaw) {
+      try {
+        const parsedSelectionOrder = JSON.parse(selectionOrderRaw);
+        if (Array.isArray(parsedSelectionOrder)) {
+          selectionOrder = parsedSelectionOrder.map((value) => String(value));
+        }
+      } catch (parseError) {
+        console.warn('Invalid selection order payload:', parseError.message);
+      }
+    }
+
+    const targetClass = normalizeClassName(req.body.targetClass);
+    const targetSection = String(req.body.targetSection || '').trim().toUpperCase();
+    const sourceClass = normalizeClassName(req.body.sourceClass);
+    const sourceSection = String(req.body.sourceSection || '').trim().toUpperCase();
+
+    if (!selectedIds.length) {
+      return res.redirect('/student-transfer?error=no-students');
+    }
+
+    if (!targetClass || !targetSection) {
+      return res.redirect('/student-transfer?error=missing-target');
+    }
+
+    const studentsToMove = await modal.find({ _id: { $in: selectedIds } }).lean();
+    const studentMap = new Map(studentsToMove.map((student) => [String(student._id), student]));
+    const orderedStudents = selectionOrder.length
+      ? selectionOrder.map((studentId) => studentMap.get(String(studentId))).filter(Boolean)
+      : selectedIds.map((studentId) => studentMap.get(String(studentId))).filter(Boolean);
+
+    const bulkUpdates = orderedStudents.map((student, index) => {
+      const nextRoll = index + 1;
+      return {
+        updateOne: {
+          filter: { _id: student._id },
+          update: {
+            $set: {
+              studentClass: targetClass,
+              section: targetSection,
+              roll: nextRoll
+            }
+          }
+        }
+      };
+    });
+
+    const updateResult = bulkUpdates.length
+      ? await modal.bulkWrite(bulkUpdates)
+      : { matchedCount: 0, modifiedCount: 0 };
+
+    console.log('Student transfer completed:', {
+      sourceClass,
+      sourceSection,
+      targetClass,
+      targetSection,
+      selectionOrder,
+      matchedCount: updateResult.matchedCount,
+      modifiedCount: updateResult.modifiedCount
+    });
+
+    return res.redirect(`/student-transfer?success=true&count=${updateResult.modifiedCount}`);
+  } catch (error) {
+    console.error('Error transferring student records:', error);
+    return res.redirect('/student-transfer?error=server');
+  }
+};
 exports.showuser = async (req, res, next) => {
   try {
 

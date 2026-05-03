@@ -180,6 +180,8 @@ student.get('/studentrecord/template',verifytoken,authorized,isAdmin,admincontro
 student.post('/studentrecord/add',verifytoken,authorized,isAdmin,admincontrol.studentrecordadd)
 student.get('/studentrecord/edit/:studentId/:editing?',verifytoken,authorized,isAdmin,admincontrol.studentrecordedit)
 student.post('/studentrecord/delete/:studentId',verifytoken,authorized,isAdmin,admincontrol.studentrecorddelete)
+student.get('/student-transfer', verifytoken, authorized, admincontrol.showStudentTransfer)
+student.post('/student-transfer', verifytoken, authorized, admincontrol.transferStudentRecords)
 student.get('/user',verifytoken,authorized,isAdmin,admincontrol.showuser)
 student.post('/user/:userId?',verifytoken,authorized,isAdmin,admincontrol.saveuser)
 // Route to view/display uploaded files in browser
