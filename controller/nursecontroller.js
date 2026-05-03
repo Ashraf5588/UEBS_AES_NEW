@@ -523,7 +523,10 @@ exports.createHealthRecord = async (req, res) => {
             id: savedHealthRecord && savedHealthRecord._id ? String(savedHealthRecord._id) : ''
         });
         
-        return res.redirect(303, '/healthrecord');
+       return res.status(201).json({
+    success: true,
+    message: 'Health record saved'
+});
     } catch (error) {
         console.error('Error creating health record:', error && error.stack ? error.stack : error);
         res.status(500).json({ message: 'Internal server error' });
