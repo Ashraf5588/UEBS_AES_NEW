@@ -2007,7 +2007,7 @@ exports.transferStudentRecords = async (req, res) => {
     const targetClass = normalizeClassName(req.body.targetClass);
     const targetSection = String(req.body.targetSection || '').trim().toUpperCase();
     const sourceClass = normalizeClassName(req.body.sourceClass);
-    const sourceSection = String(req.body.sourceSection || '').trim().toUpperCase();
+    const rollMap = req.body.rollMap && typeof req.body.rollMap === 'object' ? req.body.rollMap : {};
 
     if (!selectedIds.length) {
       return res.redirect('/student-transfer?error=no-students');
@@ -2024,7 +2024,9 @@ exports.transferStudentRecords = async (req, res) => {
       : selectedIds.map((studentId) => studentMap.get(String(studentId))).filter(Boolean);
 
     const bulkUpdates = orderedStudents.map((student, index) => {
-      const nextRoll = index + 1;
+      const rollKey = String(student._id);
+      const rollCandidate = rollMap && rollMap[rollKey] !== undefined ? Number(rollMap[rollKey]) : index + 1;
+      const nextRoll = Number.isFinite(rollCandidate) && rollCandidate > 0 ? rollCandidate : index + 1;
       return {
         updateOne: {
           filter: { _id: student._id },
@@ -2045,10 +2047,10 @@ exports.transferStudentRecords = async (req, res) => {
 
     console.log('Student transfer completed:', {
       sourceClass,
-      sourceSection,
       targetClass,
       targetSection,
       selectionOrder,
+      rollMap,
       matchedCount: updateResult.matchedCount,
       modifiedCount: updateResult.modifiedCount
     });
