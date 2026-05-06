@@ -328,6 +328,55 @@ exports.saveOnlineAttendance = async (req, res) => {
     }
 }
 
+exports.updateStudentRoll = async (req, res) => {
+  try {
+    const { reg, roll, studentClass, section, academicYear } = req.body || {};
+
+    if (!reg || roll === undefined || roll === null) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
+    const parsedRoll = Number(roll);
+    if (!Number.isFinite(parsedRoll) || parsedRoll <= 0) {
+      return res.status(400).json({ success: false, message: 'Invalid roll number' });
+    }
+
+    const filter = { reg: String(reg) };
+    if (studentClass) {
+      filter.studentClass = String(studentClass);
+    }
+    if (section) {
+      filter.section = String(section);
+    }
+
+    const updateResult = await studentRecord.updateOne(
+      filter,
+      { $set: { roll: parsedRoll } }
+    );
+
+    if (!updateResult || updateResult.matchedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    if (studentClass && section && academicYear) {
+      await onlineAttendance.updateMany(
+        {
+          reg: String(reg),
+          studentClass: String(studentClass),
+          section: String(section),
+          academicYear: String(academicYear)
+        },
+        { $set: { roll: parsedRoll } }
+      );
+    }
+
+    return res.json({ success: true, roll: parsedRoll });
+  } catch (error) {
+    console.error('Error updating student roll:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+}
+
 exports.getOnlineAttendanceData = async (req, res) => {
   try {
     const { studentClass, section, academicYear } = req.query;

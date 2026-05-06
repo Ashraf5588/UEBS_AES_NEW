@@ -22,6 +22,9 @@
     .load-btn{display:block;width:100%;max-width:280px;margin:0 auto;padding:12px 28px;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;border:0;border-radius:6px;font-size:15px;font-weight:600;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 3px 12px rgba(255,140,66,.3);text-transform:uppercase;letter-spacing:.5px}
     .load-btn:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(255,140,66,.4)}
     .load-btn:active{transform:translateY(0)}
+    .edit-toggle-btn{display:block;width:100%;max-width:280px;margin:10px auto 0;padding:11px 24px;background:#fff;border:2px solid var(--secondary);border-radius:6px;font-size:14px;font-weight:700;color:var(--secondary);cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s,color .2s;text-transform:uppercase;letter-spacing:.4px}
+    .edit-toggle-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,58,82,.2)}
+    .edit-toggle-btn.active{background:var(--secondary);color:#fff;border-color:var(--secondary)}
     .default-option{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;color:var(--secondary);font-size:13px;font-weight:600}
     .default-option input{accent-color:var(--primary)}
     
@@ -35,6 +38,7 @@
     table tr:hover td{background:var(--hover)}
     table input[type="text"],table input[type="number"]{width:100%;min-width:80px;padding:7px 8px;border:1px solid var(--border);border-radius:4px;font-size:13px;transition:border .2s;text-align:center}
     table input[type="text"]:read-only{background:#f7fafc;border-color:#e2e8f0;color:#4a5568}
+    .roll-editing table input[type="text"].roll-input{background:#fff;border-color:var(--primary);box-shadow:0 0 0 2px rgba(255,140,66,.12)}
     table input[type="number"]:not([readonly]):focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 2px rgba(255,140,66,.1)}
     table input[readonly]{background:#edf2f7;cursor:not-allowed}
     table img{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
@@ -105,6 +109,7 @@
         </select>
   </div>
   <button class="load-btn" onclick="loadform()">Load Form</button>
+  <button class="edit-toggle-btn" id="toggleRollEdit" type="button">Edit Roll Numbers</button>
   <label class="default-option" for="setDefaultAttendance">
     <input type="checkbox" id="setDefaultAttendance">
     Set current class as default attendance view
@@ -273,7 +278,7 @@
         <tr>
           <input type="hidden" name="gender[<%=student.reg%>]" value="<%=student.gender%>" readonly  >
         <input type="hidden" name="reg[<%=student.reg%>]" value="<%=student.reg%>" readonly >
-          <td class="sticky-col roll-col"><input type="text" name="roll[<%=student.reg%>]" value="<%=student.roll%>" readonly ></td>
+          <td class="sticky-col roll-col"><input type="text" class="roll-input" name="roll[<%=student.reg%>]" value="<%=student.roll%>" data-reg="<%= student.reg %>" data-original="<%= student.roll %>" readonly ></td>
          <td class="sticky-col name-col name-sticky"><input type="text" name="name[<%=student.reg%>]" value="<%=student.name%>" readonly ></td>
           <td><img src="/student.png" alt="photo"></td>
           <% dayList.forEach((day) => { %>
@@ -415,6 +420,100 @@ const month = urlParams.get('month');
 
 
   </script>
+
+<script>
+  const rollToggleButton = document.getElementById('toggleRollEdit');
+  const rollInputs = Array.from(document.querySelectorAll('.roll-input'));
+  const rollSaveTimers = new Map();
+  let rollEditEnabled = false;
+
+  function setRollEditMode(enabled) {
+    rollEditEnabled = Boolean(enabled);
+    document.body.classList.toggle('roll-editing', rollEditEnabled);
+    rollInputs.forEach((input) => {
+      input.readOnly = !rollEditEnabled;
+    });
+    if (rollToggleButton) {
+      rollToggleButton.classList.toggle('active', rollEditEnabled);
+      rollToggleButton.textContent = rollEditEnabled ? 'Done Editing' : 'Edit Roll Numbers';
+    }
+  }
+
+  async function saveRollNumber(input) {
+    const reg = input.dataset.reg;
+    const original = input.dataset.original || '';
+    const nextRoll = String(input.value || '').trim();
+
+    if (!rollEditEnabled || !reg) {
+      return;
+    }
+
+    if (!nextRoll) {
+      input.value = original;
+      return;
+    }
+
+    if (nextRoll === original) {
+      return;
+    }
+
+    if (rollSaveTimers.has(input)) {
+      clearTimeout(rollSaveTimers.get(input));
+    }
+
+    const timer = setTimeout(async () => {
+      const param = new URLSearchParams(window.location.search);
+      const studentClass = param.get('studentClass');
+      const section = param.get('section');
+      const academicYear = param.get('academicYear');
+
+      try {
+        const response = await fetch('/updateStudentRoll', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            reg,
+            roll: nextRoll,
+            studentClass,
+            section,
+            academicYear
+          })
+        });
+
+        if (!response.ok) {
+          input.value = original;
+          return;
+        }
+
+        input.dataset.original = nextRoll;
+      } catch (error) {
+        input.value = original;
+        console.error('Failed to update roll number:', error);
+      } finally {
+        rollSaveTimers.delete(input);
+      }
+    }, 600);
+
+    rollSaveTimers.set(input, timer);
+  }
+
+  if (rollToggleButton) {
+    rollToggleButton.addEventListener('click', () => setRollEditMode(!rollEditEnabled));
+  }
+
+  rollInputs.forEach((input) => {
+    input.addEventListener('input', () => saveRollNumber(input));
+    input.addEventListener('blur', () => {
+      if (!String(input.value || '').trim()) {
+        input.value = input.dataset.original || '';
+      }
+    });
+  });
+
+  setRollEditMode(false);
+</script>
 
 
 
