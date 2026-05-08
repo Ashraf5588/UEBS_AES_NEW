@@ -478,9 +478,29 @@ exports.frontdeskPage = async (req, res) => {
     }
 
     const absentCandidates = [];
+    const attendanceIndexByReg = new Map();
+
+    const isAbsentStatus = (value) => {
+      const normalized = normalizeText(value);
+      return normalized === 'absent' || normalized === 'a' || normalized === 'false';
+    };
+
+    const getEntryForDay = (monthMap, day) => {
+      for (const monthKey of monthVariants) {
+        const entry = monthMap.get(`${monthKey}-${day}`);
+        if (entry) {
+          return entry;
+        }
+      }
+      return null;
+    };
+
+    const ensurePresentOps = [];
 
     attendanceDocs.forEach((doc) => {
       const attendanceEntries = Array.isArray(doc && doc.attendance) ? doc.attendance : [];
+      const monthMap = new Map();
+      let hasSelectedEntry = false;
 
       attendanceEntries.forEach((entry) => {
         const entryYear = String(entry && entry.academicYear);
@@ -503,8 +523,47 @@ exports.frontdeskPage = async (req, res) => {
             reason: String(entry && entry.reason || '')
           });
         }
+
+        if (isSameYear && isSameMonth && Number.isFinite(entryDay)) {
+          monthMap.set(`${entryMonth}-${entryDay}`, entry);
+        }
+
+        if (isSameYear && isSameMonth && isSameDay) {
+          hasSelectedEntry = true;
+        }
       });
+
+      const regKey = String(doc && doc.reg || '');
+      if (regKey) {
+        attendanceIndexByReg.set(regKey, monthMap);
+      }
+
+      if (!hasSelectedEntry && Number.isFinite(selectedDay) && selectedMonthName) {
+        ensurePresentOps.push({
+          updateOne: {
+            filter: { _id: doc._id },
+            update: {
+              $push: {
+                attendance: {
+                  academicYear: String(targetAcademicYear),
+                  month: String(selectedMonthName),
+                  day: String(selectedDay),
+                  status: 'present'
+                }
+              }
+            }
+          }
+        });
+      }
     });
+
+    if (ensurePresentOps.length > 0) {
+      try {
+        await onlineAttendance.bulkWrite(ensurePresentOps, { ordered: false });
+      } catch (error) {
+        console.error('Error saving auto-present attendance:', error);
+      }
+    }
 
     const uniqueByReg = new Map();
     absentCandidates.forEach((student) => {
@@ -524,13 +583,44 @@ exports.frontdeskPage = async (req, res) => {
 
     const absentStudents = Array.from(uniqueByReg.values())
       .map((student, index) => {
+        const monthMap = attendanceIndexByReg.get(student.reg) || new Map();
+        let continuousAbsentDays = 0;
+        let lastCalledText = '-';
+
+        if (Number.isFinite(selectedDay)) {
+          let lastAbsentDay = null;
+          let lastAbsentReason = '';
+
+          for (let day = selectedDay; day >= 1; day -= 1) {
+            const entry = getEntryForDay(monthMap, day);
+            if (!entry || !isAbsentStatus(entry.status)) {
+              break;
+            }
+
+            continuousAbsentDays += 1;
+            if (day < selectedDay && lastAbsentDay === null) {
+              lastAbsentDay = day;
+              lastAbsentReason = String(entry.reason || '').trim();
+            }
+          }
+
+          if (lastAbsentDay !== null) {
+            const diff = selectedDay - lastAbsentDay;
+            const diffLabel = diff === 1 ? 'yesterday' : `${diff} days ago`;
+            const reasonText = lastAbsentReason ? `response: ${lastAbsentReason}` : 'response: -';
+            lastCalledText = `${diffLabel} (${reasonText})`;
+          }
+        }
+
         const contact = contactByReg.get(student.reg) || '';
         const dialNumber = toDialableNumber(contact);
         return {
           sn: index + 1,
           ...student,
           contact,
-          dialNumber
+          dialNumber,
+          continuousAbsentDays,
+          lastCalledText
         };
       })
       .sort((a, b) => {

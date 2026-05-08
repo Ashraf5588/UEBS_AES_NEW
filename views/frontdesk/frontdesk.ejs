@@ -29,6 +29,8 @@
 		tbody tr:hover{background:#eef5ff}
 		.num{width:56px;text-align:center}
 		.class-col,.section-col{width:90px}
+		.days-col{width:130px;text-align:center}
+		.last-called-col{min-width:200px}
 		.contact-link{display:inline-block;padding:6px 10px;border-radius:999px;background:#e7f1ff;color:#0a4f94;text-decoration:none;font-weight:600;border:1px solid #bdd8ff}
 		.contact-link:hover{background:#d6e9ff}
 		.empty{padding:26px;text-align:center;color:var(--muted);font-weight:600}
@@ -92,6 +94,8 @@
 						<th class="class-col">Class</th>
 						<th class="section-col">Section</th>
 						<th>Call</th>
+						<th class="days-col">Continuous Absent</th>
+						<th class="last-called-col">Last Called</th>
 						<th>Parent Response</th>
 					</tr>
 				</thead>
@@ -101,6 +105,8 @@
 							<tr>
 								<td class="num"><%= student.sn %></td>
 								<td><%= student.name || '-' %></td>
+								<td class="days-col"><%= Number(student.continuousAbsentDays || 0) %></td>
+								<td class="last-called-col"><%= student.lastCalledText || '-' %></td>
 								<td>
 									<% if (student.contact) { %>
 										<%= student.contact %>
@@ -135,7 +141,7 @@
 						<% }) %>
 					<% } else { %>
 						<tr>
-							<td colspan="7" class="empty">No absent students found for selected date.</td>
+							<td colspan="9" class="empty">No absent students found for selected date.</td>
 						</tr>
 					<% } %>
 				</tbody>
