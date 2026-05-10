@@ -433,8 +433,8 @@ table img{
 /* ================= STICKY COLUMNS FIX ================= */
 
 .roll-col{
-    min-width:86px;
-    width:86px
+  min-width:70px;
+  width:70px
 }
 
 .name-col{
@@ -456,7 +456,7 @@ th.sticky-col{
 }
 
 .name-sticky{
-    left:86px;
+  left:70px;
     z-index:6
 }
 
@@ -542,8 +542,8 @@ input[type="submit"]{
     }
 
     .roll-col{
-        min-width:76px;
-        width:76px
+      min-width:64px;
+      width:64px
     }
 
     .name-col{
@@ -552,7 +552,7 @@ input[type="submit"]{
     }
 
     .name-sticky{
-        left:76px
+      left:64px
     }
 }
 
@@ -584,17 +584,21 @@ input[type="submit"]{
     }
 
     .roll-col{
-      min-width:56px;
-      width:56px
+      min-width:48px;
+      width:48px
     }
 
     .name-col{
-      min-width:120px;
-      width:120px
+      min-width:140px;
+      width:140px
     }
 
     .name-sticky{
-      left:56px
+      left:auto
+    }
+
+    .sticky-col{
+      position:static
     }
 
     .day-box{
@@ -604,7 +608,7 @@ input[type="submit"]{
     }
 
     .inform-cell{
-      min-width:160px
+      min-width:140px
     }
 
     .entry-container::after{
@@ -621,21 +625,26 @@ input[type="submit"]{
 @media(max-width:480px){
 
     table{
-        min-width:640px
+      min-width:0;
+      width:100%
     }
 
     .roll-col{
-      min-width:52px;
-      width:52px
+      min-width:42px;
+      width:42px
     }
 
     .name-col{
-      min-width:110px;
-      width:110px
+      min-width:120px;
+      width:120px
     }
 
     .name-sticky{
-      left:52px
+      left:auto
+    }
+
+    .sticky-col{
+      position:static
     }
 
     .day-box{
@@ -645,7 +654,7 @@ input[type="submit"]{
     }
 
     .inform-cell{
-      min-width:140px
+      min-width:120px
     }
 
     table img{
@@ -1119,6 +1128,13 @@ const month = urlParams.get('month');
     rollInputs.forEach((input) => {
       input.readOnly = !rollEditEnabled;
     });
+    if (!rollEditEnabled) {
+      rollInputs.forEach((input) => {
+        if (!String(input.value || '').trim()) {
+          input.value = input.dataset.original || '';
+        }
+      });
+    }
     if (rollToggleButton) {
       rollToggleButton.classList.toggle('active', rollEditEnabled);
       rollToggleButton.textContent = rollEditEnabled ? 'Done Editing' : 'Edit Roll Numbers';
@@ -1134,12 +1150,7 @@ const month = urlParams.get('month');
       return;
     }
 
-    if (!nextRoll) {
-      input.value = original;
-      return;
-    }
-
-    if (nextRoll === original) {
+    if (!nextRoll || nextRoll === original) {
       return;
     }
 
