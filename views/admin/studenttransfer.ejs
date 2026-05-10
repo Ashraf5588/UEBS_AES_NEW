@@ -543,6 +543,7 @@
                 <form id="transferForm" action="/student-transfer" method="POST">
                     <input type="hidden" name="sourceClass" id="sourceClass" />
                     <input type="hidden" name="selectionOrder" id="selectionOrder" />
+                    <div id="selectedHidden"></div>
                     <div class="form-grid">
                         <div class="field">
                             <label for="targetClass">New Class</label>
@@ -858,6 +859,7 @@
         const selectAllStudents = document.getElementById('selectAllStudents');
         const studentSearch = document.getElementById('studentSearch');
         const selectionOrderInput = document.getElementById('selectionOrder');
+        const selectedHidden = document.getElementById('selectedHidden');
         const rollPreviewEmpty = document.getElementById('rollPreviewEmpty');
         const rollPreviewWrap = document.getElementById('rollPreviewWrap');
         const rollPreviewBody = document.getElementById('rollPreviewBody');
@@ -1019,6 +1021,26 @@
 
         function syncSelectionOrderInput() {
             selectionOrderInput.value = JSON.stringify(state.selectionOrder);
+            syncHiddenSelections();
+        }
+
+        function syncHiddenSelections() {
+            if (!selectedHidden) {
+                return;
+            }
+            const visibleIds = new Set(getVisibleCheckboxes().map((checkbox) => String(checkbox.value)));
+            selectedHidden.innerHTML = '';
+            state.selectionOrder.forEach((studentId) => {
+                const normalizedId = String(studentId);
+                if (visibleIds.has(normalizedId)) {
+                    return;
+                }
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'studentIds';
+                input.value = normalizedId;
+                selectedHidden.appendChild(input);
+            });
         }
 
         function renumberSelectedCards() {
@@ -1154,6 +1176,7 @@
             renumberSelectedCards();
             transferBtn.disabled = false;
             renderRollPreview();
+            syncHiddenSelections();
         }
 
         classButtons.forEach((button) => {
@@ -1265,7 +1288,7 @@
         });
 
         transferForm.addEventListener('submit', (event) => {
-            const checkedStudents = getVisibleCheckboxes().filter((checkbox) => checkbox.checked);
+            const checkedStudents = state.selectionOrder;
             syncSelectionOrderInput();
 
             if (!state.sourceClass) {

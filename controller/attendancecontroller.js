@@ -163,7 +163,7 @@ const toDialableNumber = (value) => String(value || '').replace(/[^\d+]/g, '');
 
 exports.onlineAttendancePage = async (req, res) => {
     try {
-        const {studentClass,section,academicYear,month}= req.query;
+        const {studentClass,section,academicYear,month,day}= req.query;
     const todayBs = String(bs.ADToBS(new Date()) || '');
     const [todayYearPart, todayMonthPart, todayDayPart] = todayBs.split('-');
     const todayYear = String(todayYearPart || '');
@@ -217,13 +217,14 @@ exports.onlineAttendancePage = async (req, res) => {
         absentHistory.sort((a, b) => b.sortValue - a.sortValue);
 
         console.log('Holiday Data:', HolidayData[0]);
-        res.render('./attendance/attendance', { studentClass,section,academicYear, 
+        res.render('./attendance/attendance', { studentClass,section,academicYear,day, 
           studentData : studentData  || { students: [] }
           , marksheetSetups,studentClassdata:sidenavData.studentClassdata,month,
           HolidayData: HolidayData[0] || null,
           absentHistory,
           todayBs,
-          todayMonthName });
+          todayMonthName,
+          todayDay });
 
     } catch (error) {
         console.error('Error fetching attendance page:', error);
@@ -236,7 +237,11 @@ exports.saveOnlineAttendance = async (req, res) => {
        const model = onlineAttendance ;
        const day = req.body.day;
        const month = req.body.month;
-       const status = req.body.status;
+      const status = req.body.status;
+      const reason = String(req.body.reason || '').trim();
+      const informedRaw = req.body.informed;
+      const informedProvided = informedRaw !== undefined;
+      const informed = String(informedRaw || '').toLowerCase() === 'true';
        await model.updateOne(
              {
                reg: req.body.reg,
@@ -279,6 +284,14 @@ exports.saveOnlineAttendance = async (req, res) => {
          ));
 
          const preservedReason = String(previousEntry && previousEntry.reason || '').trim();
+         let nextReason = '';
+         if (status === 'absent') {
+           if (informedProvided) {
+             nextReason = informed ? (reason || preservedReason) : '';
+           } else {
+             nextReason = reason || preservedReason;
+           }
+         }
 
          await model.updateOne(
            {
@@ -312,7 +325,7 @@ exports.saveOnlineAttendance = async (req, res) => {
                  month: month,
                  day: String(day),
                  status: status === 'absent' ? 'absent' : 'present',
-                 reason: status === 'absent' ? preservedReason : ''
+                 reason: nextReason
                }
              }
            }
@@ -439,6 +452,227 @@ exports.saveFrontdeskReason = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 }
+
+exports.searchFrontdeskStudents = async (req, res) => {
+  try {
+    const query = String(req.query.q || '').trim();
+    if (query.length < 2) {
+      return res.status(200).json([]);
+    }
+
+    const results = await studentRecord.find({
+      name: { $regex: query, $options: 'i' }
+    })
+      .select('reg name studentClass section roll fatherName address numberofmobile fatherContact motherContact otherguardianContact')
+      .limit(10)
+      .lean();
+
+    const responseData = (Array.isArray(results) ? results : []).map((student) => {
+      const contact = getPreferredContact(student);
+      return {
+        reg: String(student.reg || ''),
+        name: String(student.name || ''),
+        studentClass: String(student.studentClass || ''),
+        section: String(student.section || ''),
+        roll: student.roll,
+        fatherName: String(student.fatherName || ''),
+        address: String(student.address || ''),
+        contact: String(contact || ''),
+        dialNumber: toDialableNumber(contact)
+      };
+    });
+
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error('Error searching frontdesk students:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+exports.saveFrontdeskCallLog = async (req, res) => {
+  try {
+    const { reg, studentClass, section, academicYear, month, day, callReason, parentResponse } = req.body;
+
+    if (!reg || !studentClass || !section || !academicYear || !month || !day) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
+    const trimmedCallReason = String(callReason || '').trim();
+    const trimmedParentResponse = String(parentResponse || '').trim();
+    const monthVariants = getMonthVariants(month);
+    const monthRegex = monthVariants.length > 0
+      ? new RegExp(`^(${monthVariants.map((variant) => escapeRegex(variant)).join('|')})$`, 'i')
+      : new RegExp(`^${escapeRegex(month)}$`, 'i');
+
+    const updateResult = await onlineAttendance.updateOne(
+      {
+        reg: String(reg),
+        studentClass: String(studentClass),
+        section: String(section),
+        academicYear: String(academicYear)
+      },
+      {
+        $set: {
+          'attendance.$[entry].callReason': trimmedCallReason,
+          'attendance.$[entry].parentResponse': trimmedParentResponse,
+          'attendance.$[entry].callLoggedAt': new Date().toISOString()
+        }
+      },
+      {
+        arrayFilters: [
+          {
+            'entry.academicYear': String(academicYear),
+            'entry.day': String(day),
+            'entry.month': { $regex: monthRegex }
+          }
+        ]
+      }
+    );
+
+    if (!updateResult || updateResult.modifiedCount === 0) {
+      await onlineAttendance.updateOne(
+        {
+          reg: String(reg),
+          studentClass: String(studentClass),
+          section: String(section),
+          academicYear: String(academicYear)
+        },
+        {
+          $setOnInsert: {
+            reg: String(reg),
+            studentClass: String(studentClass),
+            section: String(section),
+            academicYear: String(academicYear)
+          },
+          $push: {
+            attendance: {
+              academicYear: String(academicYear),
+              month: String(month),
+              day: String(day),
+              status: 'present',
+              callReason: trimmedCallReason,
+              parentResponse: trimmedParentResponse,
+              callLoggedAt: new Date().toISOString()
+            }
+          }
+        },
+        { upsert: true }
+      );
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error saving frontdesk call log:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+exports.getFrontdeskCallLogs = async (req, res) => {
+  try {
+    const academicYear = String(req.query.academicYear || '').trim();
+    const month = String(req.query.month || '').trim();
+    const day = String(req.query.day || '').trim();
+
+    if (!academicYear || !month || !day) {
+      return res.status(400).json({ message: 'Missing required filters' });
+    }
+
+    const monthVariants = getMonthVariants(month);
+    const monthSet = new Set(monthVariants);
+
+    const attendanceDocs = await onlineAttendance.find({
+      academicYear: String(academicYear)
+    }).lean();
+
+    const logs = [];
+    const regSet = new Set();
+
+    attendanceDocs.forEach((doc) => {
+      const attendanceEntries = Array.isArray(doc && doc.attendance) ? doc.attendance : [];
+
+      attendanceEntries.forEach((entry) => {
+        const entryYear = String(entry && entry.academicYear || '');
+        const entryMonth = normalizeText(entry && entry.month);
+        const entryDay = String(entry && entry.day || '');
+        const hasLog = Boolean(entry && (entry.callReason || entry.parentResponse || entry.callLoggedAt));
+
+        if (!hasLog) {
+          return;
+        }
+
+        if (entryYear !== String(academicYear)) {
+          return;
+        }
+
+        if (!monthSet.has(entryMonth)) {
+          return;
+        }
+
+        if (entryDay !== String(day)) {
+          return;
+        }
+
+        const reg = String(doc && doc.reg || '');
+        if (reg) {
+          regSet.add(reg);
+        }
+
+        logs.push({
+          reg,
+          name: String(doc && doc.name || ''),
+          studentClass: String(doc && doc.studentClass || ''),
+          section: String(doc && doc.section || ''),
+          roll: doc && doc.roll,
+          callReason: String(entry && entry.callReason || ''),
+          parentResponse: String(entry && entry.parentResponse || ''),
+          callLoggedAt: String(entry && entry.callLoggedAt || ''),
+          day: entryDay,
+          month: String(entry && entry.month || ''),
+          academicYear: entryYear
+        });
+      });
+    });
+
+    const regs = Array.from(regSet);
+    const studentRecords = regs.length > 0
+      ? await studentRecord.find({ reg: { $in: regs } }).lean()
+      : [];
+
+    const contactByReg = new Map(
+      studentRecords.map((student) => [String(student.reg || ''), getPreferredContact(student)])
+    );
+
+    const responseData = logs
+      .map((log, index) => {
+        const contact = contactByReg.get(log.reg) || '';
+        return {
+          sn: index + 1,
+          ...log,
+          contact,
+          dialNumber: toDialableNumber(contact)
+        };
+      })
+      .sort((a, b) => {
+        const classCompare = String(a.studentClass).localeCompare(String(b.studentClass), 'en', { numeric: true });
+        if (classCompare !== 0) {
+          return classCompare;
+        }
+
+        const sectionCompare = String(a.section).localeCompare(String(b.section));
+        if (sectionCompare !== 0) {
+          return sectionCompare;
+        }
+
+        return String(a.roll || '').localeCompare(String(b.roll || ''), 'en', { numeric: true });
+      })
+      .map((log, index) => ({ ...log, sn: index + 1 }));
+
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error('Error loading frontdesk call logs:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
 
 exports.frontdeskPage = async (req, res) => {
   try {

@@ -21,8 +21,11 @@ attendance.get('/onlineattendance',verifytoken,authorized,attendancecontroller.o
 attendance.post('/saveonlineattendance',verifytoken,authorized,attendancecontroller.saveOnlineAttendance)
 attendance.post('/updateStudentRoll',verifytoken,authorized,attendancecontroller.updateStudentRoll)
 attendance.get('/getOnlineAttendanceData',verifytoken,authorized,attendancecontroller.getOnlineAttendanceData)
-attendance.get('/frontdesk',verifytoken,authorized,attendancecontroller.frontdeskPage)
-attendance.post('/frontdesk/reason',verifytoken,authorized,attendancecontroller.saveFrontdeskReason)
+attendance.get('/frontdesk',verifytoken,attendancecontroller.frontdeskPage)
+attendance.post('/frontdesk/reason',verifytoken,attendancecontroller.saveFrontdeskReason)
+attendance.get('/frontdesk/students',verifytoken,attendancecontroller.searchFrontdeskStudents)
+attendance.post('/frontdesk/call-log',verifytoken,attendancecontroller.saveFrontdeskCallLog)
+attendance.get('/frontdesk/call-logs',verifytoken,attendancecontroller.getFrontdeskCallLogs)
 attendance.get('/setholiday',verifytoken,authorized,isAdmin,attendancecontroller.setHoliday)
 attendance.post('/setholiday',verifytoken,authorized,isAdmin,attendancecontroller.savesetHoliday)
 

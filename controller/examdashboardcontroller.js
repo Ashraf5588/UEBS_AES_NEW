@@ -1259,7 +1259,11 @@ exports.studentPortfolio = async (req, res, next) => {
     
        const marksheetSetups = await marksheetSetup.find({}).lean();
        const model = getSlipModel();
-       const roster = await studentRecord.find({ studentClass, section }).lean().sort({ roll: 1 });
+       const rosterFilter = { studentClass, section };
+       if (reg) {
+         rosterFilter.reg = String(reg);
+       }
+       const roster = await studentRecord.find(rosterFilter).lean().sort({ roll: 1 });
        const rosterByReg = roster.reduce((acc, item) => {
          if (item && item.reg) {
            acc[item.reg] = item;
@@ -1270,7 +1274,8 @@ exports.studentPortfolio = async (req, res, next) => {
           {
             $match: {
               studentClass: studentClass,
-              section: section
+              section: section,
+              ...(reg ? { reg: String(reg) } : {})
             }
           },
           { $sort: { roll: 1 } },
