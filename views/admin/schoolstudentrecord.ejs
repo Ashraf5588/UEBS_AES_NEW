@@ -523,35 +523,71 @@
         </div>
         <center>Add new Student or Edit </center>
 
+        <div class="card" style="margin-top: 1.5rem;">
+            <h2 class="card-title"><i class="fas fa-users"></i> Bulk Actions</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="bulkClass"><i class="fas fa-graduation-cap"></i> New Class</label>
+                    <input type="text" id="bulkClass" placeholder="Enter class" />
+                </div>
+                <div class="form-group">
+                    <label for="bulkSection"><i class="fas fa-users"></i> New Section</label>
+                    <input type="text" id="bulkSection" placeholder="Enter section" />
+                </div>
+            </div>
+            <div class="button-group">
+                <button type="button" class="btn btn-primary" id="bulkUpdateBtn" disabled>
+                    <i class="fas fa-pen"></i> Update Selected
+                </button>
+                <button type="button" class="btn btn-danger" id="bulkDeleteBtn" disabled>
+                    <i class="fas fa-trash"></i> Delete Selected
+                </button>
+            </div>
+        </div>
 
         <table cellspacing="0" class="table table-striped" style="background-color: white;" id="studentrecordTable">
     <thead>
         <tr>
-            <th>Reg.No</th>
-            <th>Roll Number</th>
-            <th>Name</th>
+            <th><input type="checkbox" id="selectAllRecords" /></th>
+            <th>SN</th>
+            <th>Reg No</th>
+            <th>Name of Student</th>
+            <th>Gender</th>
             <th>Class</th>
             <th>Section</th>
-            <th>gender</th>
+            <th>Roll No</th>
+            <th>DOB Nepali</th>
+            <th>Contact No</th>
+            <th>Father's Name</th>
+            <th>Mother's Name</th>
+            <th>Bus Stop</th>
+            <th>Father's Mobile</th>
+            <th>Mother's Mobile</th>
             <th>Action</th>
-
         </tr>
     </thead>
     <tbody>
-        <% studentRecord.forEach(record => { %>
-            <tr>
-                <td><%=record.reg%></td>
-                <td><%= record.roll %></td>
-                <td><%= record.name %></td>
-                <td><%= record.studentClass %></td>
-                <td><%= record.section %></td>
-                <td><%= record.gender %></td>
+        <% studentRecord.forEach((record, index) => { %>
+            <tr data-id="<%= record._id %>">
+                <td><input type="checkbox" class="record-select" value="<%= record._id %>" /></td>
+                <td><%= index + 1 %></td>
+                <td data-field="reg"><%= record.reg %></td>
+                <td data-field="name"><%= record.name %></td>
+                <td data-field="gender"><%= record.gender %></td>
+                <td data-field="studentClass"><%= record.studentClass %></td>
+                <td data-field="section"><%= record.section %></td>
+                <td data-field="roll"><%= record.roll %></td>
+                <td data-field="dobNepali"><%= record.dobNepali %></td>
+                <td data-field="numberofmobile"><%= record.numberofmobile %></td>
+                <td data-field="fatherName"><%= record.fatherName %></td>
+                <td data-field="motherName"><%= record.motherName %></td>
+                <td data-field="busStop"><%= record.busStop %></td>
+                <td data-field="fatherMobile"><%= record.fatherMobile %></td>
+                <td data-field="motherMobile"><%= record.motherMobile %></td>
                 <td>
                     <a href="/studentrecord/edit/<%= record._id %>?editing=true" class="btn btn-secondary">
                         <i class="fas fa-edit"></i> Edit
                     </a>
-                </td>
-                <td>
                     <form action="/studentrecord/delete/<%= record._id %>" method="POST" style="display: inline;">
                         <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this record?');">
                             <i class="fas fa-trash"></i> Delete
@@ -564,59 +600,67 @@
     </tbody>
 </table>
 <script>
+const bulkUpdateBtn = document.getElementById('bulkUpdateBtn');
+const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+const selectAllRecords = document.getElementById('selectAllRecords');
+const bulkClassInput = document.getElementById('bulkClass');
+const bulkSectionInput = document.getElementById('bulkSection');
+
+function getSelectedIds() {
+    return Array.from(document.querySelectorAll('.record-select:checked'))
+        .map((input) => input.value);
+}
+
+function updateBulkButtons() {
+    const selectedIds = getSelectedIds();
+    const hasSelection = selectedIds.length > 0;
+    if (bulkUpdateBtn) bulkUpdateBtn.disabled = !hasSelection;
+    if (bulkDeleteBtn) bulkDeleteBtn.disabled = !hasSelection;
+    if (selectAllRecords) {
+        const allCheckboxes = document.querySelectorAll('.record-select');
+        selectAllRecords.checked = allCheckboxes.length > 0 && selectedIds.length === allCheckboxes.length;
+    }
+}
+
 document.getElementById('studentrecordTable').addEventListener('dblclick', function(event) {
-    if (event.target.tagName === 'TD') {
+    if (event.target.tagName === 'TD' && event.target.dataset.field) {
         const cell = event.target;
         const row = cell.parentElement;
-        const originalText = cell.innerText.trim();
+        const originalText = cell.textContent.trim();
+        const field = cell.dataset.field;
+        const recordId = row.dataset.id;
 
-        // Create an input element with the current text as its value
         const input = document.createElement('input');
         input.value = originalText;
-        input.style.width = '100%';  // Make the input fill the cell
+        input.style.width = '100%';
         input.style.border = 'none';
         input.style.padding = '5px';
         input.style.fontSize = '1rem';
-        cell.innerHTML = '';  // Clear current cell content
+        cell.textContent = '';
         cell.appendChild(input);
 
-        // Focus on the input field
         input.focus();
 
-        // When the user leaves the input (blur event), save the new value
         input.addEventListener('blur', function() {
             const newValue = input.value.trim();
 
             if (newValue !== originalText) {
-                // Update the cell with the new value
-                cell.innerHTML = newValue;
+                cell.textContent = newValue;
 
-                // Here, you would send an AJAX request to update the record in the database
-                const rowData = {
-                    regNo: row.cells[0].innerText.trim(),
-                    rollNumber: row.cells[1].innerText.trim(),
-                    name: row.cells[2].innerText.trim(),
-                    studentClass: row.cells[3].innerText.trim(),
-                    section: row.cells[4].innerText.trim()
-                };
-
-                // Send updated data to the backend via AJAX (Example using Fetch API)
-                fetch('/update-student-record', {
+                fetch('/studentrecord/update-field', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        regNo: rowData.regNo,
-                        column: getColumnIndex(cell),
-                        newValue: newValue
+                        id: recordId,
+                        field,
+                        value: newValue
                     })
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        console.log('Record updated successfully');
-                    } else {
+                    if (!data.success) {
                         alert('Error updating record');
                     }
                 })
@@ -625,26 +669,97 @@ document.getElementById('studentrecordTable').addEventListener('dblclick', funct
                     alert('Error updating record');
                 });
             } else {
-                // If no change, revert to original text
-                cell.innerHTML = originalText;
+                cell.textContent = originalText;
             }
         });
 
-        // Optional: Allow pressing 'Enter' to save the value
         input.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
-                input.blur();  // Trigger blur event to save the value
+                input.blur();
             }
         });
     }
 });
 
-// Helper function to determine which column was edited
-function getColumnIndex(cell) {
-    const columnHeaders = ['Reg.No', 'Roll Number', 'Name', 'Class', 'Section'];
-    const index = Array.from(cell.parentElement.parentElement.rows[0].cells).indexOf(cell);
-    return columnHeaders[index];
+document.querySelectorAll('.record-select').forEach((checkbox) => {
+    checkbox.addEventListener('change', updateBulkButtons);
+});
+
+if (selectAllRecords) {
+    selectAllRecords.addEventListener('change', () => {
+        const checked = selectAllRecords.checked;
+        document.querySelectorAll('.record-select').forEach((checkbox) => {
+            checkbox.checked = checked;
+        });
+        updateBulkButtons();
+    });
 }
+
+if (bulkUpdateBtn) {
+    bulkUpdateBtn.addEventListener('click', async () => {
+        const ids = getSelectedIds();
+        const studentClass = bulkClassInput ? bulkClassInput.value.trim() : '';
+        const section = bulkSectionInput ? bulkSectionInput.value.trim() : '';
+
+        if (!ids.length) {
+            alert('Select at least one student.');
+            return;
+        }
+        if (!studentClass || !section) {
+            alert('Enter new class and section.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/studentrecord/bulk-update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids, studentClass, section })
+            });
+            const data = await response.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Bulk update failed');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Bulk update failed');
+        }
+    });
+}
+
+if (bulkDeleteBtn) {
+    bulkDeleteBtn.addEventListener('click', async () => {
+        const ids = getSelectedIds();
+        if (!ids.length) {
+            alert('Select at least one student.');
+            return;
+        }
+        if (!confirm('Delete selected students?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/studentrecord/bulk-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids })
+            });
+            const data = await response.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Bulk delete failed');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Bulk delete failed');
+        }
+    });
+}
+
+updateBulkButtons();
 </script>
 
         <!-- Danger Zone -->

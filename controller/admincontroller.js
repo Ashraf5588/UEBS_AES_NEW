@@ -1672,11 +1672,13 @@ const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecor
   const csvFilePath = req.file.path;
   const csv = require('csvtojson');
   
-  // Convert CSV to JSON
-  const rawRows = await csv().fromFile(csvFilePath);
+  // Convert CSV to JSON (support comma, tab, and semicolon delimiters).
+  const rawRows = await csv({ delimiter: [',', '\t', ';'] }).fromFile(csvFilePath);
 
   const jsonArray = rawRows.map((row) => {
     const mapped = {};
+    let rawClassValue = '';
+    let rawSectionValue = '';
 
     Object.keys(row || {}).forEach((key) => {
       const schemaKey = headerMap[normalizeHeader(key)];
@@ -1685,6 +1687,14 @@ const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecor
       let value = row[key];
       if (typeof value === 'string') {
         value = value.trim();
+      }
+
+      if (schemaKey === 'studentClass') {
+        rawClassValue = String(value || '').trim();
+      }
+
+      if (schemaKey === 'section') {
+        rawSectionValue = String(value || '').trim();
       }
 
       if (schemaKey === 'roll') {
@@ -1751,6 +1761,13 @@ const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecor
       mapped.section = String(mapped.section).trim().replace(/\s+/g, ' ').toUpperCase();
     }
 
+    if (rawClassValue) {
+      mapped.__rawClass = rawClassValue;
+    }
+    if (rawSectionValue) {
+      mapped.__rawSection = rawSectionValue;
+    }
+
     Object.keys(mapped).forEach((key) => {
       if (mapped[key] === '' || mapped[key] === undefined) {
         delete mapped[key];
@@ -1760,25 +1777,61 @@ const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecor
     return mapped;
   }).filter((row) => row && row.reg && row.name);
   
-  // Insert JSON data into MongoDB
-  await modal.deleteMany({});
+  if (jsonArray.length === 0) {
+    return res.status(400).send('No valid rows found in the CSV. Check headers and delimiter.');
+  }
 
-  await modal.insertMany(jsonArray);
-
-  // Keep classlist in sync with unique studentClass + section pairs from uploaded records.
-  const uniqueClassSections = new Map();
+  const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const classSectionPairs = new Map();
   jsonArray.forEach((row) => {
+    const normalizedClass = normalizeClassName(String(row.studentClass || '').trim());
+    const normalizedSection = String(row.section || '').trim().toUpperCase();
+    const rawClass = String(row.__rawClass || '').trim();
+    const rawSection = String(row.__rawSection || '').trim();
+    const classVariants = [normalizedClass, rawClass].filter((value) => value && value !== 'undefined');
+    const sectionVariants = [normalizedSection, rawSection].filter((value) => value && value !== 'undefined');
+
+    if (!classVariants.length || !sectionVariants.length) return;
+
+    const classRegex = `^\\s*(?:${classVariants.map(escapeRegex).join('|')})\\s*$`;
+    const sectionRegex = `^\\s*(?:${sectionVariants.map(escapeRegex).join('|')})\\s*$`;
+    classSectionPairs.set(`${classRegex}__${sectionRegex}`, {
+      studentClass: { $regex: classRegex, $options: 'i' },
+      section: { $regex: sectionRegex, $options: 'i' }
+    });
+  });
+
+  // Replace only the classes/sections present in the uploaded file.
+  const deleteFilters = Array.from(classSectionPairs.values());
+  if (deleteFilters.length > 0) {
+    await modal.deleteMany({ $or: deleteFilters });
+  }
+
+  const regList = Array.from(new Set(jsonArray.map((row) => row.reg).filter(Boolean)));
+  if (regList.length > 0) {
+    await modal.deleteMany({ reg: { $in: regList } });
+  }
+
+  jsonArray.forEach((row) => {
+    delete row.__rawClass;
+    delete row.__rawSection;
+  });
+
+  await modal.insertMany(jsonArray, { ordered: false });
+
+  // Keep classlist in sync with the full studentrecord collection.
+  const allClassSectionRows = await modal.find({}, { studentClass: 1, section: 1 }).lean();
+  const uniqueClassSections = new Map();
+  allClassSectionRows.forEach((row) => {
     const cls = normalizeClassName(String(row.studentClass || '').trim());
     const sec = String(row.section || '').trim().toUpperCase();
     if (!cls || !sec) return;
     uniqueClassSections.set(`${cls}__${sec}`, { studentClass: cls, section: sec });
   });
 
+  await studentClass.deleteMany({});
   if (uniqueClassSections.size > 0) {
-    await studentClass.deleteMany({});
     await studentClass.insertMany(Array.from(uniqueClassSections.values()));
-  } else {
-    await studentClass.deleteMany({});
   }
  
   // Delete the uploaded file after processing
@@ -1939,6 +1992,101 @@ exports.studentrecorddelete = async (req, res, next) => {
   } catch (err) {
     console.error("Error deleting student record:", err);
     res.status(500).send("Error deleting student record: " + err.message);
+  }
+};
+
+exports.updateStudentRecordField = async (req, res) => {
+  try {
+    const { studentrecordschema } = require("../model/adminschema");
+    const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecord");
+    const { id, field, value } = req.body || {};
+
+    if (!id || !field) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
+    const allowedFields = new Set([
+      'reg',
+      'roll',
+      'name',
+      'studentClass',
+      'section',
+      'gender',
+      'dobNepali',
+      'numberofmobile',
+      'fatherName',
+      'motherName',
+      'busStop',
+      'fatherMobile',
+      'motherMobile'
+    ]);
+
+    if (!allowedFields.has(field)) {
+      return res.status(400).json({ success: false, message: 'Field not allowed' });
+    }
+
+    const updateValue = field === 'roll'
+      ? (Number.isFinite(Number(value)) ? Number(value) : value)
+      : String(value || '').trim();
+
+    await modal.updateOne(
+      { _id: id },
+      { $set: { [field]: updateValue } }
+    );
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating student record field:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+exports.bulkUpdateStudentRecords = async (req, res) => {
+  try {
+    const { studentrecordschema } = require("../model/adminschema");
+    const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecord");
+    const { ids, studentClass, section } = req.body || {};
+
+    const idList = Array.isArray(ids) ? ids.map((value) => String(value)) : [];
+    if (!idList.length) {
+      return res.status(400).json({ success: false, message: 'No students selected' });
+    }
+
+    const normalizedClass = normalizeClassName(String(studentClass || '').trim());
+    const normalizedSection = String(section || '').trim().toUpperCase();
+
+    if (!normalizedClass || !normalizedSection) {
+      return res.status(400).json({ success: false, message: 'Class and Section are required' });
+    }
+
+    await modal.updateMany(
+      { _id: { $in: idList } },
+      { $set: { studentClass: normalizedClass, section: normalizedSection } }
+    );
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Error bulk updating student records:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+exports.bulkDeleteStudentRecords = async (req, res) => {
+  try {
+    const { studentrecordschema } = require("../model/adminschema");
+    const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecord");
+    const { ids } = req.body || {};
+    const idList = Array.isArray(ids) ? ids.map((value) => String(value)) : [];
+
+    if (!idList.length) {
+      return res.status(400).json({ success: false, message: 'No students selected' });
+    }
+
+    await modal.deleteMany({ _id: { $in: idList } });
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Error bulk deleting student records:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
 exports.showStudentTransfer = async (req, res) => {
