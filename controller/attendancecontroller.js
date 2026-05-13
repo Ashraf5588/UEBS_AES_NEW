@@ -497,6 +497,17 @@ exports.saveFrontdeskCallLog = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
 
+    const normalizedReg = String(reg || '').trim();
+    const normalizedClass = String(studentClass || '').trim();
+    const normalizedSection = String(section || '').trim();
+    const normalizedAcademicYear = String(academicYear || '').trim();
+    const normalizedMonth = String(month || '').trim();
+    const normalizedDay = String(day || '').trim();
+
+    const studentInfo = await studentRecord.findOne({ reg: normalizedReg }).lean();
+    const studentName = String(studentInfo && studentInfo.name || '');
+    const studentRoll = studentInfo && studentInfo.roll !== undefined ? studentInfo.roll : undefined;
+
     const trimmedCallReason = String(callReason || '').trim();
     const trimmedParentResponse = String(parentResponse || '').trim();
     const monthVariants = getMonthVariants(month);
@@ -506,13 +517,15 @@ exports.saveFrontdeskCallLog = async (req, res) => {
 
     const updateResult = await onlineAttendance.updateOne(
       {
-        reg: String(reg),
-        studentClass: String(studentClass),
-        section: String(section),
-        academicYear: String(academicYear)
+        reg: normalizedReg,
+        studentClass: normalizedClass,
+        section: normalizedSection,
+        academicYear: normalizedAcademicYear
       },
       {
         $set: {
+          ...(studentName ? { name: studentName } : {}),
+          ...(studentRoll !== undefined ? { roll: studentRoll } : {}),
           'attendance.$[entry].callReason': trimmedCallReason,
           'attendance.$[entry].parentResponse': trimmedParentResponse,
           'attendance.$[entry].callLoggedAt': new Date().toISOString()
@@ -521,8 +534,8 @@ exports.saveFrontdeskCallLog = async (req, res) => {
       {
         arrayFilters: [
           {
-            'entry.academicYear': String(academicYear),
-            'entry.day': String(day),
+            'entry.academicYear': normalizedAcademicYear,
+            'entry.day': normalizedDay,
             'entry.month': { $regex: monthRegex }
           }
         ]
@@ -539,16 +552,18 @@ exports.saveFrontdeskCallLog = async (req, res) => {
         },
         {
           $setOnInsert: {
-            reg: String(reg),
-            studentClass: String(studentClass),
-            section: String(section),
-            academicYear: String(academicYear)
+            reg: normalizedReg,
+            studentClass: normalizedClass,
+            section: normalizedSection,
+            academicYear: normalizedAcademicYear,
+            ...(studentName ? { name: studentName } : {}),
+            ...(studentRoll !== undefined ? { roll: studentRoll } : {})
           },
           $push: {
             attendance: {
-              academicYear: String(academicYear),
-              month: String(month),
-              day: String(day),
+              academicYear: normalizedAcademicYear,
+              month: normalizedMonth,
+              day: normalizedDay,
               status: 'present',
               callReason: trimmedCallReason,
               parentResponse: trimmedParentResponse,
@@ -584,6 +599,7 @@ exports.getFrontdeskCallLogs = async (req, res) => {
       academicYear: String(academicYear)
     }).lean();
 
+    const normalizeReg = (value) => String(value || '').trim();
     const logs = [];
     const regSet = new Set();
 
@@ -612,7 +628,7 @@ exports.getFrontdeskCallLogs = async (req, res) => {
           return;
         }
 
-        const reg = String(doc && doc.reg || '');
+        const reg = normalizeReg(doc && doc.reg);
         if (reg) {
           regSet.add(reg);
         }
@@ -639,15 +655,24 @@ exports.getFrontdeskCallLogs = async (req, res) => {
       : [];
 
     const contactByReg = new Map(
-      studentRecords.map((student) => [String(student.reg || ''), getPreferredContact(student)])
+      studentRecords.map((student) => [normalizeReg(student.reg), getPreferredContact(student)])
+    );
+    const studentByReg = new Map(
+      studentRecords.map((student) => [normalizeReg(student.reg), student])
     );
 
     const responseData = logs
       .map((log, index) => {
-        const contact = contactByReg.get(log.reg) || '';
+        const normalizedReg = normalizeReg(log.reg);
+        const record = studentByReg.get(normalizedReg);
+        const contact = contactByReg.get(normalizedReg) || '';
         return {
           sn: index + 1,
           ...log,
+          name: log.name || String(record && record.name || ''),
+          studentClass: log.studentClass || String(record && record.studentClass || ''),
+          section: log.section || String(record && record.section || ''),
+          roll: log.roll !== undefined ? log.roll : (record && record.roll),
           contact,
           dialNumber: toDialableNumber(contact)
         };
