@@ -589,6 +589,12 @@
                             <div class="icon-wrapper"><i class="fa-solid fa-user-pen"></i></div>
                             <div class="text-wrapper">Student Update</div>
                         </a>
+                        <% if (userrole === 'ADMIN') { %>
+                            <a href="/frontdesk" class="action-card card-green" aria-label="Front Desk">
+                            <div class="icon-wrapper"><i class="fa-solid fa-user-pen"></i></div>
+                            <div class="text-wrapper">Absent Record</div>
+                        </a>
+                        <% } %>
                         <a href="/createevent" class="action-card card-emerald" aria-label="Create Event">
                             <div class="icon-wrapper"><i class="fa-solid fa-calendar-plus"></i></div>
                             <div class="text-wrapper">Event</div>

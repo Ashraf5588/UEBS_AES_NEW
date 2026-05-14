@@ -4,11 +4,14 @@ const Medicine = require('../model/medicineschema');
 const MedicineDistribution = require('../model/medicinedistribution');
 const PadDistribution = require('../model/padrecordschema');
 const { studentrecordschema, classSchema } = require('../model/adminschema');
+const { marksheetsetupschemaForAdmin } = require('../model/marksheetschema');
 
 const StudentRecord = mongoose.models.studentRecord ||
     mongoose.model('studentRecord', studentrecordschema, 'studentrecord');
 const ClassList = mongoose.models.studentClass ||
     mongoose.model('studentClass', classSchema, 'classlist');
+const MarksheetSetup = mongoose.models.marksheetSetup ||
+    mongoose.model('marksheetSetup', marksheetsetupschemaForAdmin, 'marksheetSetup');
 
 const calculateAgeFromDob = (dobValue) => {
     const dob = dobValue ? new Date(dobValue) : null;
@@ -771,6 +774,17 @@ exports.getBmiFilterOptions = async (req, res) => {
             .select('studentClass section')
             .lean();
 
+        const marksheetSetups = await MarksheetSetup.find({})
+            .select('academicYear')
+            .sort({ _id: -1 })
+            .lean();
+
+        const setupYears = marksheetSetups
+            .map((setup) => String(setup.academicYear || '').trim())
+            .filter(Boolean);
+
+        const currentAcademicYear = setupYears.length ? setupYears[0] : '';
+
         const yearRows = await StudentRecord.aggregate([
             {
                 $match: {
@@ -793,6 +807,13 @@ exports.getBmiFilterOptions = async (req, res) => {
                 }
             }
         ]);
+
+        const registrationYears = yearRows.map((item) => item._id).filter(Boolean).map(String);
+        let academicYears = Array.from(new Set([...setupYears, ...registrationYears]));
+
+        if (currentAcademicYear && !academicYears.includes(currentAcademicYear)) {
+            academicYears.unshift(currentAcademicYear);
+        }
 
         const groupedMap = new Map();
 
@@ -818,7 +839,8 @@ exports.getBmiFilterOptions = async (req, res) => {
 
         res.status(200).json({
             groups: grouped,
-            academicYears: yearRows.map((item) => item._id).filter(Boolean)
+            academicYears,
+            currentAcademicYear
         });
     } catch (error) {
         console.error('Error loading BMI filter options:', error);

@@ -652,6 +652,7 @@ document.getElementById('studentrecordTable').addEventListener('dblclick', funct
                     headers: {
                         'Content-Type': 'application/json',
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({
                         id: recordId,
                         field,
@@ -714,6 +715,7 @@ if (bulkUpdateBtn) {
             const response = await fetch('/studentrecord/bulk-update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
                 body: JSON.stringify({ ids, studentClass, section })
             });
             const data = await response.json();
@@ -744,6 +746,7 @@ if (bulkDeleteBtn) {
             const response = await fetch('/studentrecord/bulk-delete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
                 body: JSON.stringify({ ids })
             });
             const data = await response.json();

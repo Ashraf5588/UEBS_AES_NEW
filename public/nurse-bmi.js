@@ -165,6 +165,12 @@ const loadFilterOptions = async () => {
     bmiGroups = Array.isArray(data.groups) ? data.groups : [];
     buildGroupOptions(bmiGroups);
     buildYearOptions(Array.isArray(data.academicYears) ? data.academicYears : []);
+
+    const defaultYear = String(data.currentAcademicYear || '').trim();
+    if (defaultYear && bmiYearSelect) {
+      bmiYearSelect.value = defaultYear;
+    }
+
     setStatus('Select a class and section to load students.');
   } catch (error) {
     setStatus(error.message || 'Unable to load class and section groups.');

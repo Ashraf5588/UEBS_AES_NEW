@@ -19,11 +19,13 @@ const bcrypt = require("bcrypt");
 const terminal = mongoose.model("terminal", terminalSchema, "terminal");
 const terminalModel = mongoose.model("terminal", terminalSchema, "terminal");
 const { marksheetsetupschemaForAdmin ,routineSchema} = require("../model/marksheetschema");
+const { onlineAttendanceSchema } = require("../model/onlineattendanceschema");
 const { fail } = require("assert");
 const routineModel = mongoose.model("routine", routineSchema, "routine");
 const marksheetSetup = mongoose.model("marksheetSetup", marksheetsetupschemaForAdmin, "marksheetSetup");
 const Portfolio = require("../model/portfolio");
 const HealthRecord = require("../model/nurseschema");
+const onlineAttendance = mongoose.model("onlineAttendance", onlineAttendanceSchema, "onlineAttendance");
 app.set("view engine", "ejs");
 app.set("view", path.join(rootDir, "views"));
 const newsubject = mongoose.model("newsubject", newsubjectSchema, "newsubject");
@@ -1378,6 +1380,84 @@ for (const student of studentWisedata) {
 
 
       
+       const attendanceDocs = portfolioRegs.length
+         ? await onlineAttendance.find({ reg: { $in: portfolioRegs } }).lean()
+         : [];
+       const callLogsByReg = attendanceDocs.reduce((acc, doc) => {
+         const regKey = doc && doc.reg ? String(doc.reg) : '';
+         if (!regKey) {
+           return acc;
+         }
+
+         const entries = Array.isArray(doc.attendance) ? doc.attendance : [];
+         const logs = entries
+           .filter((entry) => entry && (entry.callReason || entry.parentResponse || entry.callLoggedAt))
+           .map((entry) => ({
+             academicYear: String(entry.academicYear || ''),
+             month: String(entry.month || ''),
+             day: String(entry.day || ''),
+             callReason: String(entry.callReason || ''),
+             parentResponse: String(entry.parentResponse || ''),
+             callLoggedAt: entry.callLoggedAt ? new Date(entry.callLoggedAt) : null
+           }))
+           .sort((a, b) => {
+             const timeA = a.callLoggedAt ? a.callLoggedAt.getTime() : 0;
+             const timeB = b.callLoggedAt ? b.callLoggedAt.getTime() : 0;
+             return timeB - timeA;
+           });
+
+         if (logs.length > 0) {
+           acc[regKey] = logs;
+         }
+
+         return acc;
+       }, {});
+
+       const isAbsentStatus = (value) => {
+         const normalized = String(value || '').trim().toLowerCase();
+         return normalized === 'absent' || normalized === 'a' || normalized === 'false';
+       };
+
+       const absentSummaryByReg = attendanceDocs.reduce((acc, doc) => {
+         const regKey = doc && doc.reg ? String(doc.reg) : '';
+         if (!regKey) {
+           return acc;
+         }
+
+         const entries = Array.isArray(doc.attendance) ? doc.attendance : [];
+         const monthCounts = {};
+         const reasons = [];
+         let totalAbsent = 0;
+
+         entries.forEach((entry) => {
+           if (!entry || !isAbsentStatus(entry.status)) {
+             return;
+           }
+
+           totalAbsent += 1;
+           const monthLabel = String(entry.month || 'Unknown');
+           monthCounts[monthLabel] = (monthCounts[monthLabel] || 0) + 1;
+
+           const reasonText = String(entry.reason || '').trim();
+           if (reasonText) {
+             const dateLabel = [entry.academicYear, entry.month, entry.day]
+               .filter(Boolean)
+               .join(' ');
+             reasons.push({
+               date: dateLabel || '-',
+               reason: reasonText
+             });
+           }
+         });
+
+         acc[regKey] = {
+           totalAbsent,
+           monthCounts,
+           reasons
+         };
+         return acc;
+       }, {});
+
        res.render("./exam/studentportfolio", {
       currentPage: "exammanagement",
       studentClassdata,
@@ -1390,6 +1470,8 @@ for (const student of studentWisedata) {
         portfolioByReg,
         rosterByReg,
         healthRecordsByReg,
+        callLogsByReg,
+      absentSummaryByReg,
     });
   }
   catch (error) {

@@ -23,7 +23,7 @@
       --text: #334155;
       --border: #e2e8f0;
     }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+   body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
     * { box-sizing: border-box; }
 
     /* Form Styles */
@@ -211,6 +211,21 @@
     .profile-right {
         text-align: right;
     }
+
+      .print-btn {
+         background: #0f766e;
+         color: #fff;
+         border: none;
+         padding: 10px 20px;
+         border-radius: 6px;
+         cursor: pointer;
+         font-weight: 700;
+         margin-right: 10px;
+      }
+
+      .print-btn:hover {
+         opacity: 0.9;
+      }
 
     .zone-badge {
         padding: 8px 20px;
@@ -458,6 +473,164 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
+   }
+
+   .calllog-panel {
+      background: #f8fafc;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+   }
+
+   .calllog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+   }
+
+   .calllog-title {
+      font-weight: 700;
+      color: var(--secondary);
+      font-size: 1rem;
+   }
+
+   .calllog-count {
+      background: #334155;
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+   }
+
+   .calllog-table-wrap {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: auto;
+      background: #fff;
+   }
+
+   .calllog-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 520px;
+      font-size: 0.85rem;
+   }
+
+   .calllog-table th {
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 700;
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-size: 0.7rem;
+   }
+
+   .calllog-table td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+   }
+
+   .calllog-empty {
+      padding: 12px;
+      color: #64748b;
+      font-size: 0.9rem;
+   }
+
+   .absent-panel {
+      background: #fef2f2;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 20px;
+      display: grid;
+      gap: 12px;
+   }
+
+   .absent-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+   }
+
+   .absent-title {
+      font-weight: 700;
+      color: #b91c1c;
+      font-size: 1rem;
+   }
+
+   .absent-total {
+      background: #b91c1c;
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+   }
+
+   .absent-months {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+   }
+
+   .absent-month-item {
+      background: #fff;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.85rem;
+      color: #7f1d1d;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+   }
+
+   .absent-reasons {
+      border: 1px dashed rgba(239, 68, 68, 0.35);
+      border-radius: 10px;
+      background: #fff;
+      padding: 10px 12px;
+      display: grid;
+      gap: 8px;
+      max-height: 220px;
+      overflow: auto;
+   }
+
+   .absent-reason-item {
+      display: grid;
+      gap: 4px;
+      font-size: 0.85rem;
+   }
+
+   .absent-reason-date {
+      color: #7f1d1d;
+      font-weight: 700;
+      font-size: 0.78rem;
+   }
+
+   .absent-empty {
+      color: #7f1d1d;
+      font-size: 0.9rem;
+   }
+
+   @media print {
+      @page { size: A4 landscape; margin: 12mm; }
+      body { background: #fff; padding: 0; }
+      .no-print { display: none !important; }
+      .student-card { box-shadow: none; border: 1px solid #e2e8f0; margin-bottom: 24px; }
+      .profile-header { color: #111827; background: #f8fafc; }
+      .zone-badge { box-shadow: none; }
    }
 
    .health-list {
@@ -831,7 +1004,7 @@
 </head>
 <body>
   
-  <div class="filter-container">
+   <div class="filter-container no-print">
     <div class="header">
       <h1>Student Portfolio</h1>
       <p>Select criteria to view individual student performance</p>
@@ -868,7 +1041,7 @@
     </div>
   </div>
 
-   <div class="filter-tools">
+   <div class="filter-tools no-print">
       <div class="filter-tools-row">
          <input id="filterSearch" type="text" placeholder="Search name, reg, roll, family..." />
          <input id="filterFamily" type="text" placeholder="Family keyword (parent/guardian/occupation)" />
@@ -1088,6 +1261,8 @@
         <% const portfolio = portfolioByReg ? portfolioByReg[reg] : null; %>
         <% const complaints = portfolio && Array.isArray(portfolio.complaints) ? portfolio.complaints : []; %>
       <% const healthRecords = healthRecordsByReg && Array.isArray(healthRecordsByReg[reg]) ? healthRecordsByReg[reg] : []; %>
+      <% const callLogs = callLogsByReg && Array.isArray(callLogsByReg[reg]) ? callLogsByReg[reg] : []; %>
+      <% const absentSummary = absentSummaryByReg && absentSummaryByReg[reg] ? absentSummaryByReg[reg] : { totalAbsent: 0, monthCounts: {}, reasons: [] }; %>
 
         <div class="student-card"
            data-name="<%= roster.name || student.name || '' %>"
@@ -1123,13 +1298,14 @@
                      <p>Reg No: <%= reg %> | Class: <%= student.studentClass %> | Section: <%= student.section %></p>
                  </div>
              </div>
-             <div class="profile-right">
-               <button type="button" onclick="addComplaint('<%= reg %>')" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Add Complaint</button>
-                 <button type="button" onclick="addInformation('<%= reg %>')" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Add Information</button>
-                 <div class="zone-badge <%= zoneClass %>">
-                    <%= zoneText %>
-                 </div>
-             </div>
+                   <div class="profile-right">
+                      <button type="button" class="print-btn no-print" onclick="window.print()">Print Portfolio</button>
+                      <button type="button" class="no-print" onclick="addComplaint('<%= reg %>')" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Add Complaint</button>
+                         <button type="button" class="no-print" onclick="addInformation('<%= reg %>')" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Add Information</button>
+                         <div class="zone-badge <%= zoneClass %>">
+                              <%= zoneText %>
+                         </div>
+                   </div>
           </header>
 
           <main class="portfolio-content">
@@ -1151,7 +1327,7 @@
                          <div class="detail-item"><strong>Mother Tongue:</strong> <%= roster.mothersToungue || '-' %></div>
                          <div class="detail-item"><strong>Previous School:</strong> <%= roster.previousSchool || '-' %></div>
                       </div>
-                      <div class="details-group">
+                      <div class="details-group no-print">
                          <div class="details-title">Family Background</div>
                          <div class="detail-item"><strong>Father Name:</strong> <%= roster.fatherName || '-' %></div>
                          <div class="detail-item"><strong>Father Occupation:</strong> <%= roster.fatheroccupation || '-' %></div>
@@ -1181,7 +1357,7 @@
                          <div class="details-title">Contact Info</div>
                          <div class="detail-item"><strong>Contact Number:</strong> <%= roster.numberofmobile || '-' %></div>
                       </div>
-                      <div class="details-group">
+                      <div class="details-group no-print">
                          <div class="details-title">Home & Fees</div>
                          <div class="detail-item"><strong>Lives with Father/Mother:</strong> <%= (roster.liveWithFather === false || roster.liveWithMother === false) ? 'No' : 'Yes' %></div>
                          <div class="detail-item"><strong>Parent View Towards School:</strong> <%= roster.parentViewTowardsSchool || 'Positive' %></div>
@@ -1242,6 +1418,74 @@
                         <% } else { %>
                            <div class="complaint-empty">No health visits recorded yet.</div>
                         <% } %>
+                   </div>
+
+                   <div class="absent-panel">
+                      <div class="absent-header">
+                         <div class="absent-title">Absent Details</div>
+                         <div class="absent-total"><%= absentSummary.totalAbsent %> total</div>
+                      </div>
+                      <% const monthEntries = Object.entries(absentSummary.monthCounts || {}); %>
+                      <% if (monthEntries.length) { %>
+                        <div class="absent-months">
+                           <% monthEntries.forEach(([monthName, count]) => { %>
+                              <div class="absent-month-item">
+                                 <span><%= monthName || 'Unknown' %></span>
+                                 <strong><%= count %></strong>
+                              </div>
+                           <% }) %>
+                        </div>
+                      <% } else { %>
+                        <div class="absent-empty">No absence records yet.</div>
+                      <% } %>
+
+                      <% if (absentSummary.reasons && absentSummary.reasons.length) { %>
+                        <div class="absent-reasons">
+                           <% absentSummary.reasons.forEach((item) => { %>
+                              <div class="absent-reason-item">
+                                 <div class="absent-reason-date"><%= item.date || '-' %></div>
+                                 <div><%= item.reason || '-' %></div>
+                              </div>
+                           <% }) %>
+                        </div>
+                      <% } %>
+                   </div>
+
+                   <div class="calllog-panel">
+                      <div class="calllog-header">
+                         <div class="calllog-title">Parent Call Logs</div>
+                         <div class="calllog-count"><%= callLogs.length %> call<%= callLogs.length === 1 ? '' : 's' %></div>
+                      </div>
+                      <% if (callLogs.length) { %>
+                        <div class="calllog-table-wrap">
+                           <table class="calllog-table">
+                              <thead>
+                                 <tr>
+                                    <th>Call Date</th>
+                                    <th>Call Reason</th>
+                                    <th>Parent Response</th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 <% callLogs.forEach((log) => { %>
+                                    <tr>
+                                       <td>
+                                          <% if (log.callLoggedAt) { %>
+                                             <%= new Date(log.callLoggedAt).toLocaleString() %>
+                                          <% } else { %>
+                                             <%= [log.academicYear, log.month, log.day].filter(Boolean).join(' ') || '-' %>
+                                          <% } %>
+                                       </td>
+                                       <td><%= log.callReason || '-' %></td>
+                                       <td><%= log.parentResponse || '-' %></td>
+                                    </tr>
+                                 <% }) %>
+                              </tbody>
+                           </table>
+                        </div>
+                      <% } else { %>
+                        <div class="calllog-empty">No call logs recorded yet.</div>
+                      <% } %>
                    </div>
              
              <% if (hasRecords) { %>
