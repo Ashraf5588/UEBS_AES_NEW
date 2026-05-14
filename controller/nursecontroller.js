@@ -863,15 +863,7 @@ exports.getBmiStudents = async (req, res) => {
             section
         };
 
-        if (academicYear) {
-            const year = Number.parseInt(academicYear, 10);
-            if (!Number.isNaN(year)) {
-                filter.registrationDate = {
-                    $gte: new Date(year, 0, 1),
-                    $lt: new Date(year + 1, 0, 1)
-                };
-            }
-        }
+        // Academic year is used for saving context only; do not filter student list.
 
         const students = await StudentRecord.find(filter)
             .sort({ roll: 1, name: 1 })
