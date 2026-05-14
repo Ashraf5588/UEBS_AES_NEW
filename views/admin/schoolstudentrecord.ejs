@@ -842,43 +842,19 @@ document.getElementById('studentrecordTable').addEventListener('click', (event) 
     openDeletePreview(ids);
 });
 
-document.getElementById('studentrecordTable').addEventListener('click', async (event) => {
+document.getElementById('studentrecordTable').addEventListener('click', (event) => {
     const deleteButton = event.target.closest('.delete-record-btn');
     if (!deleteButton) {
         return;
     }
 
-    const rowId = deleteButton.dataset.id;
-    const selectedIds = getSelectedIds();
-
-    if (selectedIds.length <= 1 && (!selectedIds.length || selectedIds[0] === rowId)) {
-        return;
-    }
-
     event.preventDefault();
 
-    const ids = selectedIds.includes(rowId) ? selectedIds : selectedIds.concat(rowId);
-    if (!confirm(`Delete ${ids.length} selected students?`)) {
-        return;
-    }
+    const rowId = deleteButton.dataset.id;
+    const selectedIds = getSelectedIds();
+    const ids = selectedIds.length ? selectedIds : [rowId];
 
-    try {
-        const response = await fetch('/studentrecord/bulk-delete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify({ ids })
-        });
-        const data = await response.json();
-        if (data.success) {
-            window.location.reload();
-        } else {
-            alert(data.message || 'Bulk delete failed');
-        }
-    } catch (error) {
-        console.error(error);
-        alert('Bulk delete failed');
-    }
+    openDeletePreview(ids);
 });
 
 document.querySelectorAll('.record-select').forEach((checkbox) => {
@@ -936,14 +912,15 @@ if (bulkDeleteBtn) {
     });
 }
 
-const { deleteConfirmBtn, deleteCancelBtn } = getDeletePreviewElements();
+document.addEventListener('click', (event) => {
+    if (event.target.closest('#deleteCancelBtn')) {
+        event.preventDefault();
+        closeDeletePreview();
+        return;
+    }
 
-if (deleteCancelBtn) {
-    deleteCancelBtn.addEventListener('click', closeDeletePreview);
-}
-
-if (deleteConfirmBtn) {
-    deleteConfirmBtn.addEventListener('click', () => {
+    if (event.target.closest('#deleteConfirmBtn')) {
+        event.preventDefault();
         const { deletePreview } = getDeletePreviewElements();
         const ids = String(deletePreview && deletePreview.dataset.ids ? deletePreview.dataset.ids : '')
             .split(',')
@@ -953,8 +930,8 @@ if (deleteConfirmBtn) {
         if (ids.length) {
             runBulkDelete(ids);
         }
-    });
-}
+    }
+});
 
 updateBulkButtons();
 </script>
