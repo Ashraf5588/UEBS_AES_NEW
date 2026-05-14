@@ -493,6 +493,9 @@
                 <%= editing ? 'Edit Student Record' : 'Add New Student' %>
             </h2>
             <form action="/studentrecord/add" method="POST" class="student-form">
+                <% if (editing && studentId) { %>
+                    <input type="hidden" name="studentId" value="<%= studentId %>">
+                <% } %>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="reg"><i class="fas fa-id-card"></i> Registration Number</label>
@@ -665,11 +668,16 @@ const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
 const selectAllRecords = document.getElementById('selectAllRecords');
 const bulkClassInput = document.getElementById('bulkClass');
 const bulkSectionInput = document.getElementById('bulkSection');
-const deletePreview = document.getElementById('deletePreview');
-const deletePreviewBody = document.getElementById('deletePreviewBody');
-const deletePreviewCount = document.getElementById('deletePreviewCount');
-const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
-const deleteCancelBtn = document.getElementById('deleteCancelBtn');
+
+function getDeletePreviewElements() {
+    return {
+        deletePreview: document.getElementById('deletePreview'),
+        deletePreviewBody: document.getElementById('deletePreviewBody'),
+        deletePreviewCount: document.getElementById('deletePreviewCount'),
+        deleteConfirmBtn: document.getElementById('deleteConfirmBtn'),
+        deleteCancelBtn: document.getElementById('deleteCancelBtn')
+    };
+}
 
 function getSelectedIds() {
     return Array.from(document.querySelectorAll('.record-select:checked'))
@@ -701,6 +709,11 @@ function getRowPreviewData(id) {
 }
 
 function openDeletePreview(ids) {
+    const { deletePreview, deletePreviewBody, deletePreviewCount } = getDeletePreviewElements();
+    if (!deletePreview || !deletePreviewBody || !deletePreviewCount) {
+        return;
+    }
+
     const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
     if (!uniqueIds.length) {
         alert('Select at least one student.');
@@ -723,6 +736,11 @@ function openDeletePreview(ids) {
 }
 
 function closeDeletePreview() {
+    const { deletePreview, deletePreviewBody } = getDeletePreviewElements();
+    if (!deletePreview || !deletePreviewBody) {
+        return;
+    }
+
     deletePreview.classList.remove('is-open');
     deletePreview.setAttribute('aria-hidden', 'true');
     deletePreviewBody.innerHTML = '';
@@ -918,13 +936,16 @@ if (bulkDeleteBtn) {
     });
 }
 
+const { deleteConfirmBtn, deleteCancelBtn } = getDeletePreviewElements();
+
 if (deleteCancelBtn) {
     deleteCancelBtn.addEventListener('click', closeDeletePreview);
 }
 
 if (deleteConfirmBtn) {
     deleteConfirmBtn.addEventListener('click', () => {
-        const ids = String(deletePreview.dataset.ids || '')
+        const { deletePreview } = getDeletePreviewElements();
+        const ids = String(deletePreview && deletePreview.dataset.ids ? deletePreview.dataset.ids : '')
             .split(',')
             .map((value) => value.trim())
             .filter(Boolean);

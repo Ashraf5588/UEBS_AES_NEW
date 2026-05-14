@@ -1920,21 +1920,44 @@ exports.downloadStudentRecordTemplate = async (req, res) => {
 };
 exports.studentrecordadd = async (req, res, next) => {
   try {
-      const { studentrecordschema } = require("../model/adminschema");
-const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecord");
-    const { reg,roll, name,studentClass,section,gender} = req.body;
+    const { studentrecordschema } = require("../model/adminschema");
+    const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecord");
+    const { studentId, reg, roll, name, studentClass, section, gender } = req.body;
 
-    // Update student record based on regNo and column
-    const updated = await modal.create({ reg,roll, name,studentClass,section,gender});  // Your update function here
+    const updatePayload = {
+      reg,
+      roll,
+      name,
+      studentClass,
+      section,
+      gender
+    };
 
-    if (updated) {
+    if (studentId) {
+      const updated = await modal.findByIdAndUpdate(
+        studentId,
+        { $set: updatePayload },
+        { new: true, runValidators: true }
+      );
+
+      if (updated) {
         return res.render("./partials/success", {
-            message: 'Student record updated successfully',
-            redirectUrl: '/studentrecord'
+          message: 'Student record updated successfully',
+          redirectUrl: '/studentrecord'
         });
+      }
     } else {
-        res.json({ success: false, message: 'Update failed' });
+      const created = await modal.create(updatePayload);
+
+      if (created) {
+        return res.render("./partials/success", {
+          message: 'Student record added successfully',
+          redirectUrl: '/studentrecord'
+        });
+      }
     }
+
+    return res.json({ success: false, message: 'Save failed' });
 
 
 
