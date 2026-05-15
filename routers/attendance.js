@@ -20,6 +20,7 @@ const { verify } = require('jsonwebtoken');
 attendance.get('/onlineattendance',verifytoken,authorized,attendancecontroller.onlineAttendancePage)
 attendance.post('/saveonlineattendance',verifytoken,authorized,attendancecontroller.saveOnlineAttendance)
 attendance.post('/updateStudentRoll',verifytoken,authorized,attendancecontroller.updateStudentRoll)
+attendance.post('/updateStudentHouse',verifytoken,authorized,attendancecontroller.updateStudentHouse)
 attendance.get('/getOnlineAttendanceData',verifytoken,authorized,attendancecontroller.getOnlineAttendanceData)
 attendance.get('/frontdesk',verifytoken,attendancecontroller.frontdeskPage)
 attendance.post('/frontdesk/reason',verifytoken,attendancecontroller.saveFrontdeskReason)

@@ -135,6 +135,22 @@ const BS_MONTH_ORDER = {
 const normalizeText = (value) => String(value || '').trim().toLowerCase();
 const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+const getUpdateMatchedCount = (result) => {
+  if (!result) {
+    return 0;
+  }
+  if (Number.isFinite(result.matchedCount)) {
+    return result.matchedCount;
+  }
+  if (Number.isFinite(result.nMatched)) {
+    return result.nMatched;
+  }
+  if (Number.isFinite(result.n)) {
+    return result.n;
+  }
+  return 0;
+};
+
 const getBsMonthOrder = (monthName) => {
   return BS_MONTH_ORDER[normalizeText(monthName)] || 0;
 };
@@ -354,20 +370,28 @@ exports.updateStudentRoll = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid roll number' });
     }
 
-    const filter = { reg: String(reg) };
+    const baseFilter = { reg: String(reg) };
+    const scopedFilter = { ...baseFilter };
     if (studentClass) {
-      filter.studentClass = String(studentClass);
+      scopedFilter.studentClass = String(studentClass);
     }
     if (section) {
-      filter.section = String(section);
+      scopedFilter.section = String(section);
     }
 
-    const updateResult = await studentRecord.updateOne(
-      filter,
+    let updateResult = await studentRecord.updateOne(
+      scopedFilter,
       { $set: { roll: parsedRoll } }
     );
 
-    if (!updateResult || updateResult.matchedCount === 0) {
+    if (getUpdateMatchedCount(updateResult) === 0) {
+      updateResult = await studentRecord.updateOne(
+        baseFilter,
+        { $set: { roll: parsedRoll } }
+      );
+    }
+
+    if (getUpdateMatchedCount(updateResult) === 0) {
       return res.status(404).json({ success: false, message: 'Student not found' });
     }
 
@@ -386,6 +410,47 @@ exports.updateStudentRoll = async (req, res) => {
     return res.json({ success: true, roll: parsedRoll });
   } catch (error) {
     console.error('Error updating student roll:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+}
+
+exports.updateStudentHouse = async (req, res) => {
+  try {
+    const { reg, house, studentClass, section } = req.body || {};
+
+    if (!reg) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
+    const normalizedHouse = String(house || '').trim();
+    const baseFilter = { reg: String(reg) };
+    const scopedFilter = { ...baseFilter };
+    if (studentClass) {
+      scopedFilter.studentClass = String(studentClass);
+    }
+    if (section) {
+      scopedFilter.section = String(section);
+    }
+
+    let updateResult = await studentRecord.updateOne(
+      scopedFilter,
+      { $set: { house: normalizedHouse } }
+    );
+
+    if (getUpdateMatchedCount(updateResult) === 0) {
+      updateResult = await studentRecord.updateOne(
+        baseFilter,
+        { $set: { house: normalizedHouse } }
+      );
+    }
+
+    if (getUpdateMatchedCount(updateResult) === 0) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    return res.json({ success: true, house: normalizedHouse });
+  } catch (error) {
+    console.error('Error updating student house:', error);
     return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 }

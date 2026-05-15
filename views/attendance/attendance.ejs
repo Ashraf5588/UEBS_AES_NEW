@@ -144,6 +144,29 @@ body{
     letter-spacing:.4px
 }
 
+  .house-toggle-btn{
+    display:block;
+    width:100%;
+    max-width:280px;
+    margin:10px auto 0;
+    padding:11px 24px;
+    background:#fff;
+    border:2px solid var(--primary-dark);
+    border-radius:6px;
+    font-size:14px;
+    font-weight:700;
+    color:var(--primary-dark);
+    cursor:pointer;
+    transition:all .2s;
+    text-transform:uppercase;
+    letter-spacing:.4px
+  }
+
+  .house-toggle-btn.active{
+    background:var(--primary-dark);
+    color:#fff
+  }
+
 .edit-toggle-btn.active{
     background:var(--secondary);
     color:#fff
@@ -281,6 +304,16 @@ table img{
     border-radius:50%;
     object-fit:cover;
     border:2px solid var(--border)
+}
+
+.house-select{
+  width:100%;
+  min-width:120px;
+  padding:7px 8px;
+  border:1px solid var(--border);
+  border-radius:4px;
+  font-size:13px;
+  background:#fff
 }
 
 /* ================= ATTENDANCE BOX ================= */
@@ -462,6 +495,15 @@ th.sticky-col{
 
 th.name-sticky{
     z-index:21
+}
+
+.house-col{
+  min-width:140px;
+  width:140px
+}
+
+body.house-hidden .house-col{
+  display:none
 }
 
 /* ================= RESPONSE TABLE ================= */
@@ -709,6 +751,7 @@ input[type="submit"]{
   </div>
   <button class="load-btn" onclick="loadform()">Load Form</button>
   <button class="edit-toggle-btn" id="toggleRollEdit" type="button">Edit Roll Numbers</button>
+  <button class="house-toggle-btn" id="toggleHouseColumn" type="button">Add House</button>
   <label class="default-option" for="setDefaultAttendance">
     <input type="checkbox" id="setDefaultAttendance">
     Set current class as default attendance view
@@ -886,6 +929,7 @@ input[type="submit"]{
 
         <th class="sticky-col roll-col">Roll</th>
         <th class="sticky-col name-col name-sticky">Name</th>
+        <th class="house-col">House</th>
         <th><%= month %> <%= selectedDay %></th>
         <th>Inform Status</th>
         
@@ -904,6 +948,15 @@ input[type="submit"]{
         <input type="hidden" name="reg[<%=student.reg%>]" value="<%=student.reg%>" readonly >
           <td class="sticky-col roll-col"><input type="text" class="roll-input" name="roll[<%=student.reg%>]" value="<%=student.roll%>" data-reg="<%= student.reg %>" data-original="<%= student.roll %>" readonly ></td>
          <td class="sticky-col name-col name-sticky"><input type="text" name="name[<%=student.reg%>]" value="<%=student.name%>" readonly ></td>
+          <td class="house-col">
+            <select class="house-select" data-reg="<%= student.reg %>" data-original="<%= student.house || '' %>">
+              <option value="" <%= !student.house ? 'selected' : '' %>>Select</option>
+              <option value="green" <%= student.house === 'green' ? 'selected' : '' %>>Green</option>
+              <option value="blue" <%= student.house === 'blue' ? 'selected' : '' %>>Blue</option>
+              <option value="yellow" <%= student.house === 'yellow' ? 'selected' : '' %>>Yellow</option>
+              <option value="red" <%= student.house === 'red' ? 'selected' : '' %>>Red</option>
+            </select>
+          </td>
           <% dayList.forEach((day) => { %>
             <% const isHoliday = holidayDays.includes(day); %>
             <td class="<%= isHoliday ? 'holiday' : '' %>">
@@ -1210,6 +1263,80 @@ const month = urlParams.get('month');
   });
 
   setRollEditMode(false);
+</script>
+
+<script>
+  const houseToggleButton = document.getElementById('toggleHouseColumn');
+  const houseSelects = Array.from(document.querySelectorAll('.house-select'));
+  const houseSaveTimers = new Map();
+  let houseVisible = false;
+
+  function setHouseVisible(visible) {
+    houseVisible = Boolean(visible);
+    document.body.classList.toggle('house-hidden', !houseVisible);
+    if (houseToggleButton) {
+      houseToggleButton.classList.toggle('active', houseVisible);
+      houseToggleButton.textContent = houseVisible ? 'Hide House' : 'Add House';
+    }
+  }
+
+  async function saveHouse(selectEl) {
+    if (houseSaveTimers.has(selectEl)) {
+      clearTimeout(houseSaveTimers.get(selectEl));
+    }
+
+    const timer = setTimeout(async () => {
+      const reg = selectEl.dataset.reg;
+      const nextHouse = String(selectEl.value || '').trim();
+      const original = selectEl.dataset.original || '';
+      const param = new URLSearchParams(window.location.search);
+      const studentClass = param.get('studentClass');
+      const section = param.get('section');
+
+      if (!reg) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/updateStudentHouse', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            reg,
+            house: nextHouse,
+            studentClass,
+            section
+          })
+        });
+
+        if (!response.ok) {
+          selectEl.value = original;
+          return;
+        }
+
+        selectEl.dataset.original = nextHouse;
+      } catch (error) {
+        selectEl.value = original;
+        console.error('Failed to update house:', error);
+      } finally {
+        houseSaveTimers.delete(selectEl);
+      }
+    }, 600);
+
+    houseSaveTimers.set(selectEl, timer);
+  }
+
+  if (houseToggleButton) {
+    houseToggleButton.addEventListener('click', () => setHouseVisible(!houseVisible));
+  }
+
+  houseSelects.forEach((selectEl) => {
+    selectEl.addEventListener('change', () => saveHouse(selectEl));
+  });
+
+  setHouseVisible(false);
 </script>
 
 
