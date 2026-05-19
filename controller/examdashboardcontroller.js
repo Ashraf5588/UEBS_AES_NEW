@@ -1398,6 +1398,7 @@ for (const student of studentWisedata) {
              day: String(entry.day || ''),
              callReason: String(entry.callReason || ''),
              parentResponse: String(entry.parentResponse || ''),
+             callBy: String(entry.callBy || ''),
              callLoggedAt: entry.callLoggedAt ? new Date(entry.callLoggedAt) : null
            }))
            .sort((a, b) => {

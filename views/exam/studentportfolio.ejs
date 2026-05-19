@@ -496,6 +496,16 @@
       gap: 10px;
    }
 
+   .calllog-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+   }
+
+   .calllog-actions .calllog-btn {
+      background: #0f766e;
+   }
+
    .calllog-title {
       font-weight: 700;
       color: var(--secondary);
@@ -547,6 +557,37 @@
       padding: 12px;
       color: #64748b;
       font-size: 0.9rem;
+   }
+
+   .call-form-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+   }
+
+   .call-form-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+   }
+
+   .call-now-btn {
+      background: #0f766e;
+      text-decoration: none;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+   }
+
+   .call-status {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-weight: 600;
    }
 
    .absent-panel {
@@ -1309,6 +1350,7 @@
                    <div class="profile-right">
                       <button type="button" class="print-btn no-print" onclick="window.print()">Print Portfolio</button>
                       <button type="button" class="no-print" onclick="addComplaint('<%= reg %>')" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Add Complaint</button>
+                      <button type="button" class="no-print" onclick="openCallLogModal('<%= reg %>')" style="background-color: #0f766e; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Add Call Record</button>
                          <button type="button" class="no-print" onclick="addInformation('<%= reg %>')" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Add Information</button>
                          <div class="zone-badge <%= zoneClass %>">
                               <%= zoneText %>
@@ -1462,7 +1504,10 @@
                    <div class="calllog-panel">
                       <div class="calllog-header">
                          <div class="calllog-title">Parent Call Logs</div>
-                         <div class="calllog-count"><%= callLogs.length %> call<%= callLogs.length === 1 ? '' : 's' %></div>
+                        <div class="calllog-actions">
+                           <button type="button" class="calllog-btn no-print" onclick="openCallLogModal('<%= reg %>')">Add Call Record</button>
+                           <div class="calllog-count"><%= callLogs.length %> call<%= callLogs.length === 1 ? '' : 's' %></div>
+                        </div>
                       </div>
                       <% if (callLogs.length) { %>
                         <div class="calllog-table-wrap">
@@ -1470,6 +1515,7 @@
                               <thead>
                                  <tr>
                                     <th>Call Date</th>
+                                    <th>Called By</th>
                                     <th>Call Reason</th>
                                     <th>Parent Response</th>
                                  </tr>
@@ -1484,6 +1530,7 @@
                                              <%= [log.academicYear, log.month, log.day].filter(Boolean).join(' ') || '-' %>
                                           <% } %>
                                        </td>
+                                       <td><%= log.callBy || '-' %></td>
                                        <td><%= log.callReason || '-' %></td>
                                        <td><%= log.parentResponse || '-' %></td>
                                     </tr>
@@ -2051,6 +2098,57 @@
    </div>
 </div>
 
+<div id="callLogModal" class="modal-backdrop" aria-hidden="true">
+   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="callLogModalTitle">
+      <div class="modal-header">
+         <div class="modal-title" id="callLogModalTitle">Add Call Record</div>
+         <button type="button" class="btn-secondary" onclick="closeCallLogModal()">Close</button>
+      </div>
+      <form id="callLogForm">
+         <div class="modal-body" style="grid-template-columns: 1fr;">
+            <div class="call-form-grid">
+               <div class="modal-field">
+                  <label for="callLogName">Student Name</label>
+                  <input id="callLogName" type="text" readonly />
+               </div>
+               <div class="modal-field">
+                  <label for="callLogClass">Class</label>
+                  <input id="callLogClass" type="text" readonly />
+               </div>
+               <div class="modal-field">
+                  <label for="callLogSection">Section</label>
+                  <input id="callLogSection" type="text" readonly />
+               </div>
+               <div class="modal-field">
+                  <label for="callLogReg">Reg No</label>
+                  <input id="callLogReg" type="text" readonly />
+               </div>
+               <div class="modal-field">
+                  <label for="callLogContact">Contact Number</label>
+                  <input id="callLogContact" type="text" readonly />
+               </div>
+            </div>
+            <div class="modal-field">
+               <label for="callLogReason">Reason for Call</label>
+               <textarea id="callLogReason" required></textarea>
+            </div>
+            <div class="modal-field">
+               <label for="callLogResponse">Parent Response</label>
+               <textarea id="callLogResponse" required></textarea>
+            </div>
+            <div class="call-form-actions">
+               <a id="callLogNow" class="call-now-btn" href="#" target="_self">Call Now</a>
+               <span id="callLogStatus" class="call-status"></span>
+            </div>
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeCallLogModal()">Cancel</button>
+            <button type="submit">Save Call Log</button>
+         </div>
+      </form>
+   </div>
+</div>
+
 <script>
    const rosterByReg = <%- JSON.stringify(rosterByReg || {}) %>;
    const complaintsByReg = <%- JSON.stringify(typeof complaintsByReg !== 'undefined' ? complaintsByReg : {}) %>;
@@ -2074,6 +2172,9 @@
    const complaintCaptureButton = document.getElementById('complaint_capture_btn');
    const complaintUploadStatus = document.getElementById('complaint_upload_status');
    const complaintUploadPreview = document.getElementById('complaint_upload_preview');
+   const callLogForm = document.getElementById('callLogForm');
+   const callLogStatus = document.getElementById('callLogStatus');
+   const callLogNow = document.getElementById('callLogNow');
    let complaintImageUrls = [];
 
    function normalize(value) {
@@ -2431,6 +2532,35 @@
       openComplaintModal(reg);
    }
 
+   function openCallLogModal(reg) {
+      const data = rosterByReg[reg] || {};
+      setField('callLogReg', reg);
+      setField('callLogName', data.name);
+      setField('callLogClass', data.studentClass);
+      setField('callLogSection', data.section);
+      setField('callLogContact', data.numberofmobile || data.fatherContact || data.motherContact || data.otherguardianContact || '');
+      const contactValue = document.getElementById('callLogContact').value;
+      if (callLogNow) {
+         callLogNow.href = contactValue ? `tel:${contactValue}` : '#';
+      }
+      if (callLogStatus) {
+         callLogStatus.textContent = '';
+         callLogStatus.style.color = '#64748b';
+      }
+      document.getElementById('callLogReason').value = '';
+      document.getElementById('callLogResponse').value = '';
+
+      const modal = document.getElementById('callLogModal');
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+   }
+
+   function closeCallLogModal() {
+      const modal = document.getElementById('callLogModal');
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+   }
+
    if (complaintImageInput) {
       complaintImageInput.addEventListener('change', async function (event) {
          await uploadComplaintImages(event.target.files);
@@ -2487,6 +2617,66 @@
             console.error('Error:', error);
             alert('An error occurred while adding the complaint.');
          });
+      });
+   }
+
+   if (callLogForm) {
+      callLogForm.addEventListener('submit', async function (event) {
+         event.preventDefault();
+         if (!callLogStatus) return;
+
+         const reg = (document.getElementById('callLogReg').value || '').trim();
+         const studentClass = (document.getElementById('callLogClass').value || '').trim();
+         const section = (document.getElementById('callLogSection').value || '').trim();
+         const callReason = (document.getElementById('callLogReason').value || '').trim();
+         const parentResponse = (document.getElementById('callLogResponse').value || '').trim();
+         const academicYear = document.getElementById('academicYear')?.value || String(defaultAcademicYear);
+         const today = new Date();
+         const monthName = today.toLocaleString('en-US', { month: 'long' });
+         const day = String(today.getDate());
+
+         if (!reg || !studentClass || !section || !academicYear) {
+            callLogStatus.textContent = 'Missing student data.';
+            callLogStatus.style.color = '#dc2626';
+            return;
+         }
+         if (!callReason || !parentResponse) {
+            callLogStatus.textContent = 'Reason and response are required.';
+            callLogStatus.style.color = '#dc2626';
+            return;
+         }
+
+         callLogStatus.textContent = 'Saving call log...';
+         callLogStatus.style.color = '#0369a1';
+
+         try {
+            const response = await fetch('/studentportfolio/call-log', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({
+                  reg,
+                  studentClass,
+                  section,
+                  academicYear,
+                  month: monthName,
+                  day,
+                  callReason,
+                  parentResponse
+               })
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+               throw new Error(data.message || 'Failed to save call log');
+            }
+
+            callLogStatus.textContent = 'Call log saved.';
+            callLogStatus.style.color = '#16a34a';
+            closeCallLogModal();
+            window.location.reload();
+         } catch (error) {
+            callLogStatus.textContent = error.message || 'Unable to save call log.';
+            callLogStatus.style.color = '#dc2626';
+         }
       });
    }
 

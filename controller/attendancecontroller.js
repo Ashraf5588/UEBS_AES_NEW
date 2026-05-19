@@ -575,6 +575,7 @@ exports.saveFrontdeskCallLog = async (req, res) => {
 
     const trimmedCallReason = String(callReason || '').trim();
     const trimmedParentResponse = String(parentResponse || '').trim();
+    const callBy = req.user && req.user.teacherName ? String(req.user.teacherName).trim() : '';
     const monthVariants = getMonthVariants(month);
     const monthRegex = monthVariants.length > 0
       ? new RegExp(`^(${monthVariants.map((variant) => escapeRegex(variant)).join('|')})$`, 'i')
@@ -593,7 +594,8 @@ exports.saveFrontdeskCallLog = async (req, res) => {
           ...(studentRoll !== undefined ? { roll: studentRoll } : {}),
           'attendance.$[entry].callReason': trimmedCallReason,
           'attendance.$[entry].parentResponse': trimmedParentResponse,
-          'attendance.$[entry].callLoggedAt': new Date().toISOString()
+          'attendance.$[entry].callLoggedAt': new Date().toISOString(),
+          ...(callBy ? { 'attendance.$[entry].callBy': callBy } : {})
         }
       },
       {
@@ -632,7 +634,8 @@ exports.saveFrontdeskCallLog = async (req, res) => {
               status: 'present',
               callReason: trimmedCallReason,
               parentResponse: trimmedParentResponse,
-              callLoggedAt: new Date().toISOString()
+              callLoggedAt: new Date().toISOString(),
+              ...(callBy ? { callBy } : {})
             }
           }
         },
