@@ -59,6 +59,8 @@
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: grid;
   gap: 18px;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
 }
 
 .hm-sidenav-header {
@@ -86,6 +88,8 @@
 .hm-sidenav-nav {
   display: grid;
   gap: 10px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .hm-nav-link {

@@ -1,10 +1,13 @@
 const mongoose = require('mongoose');
+const fs = require('fs');
+const csv = require('csvtojson');
 const HealthRecord = require('../model/nurseschema');
 const Medicine = require('../model/medicineschema');
 const MedicineDistribution = require('../model/medicinedistribution');
 const PadDistribution = require('../model/padrecordschema');
 const { studentrecordschema, classSchema } = require('../model/adminschema');
 const { marksheetsetupschemaForAdmin } = require('../model/marksheetschema');
+const { staffSchema } = require('../model/staffschema');
 
 const StudentRecord = mongoose.models.studentRecord ||
     mongoose.model('studentRecord', studentrecordschema, 'studentrecord');
@@ -12,6 +15,8 @@ const ClassList = mongoose.models.studentClass ||
     mongoose.model('studentClass', classSchema, 'classlist');
 const MarksheetSetup = mongoose.models.marksheetSetup ||
     mongoose.model('marksheetSetup', marksheetsetupschemaForAdmin, 'marksheetSetup');
+const Staff = mongoose.models.staff ||
+    mongoose.model('staff', staffSchema, 'staff');
 
 const calculateAgeFromDob = (dobValue) => {
     const dob = dobValue ? new Date(dobValue) : null;
@@ -41,6 +46,31 @@ const calculateAgeFromDob = (dobValue) => {
 const normalizeNumber = (value) => {
     const number = Number(value);
     return Number.isFinite(number) ? number : null;
+};
+
+const normalizeStaffName = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+
+const extractStaffName = (row) => {
+    if (!row || typeof row !== 'object') {
+        return '';
+    }
+
+    const mapped = Object.keys(row).reduce((acc, key) => {
+        acc[String(key || '').trim().toLowerCase()] = row[key];
+        return acc;
+    }, {});
+
+    const candidates = ['staffname', 'staff name', 'name', 'staff'];
+    for (const key of candidates) {
+        const value = mapped[key];
+        const normalized = normalizeStaffName(value);
+        if (normalized) {
+            return normalized;
+        }
+    }
+
+    const fallback = normalizeStaffName(Object.values(row)[0]);
+    return fallback;
 };
 
 const getHeightInCm = (feet, inch) => {
@@ -944,6 +974,110 @@ exports.saveBmiRows = async (req, res) => {
         res.status(200).json({ message: 'BMI data saved successfully', updates });
     } catch (error) {
         console.error('Error saving BMI rows:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.showBpRecordForm = async (req, res) => {
+    try {
+        const initialStatus = String(req.query.uploaded || '').trim() ? 'Staff list uploaded.' : '';
+        res.render('nurse/bprecord', { initialStatus });
+    } catch (error) {
+        console.error('Error rendering BP record form:', error);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+exports.uploadStaffCsv = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).send('Please upload a CSV file');
+        }
+
+        const csvFilePath = req.file.path;
+        const rows = await csv({ delimiter: [',', '\t', ';'] }).fromFile(csvFilePath);
+
+        const staffNames = new Set();
+        rows.forEach((row) => {
+            const name = extractStaffName(row);
+            if (name) {
+                staffNames.add(name);
+            }
+        });
+
+        if (!staffNames.size) {
+            fs.unlinkSync(csvFilePath);
+            return res.status(400).send('No staff names found in the CSV file');
+        }
+
+        const operations = [...staffNames].map((staffName) => ({
+            updateOne: {
+                filter: { staffName },
+                update: { $setOnInsert: { staffName } },
+                upsert: true
+            }
+        }));
+
+        await Staff.bulkWrite(operations);
+        fs.unlinkSync(csvFilePath);
+
+        return res.redirect('/healthrecord/bp/add?uploaded=1');
+    } catch (error) {
+        console.error('Error uploading staff CSV:', error);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+exports.getStaffList = async (req, res) => {
+    try {
+        const staffRows = await Staff.find({})
+            .sort({ staffName: 1 })
+            .lean();
+
+        const rows = staffRows.map((staff) => ({
+            id: String(staff._id),
+            staffName: staff.staffName || '',
+            bloodPressure: staff.bloodPressure || ''
+        }));
+
+        res.status(200).json({ rows });
+    } catch (error) {
+        console.error('Error loading staff list:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.saveBpRows = async (req, res) => {
+    try {
+        const entries = Array.isArray(req.body.entries) ? req.body.entries : [];
+        if (!entries.length) {
+            return res.status(400).json({ message: 'No BP rows to save' });
+        }
+
+        const operations = entries
+            .map((entry) => {
+                const staffId = String(entry.id || '').trim();
+                if (!staffId) {
+                    return null;
+                }
+                return {
+                    updateOne: {
+                        filter: { _id: staffId },
+                        update: { $set: { bloodPressure: String(entry.bloodPressure || '').trim() } }
+                    }
+                };
+            })
+            .filter(Boolean);
+
+        if (!operations.length) {
+            return res.status(400).json({ message: 'No valid staff ids found' });
+        }
+
+        await Staff.bulkWrite(operations);
+
+        res.status(200).json({ message: 'Blood pressure saved successfully' });
+    } catch (error) {
+        console.error('Error saving BP rows:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };

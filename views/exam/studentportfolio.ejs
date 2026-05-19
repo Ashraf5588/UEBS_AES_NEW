@@ -37,8 +37,11 @@
         margin-left: auto;
         margin-right: auto;
     }
-    .header h1 { margin: 0 0 5px 0; color: var(--secondary); font-size: 1.5rem; }
-    .header p { margin: 0 0 20px 0; color: #64748b; font-size: 0.9rem; }
+   .header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+   .header h1 { margin: 0 0 5px 0; color: var(--secondary); font-size: 1.5rem; }
+   .header p { margin: 0 0 20px 0; color: #64748b; font-size: 0.9rem; }
+   .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+   .export-btn { background: #0f766e; }
     
     .form-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; }
     .form-group { flex: 1; min-width: 200px; }
@@ -1006,8 +1009,13 @@
   
    <div class="filter-container no-print">
     <div class="header">
-      <h1>Student Portfolio</h1>
-      <p>Select criteria to view individual student performance</p>
+      <div>
+         <h1>Student Portfolio</h1>
+         <p>Select criteria to view individual student performance</p>
+      </div>
+      <div class="header-actions">
+         <button type="button" class="export-btn" onclick="openExportModal()">Export to Excel</button>
+      </div>
     </div>
     <div class="form-row">
          <div class="form-group student-search">
@@ -1737,6 +1745,65 @@
       <% }) %>
    <% } %>
 
+<div id="exportModal" class="modal-backdrop" aria-hidden="true">
+   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
+      <div class="modal-header">
+         <div class="modal-title" id="exportModalTitle">Export Portfolio Data</div>
+         <button type="button" class="btn-secondary" onclick="closeExportModal()">Close</button>
+      </div>
+      <div class="modal-body" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="sn" checked /> SN</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="name" checked /> Name</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="reg" checked /> Reg No</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="roll" checked /> Roll</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="class" checked /> Class</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="section" checked /> Section</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="gender" /> Gender</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="age" /> Age</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="dob" /> Date of Birth</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="classStarted" /> Class Started</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="motherTongue" /> Mother Tongue</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="previousSchool" /> Previous School</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="contact" /> Contact Number</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="fatherName" /> Father Name</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="fatherOccupation" /> Father Occupation</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="fatherContact" /> Father Contact</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="fatherQualification" /> Father Qualification</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="motherName" /> Mother Name</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="motherOccupation" /> Mother Occupation</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="motherContact" /> Mother Contact</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="motherQualification" /> Mother Qualification</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="guardianName" /> Other Guardian</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="guardianOccupation" /> Guardian Occupation</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="guardianContact" /> Guardian Contact</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="yearlyIncome" /> Yearly Income</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="bloodGroup" /> Blood Group</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="medicalCondition" /> Medical Condition</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="behavioralCondition" /> Behavioral Condition</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="eyeProblem" /> Eye Problem</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="earProblem" /> Ear Problem</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="hairProblem" /> Hair Problem</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="height" /> Height</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="weight" /> Weight</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="livesWithParents" /> Lives with Father/Mother</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="parentView" /> Parent View Towards School</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="parentVisit" /> Parent Visit Frequency</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="tvAtHome" /> TV at Home</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="internetAtHome" /> Internet at Home</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="feePaidDuration" /> Fee Paid Duration</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="complaints" /> Complaints</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="healthVisits" /> Health Visits</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="callLogs" /> Call Logs</label>
+         <label class="filter-checkbox"><input type="checkbox" class="export-field" value="absent" /> Absent Record</label>
+      </div>
+      <div class="modal-footer">
+         <button type="button" class="btn-secondary" onclick="toggleExportFields(false)">Clear All</button>
+         <button type="button" class="btn-secondary" onclick="toggleExportFields(true)">Select All</button>
+         <button type="button" onclick="downloadPortfolioExport()">Download Excel</button>
+      </div>
+   </div>
+</div>
+
 <div id="infoModal" class="modal-backdrop" aria-hidden="true">
    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
       <div class="modal-header">
@@ -1986,6 +2053,10 @@
 
 <script>
    const rosterByReg = <%- JSON.stringify(rosterByReg || {}) %>;
+   const complaintsByReg = <%- JSON.stringify(typeof complaintsByReg !== 'undefined' ? complaintsByReg : {}) %>;
+   const healthRecordsByReg = <%- JSON.stringify(typeof healthRecordsByReg !== 'undefined' ? healthRecordsByReg : {}) %>;
+   const callLogsByReg = <%- JSON.stringify(typeof callLogsByReg !== 'undefined' ? callLogsByReg : {}) %>;
+   const absentSummaryByReg = <%- JSON.stringify(typeof absentSummaryByReg !== 'undefined' ? absentSummaryByReg : {}) %>;
    const studentCards = Array.from(document.querySelectorAll('.student-card'));
    const filterSearch = document.getElementById('filterSearch');
    const filterFamily = document.getElementById('filterFamily');
@@ -2417,6 +2488,234 @@
             alert('An error occurred while adding the complaint.');
          });
       });
+   }
+
+   function openExportModal() {
+      const modal = document.getElementById('exportModal');
+      if (!modal) return;
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+   }
+
+   function closeExportModal() {
+      const modal = document.getElementById('exportModal');
+      if (!modal) return;
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+   }
+
+   function toggleExportFields(checked) {
+      document.querySelectorAll('.export-field').forEach((el) => {
+         el.checked = checked;
+      });
+   }
+
+   function escapeCsv(value) {
+      const text = String(value ?? '').replace(/\r?\n/g, '\n');
+      if (/["]|,|\n/.test(text)) {
+         return `"${text.replace(/"/g, '""')}"`;
+      }
+      return text;
+   }
+
+   function formatDateTime(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return date.toLocaleString();
+   }
+
+   function formatDateOnly(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return date.toLocaleDateString();
+   }
+
+   function formatComplaints(items) {
+      if (!Array.isArray(items) || !items.length) return '';
+      return items.map((item, index) => {
+         const reason = item.reason || item.complaint || '-';
+         const date = formatDateOnly(item.date);
+         const by = item.by || '';
+         const meta = [date && `Date: ${date}`, by && `By: ${by}`].filter(Boolean).join(' | ');
+         return `${index + 1}. ${reason}${meta ? ` (${meta})` : ''}`;
+      }).join('\n');
+   }
+
+   function formatHealthVisits(items) {
+      if (!Array.isArray(items) || !items.length) return '';
+      return items.map((item, index) => {
+         const date = formatDateTime(item.createdAt);
+         const diagnosis = item.diagnosis || '-';
+         const treatment = item.treatment || '-';
+         return `${index + 1}. ${date || 'N/A'} | ${diagnosis} | ${treatment}`;
+      }).join('\n');
+   }
+
+   function formatCallLogs(items) {
+      if (!Array.isArray(items) || !items.length) return '';
+      return items.map((item, index) => {
+         const date = item.callLoggedAt ? formatDateTime(item.callLoggedAt) : [item.academicYear, item.month, item.day].filter(Boolean).join(' ');
+         const reason = item.callReason || '-';
+         const response = item.parentResponse || '-';
+         return `${index + 1}. ${date || 'N/A'} | ${reason} | ${response}`;
+      }).join('\n');
+   }
+
+   function formatAbsent(summary) {
+      if (!summary || typeof summary !== 'object') return '';
+      const total = summary.totalAbsent || 0;
+      const monthCounts = summary.monthCounts || {};
+      const months = Object.entries(monthCounts).map(([month, count]) => `${month}: ${count}`).join(', ');
+      const reasons = Array.isArray(summary.reasons)
+         ? summary.reasons.map((item, index) => `${index + 1}. ${(item.date || '')} ${item.reason || ''}`.trim()).join('\n')
+         : '';
+      const lines = [`Total: ${total}`];
+      if (months) lines.push(`Months: ${months}`);
+      if (reasons) lines.push(`Reasons:\n${reasons}`);
+      return lines.join('\n');
+   }
+
+   function getVisibleRegs() {
+      if (!studentCards.length) return [];
+      return studentCards
+         .filter((card) => card.style.display !== 'none')
+         .map((card) => card.dataset.reg)
+         .filter(Boolean);
+   }
+
+   function buildExportRows(fields) {
+      const regs = getVisibleRegs();
+      const rows = [];
+
+      regs.forEach((reg, index) => {
+         const roster = rosterByReg[reg] || {};
+         const livesWithParents = !(toBoolean(roster.liveWithFather, true) === false || toBoolean(roster.liveWithMother, true) === false);
+         const data = {
+            sn: index + 1,
+            name: roster.name || '',
+            reg,
+            roll: roster.roll || '',
+            class: roster.studentClass || '',
+            section: roster.section || '',
+            gender: roster.gender || '',
+            age: roster.age || '',
+            dob: roster.dob ? formatDateOnly(roster.dob) : '',
+            classStarted: roster.classStartedAt ? formatDateOnly(roster.classStartedAt) : '',
+            motherTongue: roster.mothersToungue || '',
+            previousSchool: roster.previousSchool || '',
+            contact: roster.numberofmobile || '',
+            fatherName: roster.fatherName || '',
+            fatherOccupation: roster.fatheroccupation || '',
+            fatherContact: roster.fatherContact || '',
+            fatherQualification: roster.fatherqualification || '',
+            motherName: roster.motherName || '',
+            motherOccupation: roster.motheroccupation || '',
+            motherContact: roster.motherContact || '',
+            motherQualification: roster.motherqualification || '',
+            guardianName: roster.otherguardianName || '',
+            guardianOccupation: roster.otherguardianOccupation || '',
+            guardianContact: roster.otherguardianContact || '',
+            yearlyIncome: roster.yearlyIncome || '',
+            bloodGroup: roster.bloodGroup || '',
+            medicalCondition: Array.isArray(roster.anyMedicalCondition) ? roster.anyMedicalCondition.join(', ') : (roster.anyMedicalCondition || ''),
+            behavioralCondition: roster.otherbehaviouralCondition || '',
+            eyeProblem: roster.eyeproblem ? 'Yes' : 'No',
+            earProblem: roster.earproblem ? 'Yes' : 'No',
+            hairProblem: roster.hairproblem ? 'Yes' : 'No',
+            height: roster.height || '',
+            weight: roster.weight || '',
+            livesWithParents: livesWithParents ? 'Yes' : 'No',
+            parentView: roster.parentViewTowardsSchool || '',
+            parentVisit: roster.parentVisitFrequency || '',
+            tvAtHome: roster.tvatHome || '',
+            internetAtHome: roster.internetAtHome || '',
+            feePaidDuration: roster.feepaidduration || '',
+            complaints: formatComplaints(complaintsByReg[reg] || []),
+            healthVisits: formatHealthVisits(healthRecordsByReg[reg] || []),
+            callLogs: formatCallLogs(callLogsByReg[reg] || []),
+            absent: formatAbsent(absentSummaryByReg[reg])
+         };
+
+         rows.push(fields.map((field) => data[field] ?? ''));
+      });
+
+      return rows;
+   }
+
+   function downloadPortfolioExport() {
+      const selectedFields = Array.from(document.querySelectorAll('.export-field'))
+         .filter((el) => el.checked)
+         .map((el) => el.value);
+
+      if (!selectedFields.length) {
+         alert('Select at least one field to export.');
+         return;
+      }
+
+      const headerLabels = {
+         sn: 'SN',
+         name: 'Name',
+         reg: 'Reg No',
+         roll: 'Roll',
+         class: 'Class',
+         section: 'Section',
+         gender: 'Gender',
+         age: 'Age',
+         dob: 'Date of Birth',
+         classStarted: 'Class Started',
+         motherTongue: 'Mother Tongue',
+         previousSchool: 'Previous School',
+         contact: 'Contact Number',
+         fatherName: 'Father Name',
+         fatherOccupation: 'Father Occupation',
+         fatherContact: 'Father Contact',
+         fatherQualification: 'Father Qualification',
+         motherName: 'Mother Name',
+         motherOccupation: 'Mother Occupation',
+         motherContact: 'Mother Contact',
+         motherQualification: 'Mother Qualification',
+         guardianName: 'Guardian Name',
+         guardianOccupation: 'Guardian Occupation',
+         guardianContact: 'Guardian Contact',
+         yearlyIncome: 'Yearly Income',
+         bloodGroup: 'Blood Group',
+         medicalCondition: 'Medical Condition',
+         behavioralCondition: 'Behavioral Condition',
+         eyeProblem: 'Eye Problem',
+         earProblem: 'Ear Problem',
+         hairProblem: 'Hair Problem',
+         height: 'Height',
+         weight: 'Weight',
+         livesWithParents: 'Lives with Father/Mother',
+         parentView: 'Parent View Towards School',
+         parentVisit: 'Parent Visit Frequency',
+         tvAtHome: 'TV at Home',
+         internetAtHome: 'Internet at Home',
+         feePaidDuration: 'Fee Paid Duration',
+         complaints: 'Complaints',
+         healthVisits: 'Health Visits',
+         callLogs: 'Call Logs',
+         absent: 'Absent Record'
+      };
+
+      const rows = buildExportRows(selectedFields);
+      const header = selectedFields.map((field) => escapeCsv(headerLabels[field] || field)).join(',');
+      const body = rows.map((row) => row.map(escapeCsv).join(',')).join('\n');
+      const csv = [header, body].filter(Boolean).join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `student_portfolio_export_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      closeExportModal();
    }
 </script>
 </body>
