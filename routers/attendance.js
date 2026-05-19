@@ -23,6 +23,7 @@ attendance.post('/updateStudentRoll',verifytoken,authorized,attendancecontroller
 attendance.post('/updateStudentHouse',verifytoken,authorized,attendancecontroller.updateStudentHouse)
 attendance.get('/getOnlineAttendanceData',verifytoken,authorized,attendancecontroller.getOnlineAttendanceData)
 attendance.get('/frontdesk',verifytoken,attendancecontroller.frontdeskPage)
+attendance.get('/absent-record',verifytoken,authorized,isAdmin,attendancecontroller.absentRecordPage)
 attendance.post('/frontdesk/reason',verifytoken,attendancecontroller.saveFrontdeskReason)
 attendance.get('/frontdesk/students',verifytoken,attendancecontroller.searchFrontdeskStudents)
 attendance.post('/frontdesk/call-log',verifytoken,attendancecontroller.saveFrontdeskCallLog)

@@ -55,7 +55,7 @@
 
 <div class="selector-panel">
   <div class="selector-title">Choose Class, Section and Terminal for Marks Entry</div>
-  <div class="selector-grid">
+    <div class="selector-grid">
      <div class="form-group">
        
         <select name="subject" id="subject">
@@ -80,22 +80,61 @@
       <% }) %>
     </select>
 <select name="academicYear" id="academicYear">
-          <option value="" selected disabled>Choose Academic Year</option>
+          <option value="" disabled>Choose Academic Year</option>
           <% currentYear = Number(marksheetSetups[0].academicYear) %>;
             <% for (let i = 0; i < 5; i++) { %>
               <option value="<%= currentYear - i %>"><%= currentYear - i %></option>
             <% } %>
         </select>
   </div>
+  <div class="selector-grid" style="margin-top:8px">
+    <label style="display:flex;align-items:center;gap:8px;font-weight:600;color:var(--secondary)">
+      <input type="checkbox" id="saveClassDefault" style="width:16px;height:16px">
+      Set class/section as default
+    </label>
+  </div>
   <button class="load-btn" onclick="loadform()">Load Form</button>
 </div>
 
 
 <script>
-  document.getElementById('classSection').value = "<%= studentClass %>-<%= section %>";
-  document.getElementById('terminal').value = "<%= terminal %>";
-  document.getElementById('academicYear').value = "<%= academicYear %>";
-  document.getElementById('subject').value = "<%= subject %>";
+  const classSectionSelect = document.getElementById('classSection');
+  const terminalSelect = document.getElementById('terminal');
+  const academicYearSelect = document.getElementById('academicYear');
+  const subjectSelect = document.getElementById('subject');
+  const saveClassDefault = document.getElementById('saveClassDefault');
+
+  classSectionSelect.value = "<%= studentClass %>-<%= section %>";
+  terminalSelect.value = "<%= terminal %>";
+  academicYearSelect.value = "<%= academicYear %>";
+  subjectSelect.value = "<%= subject %>";
+
+  if (!academicYearSelect.value && academicYearSelect.options.length > 0) {
+    academicYearSelect.selectedIndex = 1;
+  }
+
+  const savedClassSection = localStorage.getItem('defaultClassSection');
+  if (!classSectionSelect.value && savedClassSection) {
+    classSectionSelect.value = savedClassSection;
+  }
+
+  if (savedClassSection && classSectionSelect.value === savedClassSection) {
+    saveClassDefault.checked = true;
+  }
+
+  saveClassDefault.addEventListener('change', function() {
+    if (this.checked && classSectionSelect.value) {
+      localStorage.setItem('defaultClassSection', classSectionSelect.value);
+    } else {
+      localStorage.removeItem('defaultClassSection');
+    }
+  });
+
+  classSectionSelect.addEventListener('change', function() {
+    if (saveClassDefault.checked && this.value) {
+      localStorage.setItem('defaultClassSection', this.value);
+    }
+  });
 </script>
 
   <script>

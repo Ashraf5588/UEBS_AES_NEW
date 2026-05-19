@@ -494,8 +494,12 @@ exports.createHealthRecord = async (req, res) => {
             address,
             diagnosis,
             treatment,
-            remarks
+            remarks,
+            referNote
         } = req.body;
+
+        const trimmedReferNote = String(referNote || '').trim();
+        const referred = Boolean(trimmedReferNote);
 
         if (!reg || !name || !diagnosis || !treatment) {
             console.log('Health record validation failed:', {
@@ -516,7 +520,9 @@ exports.createHealthRecord = async (req, res) => {
             address,
             diagnosis,
             treatment,
-            remarks
+            remarks,
+            referred,
+            referNote: trimmedReferNote
         });
         console.log('Saving health record document...');
         const savedHealthRecord = await healthRecord.save();
@@ -939,5 +945,37 @@ exports.saveBmiRows = async (req, res) => {
     } catch (error) {
         console.error('Error saving BMI rows:', error);
         res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.updateHealthRecordReferral = async (req, res) => {
+    try {
+        const recordId = String(req.body.id || '').trim();
+        const referNote = String(req.body.referNote || '').trim();
+        const referred = String(req.body.referred || '').toLowerCase() === 'true';
+
+        if (!recordId) {
+            return res.status(400).json({ success: false, message: 'Record id is required' });
+        }
+
+        const updated = await HealthRecord.findByIdAndUpdate(
+            recordId,
+            {
+                $set: {
+                    referred: referred || Boolean(referNote),
+                    referNote
+                }
+            },
+            { new: true }
+        ).lean();
+
+        if (!updated) {
+            return res.status(404).json({ success: false, message: 'Record not found' });
+        }
+
+        res.status(200).json({ success: true, record: updated });
+    } catch (error) {
+        console.error('Error updating referral:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };

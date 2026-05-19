@@ -411,6 +411,52 @@
             margin: 0 auto;
         }
 
+        .export-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .field-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: #f8fafc;
+        }
+
+        .field-checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .field-checkbox input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-color);
+        }
+
+        .export-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .export-note {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -604,6 +650,57 @@
                 </button>
                 <button type="button" class="btn btn-danger" id="bulkDeleteBtn" disabled>
                     <i class="fas fa-trash"></i> Delete Selected
+                </button>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem;">
+            <h2 class="card-title"><i class="fas fa-file-excel"></i> Export Students (Excel)</h2>
+            <p class="export-note">Select class/section and fields to export. Download as CSV (opens in Excel).</p>
+            <div class="export-grid">
+                <div class="form-group">
+                    <label for="exportClass"><i class="fas fa-graduation-cap"></i> Class</label>
+                    <select id="exportClass" class="form-control">
+                        <option value="" selected>All Classes</option>
+                        <% const exportClassOptions = [...new Set(studentRecord.map(r => r.studentClass).filter(Boolean))]; %>
+                        <% exportClassOptions.forEach((cls) => { %>
+                            <option value="<%= cls %>"><%= cls %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="exportSection"><i class="fas fa-users"></i> Section</label>
+                    <select id="exportSection" class="form-control">
+                        <option value="" selected>All Sections</option>
+                        <% const exportSectionOptions = [...new Set(studentRecord.map(r => r.section).filter(Boolean))]; %>
+                        <% exportSectionOptions.forEach((sec) => { %>
+                            <option value="<%= sec %>"><%= sec %></option>
+                        <% }) %>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field-checkboxes" id="exportFieldList">
+                <label class="field-checkbox"><input type="checkbox" value="reg" checked> Reg No</label>
+                <label class="field-checkbox"><input type="checkbox" value="name" checked> Student Name</label>
+                <label class="field-checkbox"><input type="checkbox" value="roll" checked> Roll No</label>
+                <label class="field-checkbox"><input type="checkbox" value="gender"> Gender</label>
+                <label class="field-checkbox"><input type="checkbox" value="studentClass" checked> Class</label>
+                <label class="field-checkbox"><input type="checkbox" value="section" checked> Section</label>
+                <label class="field-checkbox"><input type="checkbox" value="dobNepali"> DOB Nepali</label>
+                <label class="field-checkbox"><input type="checkbox" value="numberofmobile"> Contact No</label>
+                <label class="field-checkbox"><input type="checkbox" value="fatherName"> Father Name</label>
+                <label class="field-checkbox"><input type="checkbox" value="motherName"> Mother Name</label>
+                <label class="field-checkbox"><input type="checkbox" value="busStop"> Bus Stop</label>
+                <label class="field-checkbox"><input type="checkbox" value="fatherMobile"> Father Mobile</label>
+                <label class="field-checkbox"><input type="checkbox" value="motherMobile"> Mother Mobile</label>
+            </div>
+
+            <div class="export-actions">
+                <button type="button" class="btn btn-secondary" id="exportSelectAll">Select All Fields</button>
+                <button type="button" class="btn btn-secondary" id="exportClearAll">Clear Fields</button>
+                <button type="button" class="btn btn-primary" id="exportCsvBtn">
+                    <i class="fas fa-file-export"></i> Export CSV
                 </button>
             </div>
         </div>
@@ -1099,6 +1196,128 @@ updateBulkButtons();
                 showNotification('Error uploading file. Please try again.', 'error');
             }
         });
+    </script>
+
+    <script>
+        const exportClassSelect = document.getElementById('exportClass');
+        const exportSectionSelect = document.getElementById('exportSection');
+        const exportFieldList = document.getElementById('exportFieldList');
+        const exportSelectAll = document.getElementById('exportSelectAll');
+        const exportClearAll = document.getElementById('exportClearAll');
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+
+        const fieldLabels = {
+            reg: 'Reg No',
+            name: 'Student Name',
+            roll: 'Roll No',
+            gender: 'Gender',
+            studentClass: 'Class',
+            section: 'Section',
+            dobNepali: 'DOB Nepali',
+            numberofmobile: 'Contact No',
+            fatherName: "Father's Name",
+            motherName: "Mother's Name",
+            busStop: 'Bus Stop',
+            fatherMobile: "Father's Mobile",
+            motherMobile: "Mother's Mobile"
+        };
+
+        const escapeCsv = (value) => {
+            const text = String(value ?? '');
+            if (/[",\n]/.test(text)) {
+                return '"' + text.replace(/"/g, '""') + '"';
+            }
+            return text;
+        };
+
+        const getSelectedFields = () => {
+            return Array.from(exportFieldList.querySelectorAll('input[type="checkbox"]:checked'))
+                .map((input) => input.value)
+                .filter(Boolean);
+        };
+
+        const getFilteredRows = () => {
+            const classValue = exportClassSelect ? exportClassSelect.value.trim() : '';
+            const sectionValue = exportSectionSelect ? exportSectionSelect.value.trim() : '';
+            const rows = Array.from(document.querySelectorAll('#studentrecordTable tbody tr'));
+
+            return rows.filter((row) => {
+                const classCell = row.querySelector('[data-field="studentClass"]');
+                const sectionCell = row.querySelector('[data-field="section"]');
+                const rowClass = classCell ? classCell.textContent.trim() : '';
+                const rowSection = sectionCell ? sectionCell.textContent.trim() : '';
+                const matchesClass = !classValue || rowClass === classValue;
+                const matchesSection = !sectionValue || rowSection === sectionValue;
+                return matchesClass && matchesSection;
+            });
+        };
+
+        const buildCsv = () => {
+            const fields = getSelectedFields();
+            if (!fields.length) {
+                alert('Select at least one field to export.');
+                return null;
+            }
+
+            const rows = getFilteredRows();
+            if (!rows.length) {
+                alert('No records found for the selected class/section.');
+                return null;
+            }
+
+            const header = fields.map((field) => escapeCsv(fieldLabels[field] || field)).join(',');
+            const body = rows.map((row) => {
+                return fields.map((field) => {
+                    const cell = row.querySelector(`[data-field="${field}"]`);
+                    return escapeCsv(cell ? cell.textContent.trim() : '');
+                }).join(',');
+            });
+
+            return [header, ...body].join('\n');
+        };
+
+        const downloadCsv = () => {
+            const csv = buildCsv();
+            if (!csv) return;
+
+            const classValue = exportClassSelect ? exportClassSelect.value.trim() : '';
+            const sectionValue = exportSectionSelect ? exportSectionSelect.value.trim() : '';
+            const labelParts = ['students'];
+            if (classValue) labelParts.push(`class-${classValue}`);
+            if (sectionValue) labelParts.push(`section-${sectionValue}`);
+            const filename = `${labelParts.join('_')}.csv`;
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        };
+
+        if (exportSelectAll) {
+            exportSelectAll.addEventListener('click', () => {
+                exportFieldList.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+                    input.checked = true;
+                });
+            });
+        }
+
+        if (exportClearAll) {
+            exportClearAll.addEventListener('click', () => {
+                exportFieldList.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+                    input.checked = false;
+                });
+            });
+        }
+
+        if (exportCsvBtn) {
+            exportCsvBtn.addEventListener('click', downloadCsv);
+        }
     </script>
 </body>
 </html>

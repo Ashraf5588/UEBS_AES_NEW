@@ -991,6 +991,180 @@ exports.frontdeskPage = async (req, res) => {
   }
 }
 
+exports.absentRecordPage = async (req, res) => {
+  try {
+    const todayBs = String(bs.ADToBS(new Date()) || '');
+    const [yearPart, monthPart, dayPart] = todayBs.split('-');
+    const requestedAcademicYear = String(req.query.academicYear || '').trim();
+    const requestedMonth = String(req.query.month || '').trim();
+    const requestedDayRaw = String(req.query.day || '').trim();
+    const requestedDay = Number.parseInt(requestedDayRaw, 10);
+    const currentBsYear = String(yearPart || '');
+    let targetAcademicYear = requestedAcademicYear || currentBsYear;
+    const todayDay = Number.parseInt(dayPart, 10);
+    const monthNumber = Number.parseInt(monthPart, 10);
+    const currentMonthName = BS_MONTH_NAMES[monthNumber] || '';
+    const selectedMonthName = requestedMonth || currentMonthName;
+    const selectedDay = Number.isFinite(requestedDay) ? requestedDay : todayDay;
+    const monthVariants = getMonthVariants(selectedMonthName);
+
+    let attendanceDocs = await onlineAttendance.find({
+      academicYear: targetAcademicYear
+    }).lean();
+
+    if (!requestedAcademicYear && attendanceDocs.length === 0) {
+      const availableYears = await onlineAttendance.distinct('academicYear');
+      const sortedYears = (Array.isArray(availableYears) ? availableYears : [])
+        .map((year) => String(year || '').trim())
+        .filter(Boolean)
+        .sort((a, b) => Number.parseInt(b, 10) - Number.parseInt(a, 10));
+
+      if (sortedYears.length > 0) {
+        targetAcademicYear = sortedYears[0];
+        attendanceDocs = await onlineAttendance.find({
+          academicYear: targetAcademicYear
+        }).lean();
+      }
+    }
+
+    const groupMap = new Map();
+
+    const isAbsentStatus = (value) => {
+      const normalized = normalizeText(value);
+      return normalized === 'absent' || normalized === 'a' || normalized === 'false';
+    };
+
+    const CLASS_ORDER = {
+      nursery: 1,
+      lkg: 2,
+      ukg: 3,
+      one: 4,
+      two: 5,
+      three: 6,
+      four: 7,
+      five: 8,
+      six: 9,
+      seven: 10,
+      eight: 11,
+      nine: 12,
+      ten: 13
+    };
+
+    const getClassSortKey = (value) => {
+      const normalized = normalizeText(value);
+      if (CLASS_ORDER[normalized]) {
+        return CLASS_ORDER[normalized];
+      }
+
+      const numericValue = Number.parseInt(normalized, 10);
+      if (Number.isFinite(numericValue)) {
+        return 100 + numericValue;
+      }
+
+      return 1000;
+    };
+
+    attendanceDocs.forEach((doc) => {
+      const attendanceEntries = Array.isArray(doc && doc.attendance) ? doc.attendance : [];
+      const studentClassValue = String(doc && doc.studentClass || '').trim();
+      const sectionValue = String(doc && doc.section || '').trim();
+      const rollValue = doc && doc.roll;
+      const nameValue = String(doc && doc.name || '').trim();
+
+      attendanceEntries.forEach((entry) => {
+        const entryYear = String(entry && entry.academicYear || '').trim();
+        const entryMonth = normalizeText(entry && entry.month);
+        const entryDay = Number.parseInt(entry && entry.day, 10);
+        const entryStatus = normalizeText(entry && entry.status);
+
+        if (!entryYear || entryYear !== targetAcademicYear) {
+          return;
+        }
+
+        if (!Number.isFinite(entryDay) || entryDay !== selectedDay) {
+          return;
+        }
+
+        if (monthVariants.length > 0 && !monthVariants.includes(entryMonth)) {
+          return;
+        }
+
+        if (!isAbsentStatus(entryStatus)) {
+          return;
+        }
+
+        const groupKey = `${studentClassValue}||${sectionValue}`;
+        if (!groupMap.has(groupKey)) {
+          groupMap.set(groupKey, {
+            studentClass: studentClassValue,
+            section: sectionValue,
+            students: []
+          });
+        }
+
+        groupMap.get(groupKey).students.push({
+          roll: rollValue,
+          name: nameValue,
+          reason: String(entry && entry.reason || '').trim()
+        });
+      });
+    });
+
+    const groups = Array.from(groupMap.values())
+      .map((group) => {
+        const students = group.students
+          .filter((student) => student.name || student.roll !== undefined)
+          .sort((a, b) => String(a.roll || '').localeCompare(String(b.roll || ''), 'en', { numeric: true }))
+          .map((student, index) => ({
+            sn: index + 1,
+            ...student
+          }));
+
+        return {
+          ...group,
+          students,
+          absentCount: students.length
+        };
+      })
+      .sort((a, b) => {
+        const classOrderA = getClassSortKey(a.studentClass);
+        const classOrderB = getClassSortKey(b.studentClass);
+        if (classOrderA !== classOrderB) {
+          return classOrderA - classOrderB;
+        }
+
+        return String(a.section).localeCompare(String(b.section));
+      });
+
+    const academicYearOptionsRaw = await onlineAttendance.distinct('academicYear');
+    const academicYearOptions = (Array.isArray(academicYearOptionsRaw) ? academicYearOptionsRaw : [])
+      .map((year) => String(year || '').trim())
+      .filter(Boolean)
+      .sort((a, b) => Number.parseInt(b, 10) - Number.parseInt(a, 10));
+
+    if (!academicYearOptions.includes(targetAcademicYear) && targetAcademicYear) {
+      academicYearOptions.unshift(targetAcademicYear);
+    }
+
+    const monthOptions = Object.keys(BS_MONTH_NAMES).map((monthKey) => BS_MONTH_NAMES[monthKey]);
+    const dayOptions = Array.from({ length: 32 }, (_, index) => index + 1);
+
+    res.render('./attendance/absent-record', {
+      groups,
+      todayBs,
+      todayDay: selectedDay,
+      currentMonthName: selectedMonthName,
+      academicYear: targetAcademicYear,
+      academicYearOptions,
+      monthOptions,
+      dayOptions
+    });
+  } catch (error) {
+    console.error('Error loading absent record page:', error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
 exports.setHoliday = async (req, res) => {
   try {
     const marksheetSetups = await marksheetSetup.find({}).lean();

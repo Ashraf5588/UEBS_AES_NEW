@@ -808,6 +808,8 @@ input[type="submit"]{
   }
   if (queryMonth) {
     monthEl.value = queryMonth;
+  } else if (todayMonthName) {
+    monthEl.value = todayMonthName;
   }
   if (queryDay) {
     dayEl.value = queryDay;
@@ -828,7 +830,7 @@ input[type="submit"]{
     const fallbackDefaults = buildDefaultSelection();
     const classSectionValue = (savedDefaults && savedDefaults.classSection) || fallbackDefaults.classSection;
     const academicYearValue = (savedDefaults && savedDefaults.academicYear) || fallbackDefaults.academicYear;
-    const monthValue = (savedDefaults && savedDefaults.month) || fallbackDefaults.month;
+    const monthValue = fallbackDefaults.month;
     const dayValue = (savedDefaults && savedDefaults.day) || fallbackDefaults.day;
 
     if (classSectionValue && academicYearValue && monthValue && dayValue) {

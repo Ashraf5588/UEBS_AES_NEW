@@ -120,6 +120,21 @@
       text-align: center;
     }
 
+    .default-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #333;
+      margin-top: 10px;
+    }
+
+    .default-toggle input {
+      width: 16px;
+      height: 16px;
+      accent-color: #ffc822;
+    }
+
     button {
       background: linear-gradient(135deg, #ffc822 0%, #e8a920 100%);
       color: white;
@@ -229,6 +244,10 @@
     </div>
 
     <div class="btn-container">
+      <label class="default-toggle">
+        <input type="checkbox" id="saveClassDefault">
+        Set class/section as default
+      </label>
       <button onclick="loadform()">Load Form</button>
     </div>
   </div>
@@ -249,6 +268,35 @@
         window.location.href=(`/entryform?studentClass=${studentClass}&section=${section}&subject=${selectedSubject}&terminal=${terminal}&academicYear=${academicYear}`)
       
     }
+  </script>
+  <script>
+    const classSectionSelect = document.getElementById('classSection');
+    const academicYearSelect = document.getElementById('academicYear');
+    const saveClassDefault = document.getElementById('saveClassDefault');
+
+    if (!academicYearSelect.value && academicYearSelect.options.length > 0) {
+      academicYearSelect.selectedIndex = 1;
+    }
+
+    const savedClassSection = localStorage.getItem('defaultClassSection');
+    if (savedClassSection) {
+      classSectionSelect.value = savedClassSection;
+      saveClassDefault.checked = true;
+    }
+
+    saveClassDefault.addEventListener('change', function() {
+      if (this.checked && classSectionSelect.value) {
+        localStorage.setItem('defaultClassSection', classSectionSelect.value);
+      } else {
+        localStorage.removeItem('defaultClassSection');
+      }
+    });
+
+    classSectionSelect.addEventListener('change', function() {
+      if (saveClassDefault.checked && this.value) {
+        localStorage.setItem('defaultClassSection', this.value);
+      }
+    });
   </script>
 </body>
 </html>

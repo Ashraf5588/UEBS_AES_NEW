@@ -15,6 +15,8 @@ const subjectlist = mongoose.model("subjectlist", subjectSchema, "subjectlist");
 const studentClass = mongoose.model("studentClass", classSchema, "classlist");
 const newsubject = mongoose.model("newsubject", newsubjectSchema, "newsubject");
 const {AnnualLessonPlan,UnitPlan,DailyPlan} = require('../model/lessonplanSchema');
+const { addChapterSchema } = require('../model/addchapterschema');
+const addChapter = mongoose.model('addChapter', addChapterSchema, 'addChapter');
 const getSidenavData = async (req) => {
   try {
     const subjects = await subjectlist.find({}).lean();
@@ -388,6 +390,46 @@ exports.getCirriculumData = async (req, res) => {
     }
 
     const curriculum = await Cirriculum.findOne({ forClass, subject }).lean();
+
+    const existingUnits = Array.isArray(curriculum && curriculum.units) ? curriculum.units : [];
+    if (existingUnits.length === 0) {
+      const chapterDoc = await addChapter.findOne({ subject, forClass }).lean();
+      const chapterNames = Array.isArray(chapterDoc && chapterDoc.chapters) ? chapterDoc.chapters : [];
+
+      if (chapterNames.length > 0) {
+        const unitsFromChapters = chapterNames
+          .map((name) => String(name || '').trim())
+          .filter(Boolean)
+          .map((name) => ({
+            unitName: name,
+            content: [],
+            period: '',
+            remarks: '',
+            objectives: [],
+            instructionalMethod: []
+          }));
+
+        const seededCurriculum = await Cirriculum.findOneAndUpdate(
+          { forClass, subject },
+          {
+            $set: {
+              forClass,
+              subject,
+              units: unitsFromChapters
+            }
+          },
+          {
+            upsert: true,
+            new: true,
+            runValidators: true,
+            setDefaultsOnInsert: true
+          }
+        );
+
+        return res.json({ curriculum: seededCurriculum, seededFromChapters: true });
+      }
+    }
+
     return res.json({ curriculum });
   } catch (error) {
     console.error('Error loading cirriculum data:', error);
@@ -428,6 +470,50 @@ const normalizeUnits = (units) => {
     .filter((unit) => {
       return unit.unitName || unit.period || unit.remarks || unit.content.length || unit.instructionalMaterial.length || unit.objectives.length || unit.instructionalMethod.length || unit.evaluationprocess.length;
     });
+};
+
+const syncCurriculumUnits = async ({ forClass, subject, updates }) => {
+  if (!forClass || !subject || !Array.isArray(updates)) {
+    return;
+  }
+
+  const curriculumDoc = await Cirriculum.findOne({ forClass, subject });
+  if (!curriculumDoc || !Array.isArray(curriculumDoc.units)) {
+    return;
+  }
+
+  const unitList = curriculumDoc.units;
+  const normalizeKey = (value) => normalizeString(value).toLowerCase();
+
+  updates.forEach((update) => {
+    if (!update) {
+      return;
+    }
+
+    let target = null;
+    if (update.unitId) {
+      target = unitList.find((unit) => String(unit._id) === String(update.unitId));
+    }
+
+    if (!target && update.unitName) {
+      const nameKey = normalizeKey(update.unitName);
+      target = unitList.find((unit) => normalizeKey(unit.unitName) === nameKey);
+    }
+
+    if (!target) {
+      return;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(update, 'content')) {
+      target.content = update.content;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(update, 'objectives')) {
+      target.objectives = update.objectives;
+    }
+  });
+
+  await curriculumDoc.save();
 };
 
 exports.saveCirriculum = async (req, res) => {
@@ -535,6 +621,20 @@ exports.saveAnnualLessonPlan = async (req, res) => {
       units
     };
 
+    try {
+      await syncCurriculumUnits({
+        forClass,
+        subject,
+        updates: units.map((unit) => ({
+          unitId: unit.unitId,
+          unitName: unit.unitName,
+          content: unit.content
+        }))
+      });
+    } catch (error) {
+      console.error('Error syncing annual plan to curriculum:', error);
+    }
+
     return saveLessonPlanDocument(
       AnnualLessonPlan,
       { forClass, subject, teacherName: payload.teacherName },
@@ -580,6 +680,21 @@ exports.saveUnitPlan = async (req, res) => {
       curriculumId: curriculum && curriculum._id ? curriculum._id : undefined,
       units
     };
+
+    try {
+      await syncCurriculumUnits({
+        forClass,
+        subject,
+        updates: units.map((unit) => ({
+          unitId: unit.unitId,
+          unitName: unit.unitName,
+          content: unit.content,
+          objectives: unit.objectives
+        }))
+      });
+    } catch (error) {
+      console.error('Error syncing unit plan to curriculum:', error);
+    }
 
     return saveLessonPlanDocument(
       UnitPlan,

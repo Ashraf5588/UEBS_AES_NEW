@@ -14,6 +14,9 @@ const recordRange = document.getElementById('recordRange');
 const recordDate = document.getElementById('recordDate');
 const recordFilterBtn = document.getElementById('recordFilterBtn');
 const recordsTableBody = document.getElementById('recordsTableBody');
+const DEFAULT_RANGE = 'today';
+const referSaveTimers = new Map();
+const REFER_SAVE_DELAY = 600;
 
 console.log('[HealthRecord] client script loaded');
 
@@ -145,7 +148,7 @@ const renderRecords = (records) => {
   }
 
   if (!Array.isArray(records) || records.length === 0) {
-    recordsTableBody.innerHTML = '<tr><td colspan="9" class="hm-empty">No records found.</td></tr>';
+    recordsTableBody.innerHTML = '<tr><td colspan="10" class="hm-empty">No records found.</td></tr>';
     return;
   }
 
@@ -155,6 +158,7 @@ const renderRecords = (records) => {
       ? `<a class="hm-call-link" href="tel:${record.dialNumber}">Call</a>`
       : '<span class="hm-muted">N/A</span>';
 
+    const isReferred = Boolean(record.referred) || Boolean(String(record.referNote || '').trim());
     return `
       <tr>
         <td>${index + 1}</td>
@@ -164,6 +168,19 @@ const renderRecords = (records) => {
         <td>${record.diagnosis || '-'}</td>
         <td>${record.treatment || '-'}</td>
         <td>${record.remarks || '-'}</td>
+        <td>
+          <div class="hm-refer" data-refer-wrap>
+            <button type="button" class="hm-refer-toggle" data-refer-toggle data-id="${record._id}" data-referred="${isReferred}">
+              ${isReferred ? 'Referred' : 'Not referred'}
+            </button>
+            <textarea
+              class="hm-refer-note${isReferred ? '' : ' is-hidden'}"
+              data-refer-note
+              data-id="${record._id}"
+              placeholder="Referral note">${escapeHtml(record.referNote || '')}</textarea>
+            <span class="hm-refer-status" data-refer-status></span>
+          </div>
+        </td>
         <td>${contact}</td>
         <td>${callAction}</td>
       </tr>
@@ -171,12 +188,62 @@ const renderRecords = (records) => {
   }).join('');
 };
 
+const saveReferral = async (recordId, referred, referNote, statusEl) => {
+  if (!recordId) {
+    return;
+  }
+
+  if (statusEl) {
+    statusEl.textContent = 'Saving...';
+  }
+
+  try {
+    const response = await fetch('/healthrecord/refer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: recordId,
+        referred,
+        referNote
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Save failed');
+    }
+
+    if (statusEl) {
+      statusEl.textContent = 'Saved';
+      setTimeout(() => {
+        statusEl.textContent = '';
+      }, 1200);
+    }
+  } catch (error) {
+    if (statusEl) {
+      statusEl.textContent = 'Save failed';
+    }
+  }
+};
+
+const scheduleReferralSave = (recordId, referred, referNote, statusEl) => {
+  if (referSaveTimers.has(recordId)) {
+    clearTimeout(referSaveTimers.get(recordId));
+  }
+
+  const timer = setTimeout(() => {
+    referSaveTimers.delete(recordId);
+    saveReferral(recordId, referred, referNote, statusEl);
+  }, REFER_SAVE_DELAY);
+
+  referSaveTimers.set(recordId, timer);
+};
+
 const loadRecords = async () => {
   if (!recordsTableBody) {
     return;
   }
 
-  recordsTableBody.innerHTML = '<tr><td colspan="9" class="hm-empty">Loading records...</td></tr>';
+  recordsTableBody.innerHTML = '<tr><td colspan="10" class="hm-empty">Loading records...</td></tr>';
 
   const params = new URLSearchParams();
   if (recordRange && recordRange.value) {
@@ -212,7 +279,7 @@ const loadRecords = async () => {
     renderRecords(records);
   } catch (error) {
     const safeMessage = (error && error.message) ? error.message : 'Failed to load records.';
-    recordsTableBody.innerHTML = `<tr><td colspan="9" class="hm-empty">${safeMessage}</td></tr>`;
+    recordsTableBody.innerHTML = `<tr><td colspan="10" class="hm-empty">${safeMessage}</td></tr>`;
   }
 };
 
@@ -321,7 +388,7 @@ form.addEventListener('submit', async (event) => {
       recordDate.value = '';
     }
     if (recordRange) {
-      recordRange.value = 'all';
+      recordRange.value = DEFAULT_RANGE;
     }
     renderSummary(null);
     await loadRecords();
@@ -336,6 +403,9 @@ if (recordFilterBtn) {
 }
 
 if (recordRange) {
+  if (!recordRange.value) {
+    recordRange.value = DEFAULT_RANGE;
+  }
   recordRange.addEventListener('change', () => {
     loadRecords();
   });
@@ -343,6 +413,64 @@ if (recordRange) {
 
 if (recordDate) {
   recordDate.addEventListener('change', loadRecords);
+}
+
+if (recordsTableBody) {
+  recordsTableBody.addEventListener('click', (event) => {
+    const toggle = event.target.closest('[data-refer-toggle]');
+    if (!toggle) {
+      return;
+    }
+
+    const wrap = toggle.closest('[data-refer-wrap]');
+    const note = wrap ? wrap.querySelector('[data-refer-note]') : null;
+    const statusEl = wrap ? wrap.querySelector('[data-refer-status]') : null;
+    const recordId = toggle.dataset.id;
+    const currentlyReferred = toggle.dataset.referred === 'true';
+    const nextReferred = !currentlyReferred;
+
+    toggle.dataset.referred = String(nextReferred);
+    toggle.textContent = nextReferred ? 'Referred' : 'Not referred';
+
+    if (note) {
+      if (nextReferred) {
+        note.classList.remove('is-hidden');
+        note.focus();
+      } else {
+        note.value = '';
+        note.classList.add('is-hidden');
+      }
+    }
+
+    scheduleReferralSave(recordId, nextReferred, note ? note.value.trim() : '', statusEl);
+  });
+
+  recordsTableBody.addEventListener('input', (event) => {
+    const note = event.target.closest('[data-refer-note]');
+    if (!note) {
+      return;
+    }
+
+    const wrap = note.closest('[data-refer-wrap]');
+    const toggle = wrap ? wrap.querySelector('[data-refer-toggle]') : null;
+    const statusEl = wrap ? wrap.querySelector('[data-refer-status]') : null;
+    const recordId = note.dataset.id;
+    const noteValue = note.value.trim();
+    const referred = Boolean(noteValue);
+
+    if (toggle) {
+      toggle.dataset.referred = String(referred);
+      toggle.textContent = referred ? 'Referred' : 'Not referred';
+    }
+
+    if (!noteValue) {
+      note.classList.add('is-hidden');
+    } else {
+      note.classList.remove('is-hidden');
+    }
+
+    scheduleReferralSave(recordId, referred, noteValue, statusEl);
+  });
 }
 
 renderSummary(null);

@@ -81,6 +81,11 @@
           <textarea name="remarks" rows="3" placeholder="Follow-up notes"></textarea>
         </label>
 
+        <label class="hm-field">
+          <span>Refer (optional)</span>
+          <textarea name="referNote" rows="3" placeholder="Add referral note if needed"></textarea>
+        </label>
+
         <input type="hidden" name="reg" id="reg">
         <input type="hidden" name="name" id="name">
         <input type="hidden" name="studentClass" id="studentClass">
@@ -106,8 +111,8 @@
         <label class="hm-field hm-inline-field">
           <span>Range</span>
           <select id="recordRange">
-            <option value="all" selected>All</option>
-            <option value="today">Today</option>
+            <option value="today" selected>Today</option>
+            <option value="all">All</option>
             <option value="last7">Last 7 Days</option>
             <option value="lastMonth">Last Month</option>
             <option value="thisYear">This Year</option>
@@ -133,12 +138,13 @@
               <th>Diagnosis</th>
               <th>Treatment</th>
               <th>Remarks</th>
+              <th>Refer</th>
               <th>Contact</th>
               <th>Call</th>
             </tr>
           </thead>
           <tbody id="recordsTableBody">
-            <tr><td colspan="9" class="hm-empty">Loading records...</td></tr>
+            <tr><td colspan="10" class="hm-empty">Loading records...</td></tr>
           </tbody>
         </table>
       </div>

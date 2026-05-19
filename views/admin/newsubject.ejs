@@ -169,6 +169,38 @@
       box-shadow: 0 2px 4px rgba(55, 179, 246, 0.1);
     }
 
+    .class-checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 8px 0;
+    }
+
+    .class-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--gray-50);
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+
+    .class-option:hover {
+      border-color: var(--primary);
+      box-shadow: 0 2px 6px rgba(55, 179, 246, 0.12);
+    }
+
+    .class-checkbox {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--primary);
+    }
+
     /* Special styling for the centered select */
     #sameas {
       background: linear-gradient(to right, var(--light-bg), var(--white), var(--light-bg));
@@ -542,17 +574,24 @@
               </div>
               <div class="col-md-6">
                 <label for="forClass" class="form-label">For Class</label>
-              
-             
-                 
+                <div class="class-checkbox-group">
                   <% uniqueClass = new Set(studentClassdata.map(item => item.studentClass)); %>
                   <% uniqueClass.forEach(function(classData) { %>
-                    <input type="checkbox" name="forClass[]" id="forClass_<%= classData %>" value="<%= classData %>">
-                    
-                      <%= classData %>
-                
+                    <% const classValue = String(classData); %>
+                    <% const isChecked = editing && (existingClasses || []).map(String).includes(classValue); %>
+                    <label class="class-option" for="forClass_<%= classValue %>">
+                      <input
+                        type="checkbox"
+                        class="class-checkbox"
+                        name="forClass[]"
+                        id="forClass_<%= classValue %>"
+                        value="<%= classValue %>"
+                        <%= isChecked ? 'checked' : '' %>
+                      >
+                      <span><%= classValue %></span>
+                    </label>
                   <% }) %>
-                </select>
+                </div>
               </div>
             </div>
 

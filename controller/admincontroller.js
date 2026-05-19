@@ -1207,30 +1207,59 @@ exports.copytheory = async (req, res, next) => {
 exports.addNewSubjectPost = async (req, res, next) => {
   try {
     const { subjectId } = req.params;
-    const updatedNewSubject = req.body.newsubject.toUpperCase().trim();
-   const { newsubject, theory, practical, selectedClasses,total,passingMarks,theoryCreditHour, practicalCreditHour } = req.body;
-     const classes = JSON.parse(selectedClasses);
+    const updatedNewSubject = String(req.body.newsubject || '').toUpperCase().trim();
+    const { newsubject, theory, practical, selectedClasses, total, passingMarks, theoryCreditHour, practicalCreditHour } = req.body;
+    const classes = JSON.parse(selectedClasses || '[]');
 console.log("Selected classes for new subject:", classes);
 
 
     if (subjectId) {
+      const existingSubject = await newsubjectModel.findById(subjectId).lean();
+      if (!existingSubject) {
+        return res.status(404).send("New subject not found");
+      }
+
+      const previousName = String(existingSubject.newsubject || '').trim();
+      const selectedClasses = classes.map((cls) => String(cls));
+      const existingDocs = await newsubjectModel.find({
+        newsubject: previousName,
+        forClass: { $in: selectedClasses }
+      }).lean();
+
+      const existingClassSet = new Set(existingDocs.map((doc) => String(doc.forClass)));
+      const missingClasses = selectedClasses.filter((cls) => !existingClassSet.has(String(cls)));
+
       await newsubjectModel.updateMany(
         {
-            newsubject: newsubject,
-            forClass: { $in: classes }
+          newsubject: previousName,
+          forClass: { $in: selectedClasses }
         },
         {
-            $set: {
-                newsubject: updatedNewSubject,
-                theory,
-                practical,
-                total,
-                passingMarks,
-                theoryCreditHour,
-                practicalCreditHour
-            }
+          $set: {
+            newsubject: updatedNewSubject,
+            theory,
+            practical,
+            total,
+            passingMarks,
+            theoryCreditHour,
+            practicalCreditHour
+          }
         }
-    );
+      );
+
+      if (missingClasses.length > 0) {
+        const inserts = missingClasses.map((cls) => ({
+          newsubject: updatedNewSubject,
+          theory,
+          practical,
+          total,
+          passingMarks,
+          theoryCreditHour,
+          practicalCreditHour,
+          forClass: cls
+        }));
+        await newsubjectModel.insertMany(inserts);
+      }
     } else {
       
   const dataToInsert = classes.map(cls => ({
@@ -1258,6 +1287,10 @@ exports.editNewSubject = async (req, res, next) => {
     const newsubjectList = await newsubject.find({}).lean();
     const editing = req.query.editing === "true";
     const newsubjectData = await newsubject.findOne({ _id: subjectId });
+    const subjectClassDocs = newsubjectData
+      ? await newsubject.find({ newsubject: newsubjectData.newsubject }).lean()
+      : [];
+    const existingClasses = subjectClassDocs.map((doc) => String(doc.forClass));
 
     if (!newsubjectData) {
       return res.status(404).send("New subject not found");
@@ -1266,6 +1299,7 @@ exports.editNewSubject = async (req, res, next) => {
       editing,
       subjectId,
       newsubjectData,
+      existingClasses,
       newsubjectList,
       ...(await getSidenavData(req))
     });

@@ -13,6 +13,8 @@ const healthrecordschema = new mongoose.Schema({
     diagnosis: { type: String, required: true },
     treatment: { type: String, required: true },
     remarks: { type: String },
+    referred: { type: Boolean, default: false },
+    referNote: { type: String, default: '' },
 })
 
 module.exports = mongoose.models.HealthRecord || mongoose.model('HealthRecord', healthrecordschema, 'healthrecords')
