@@ -109,7 +109,7 @@ exports.createEventForm = async (req, res) => {
 
 // Start or Update event
 exports.saveEvent = async (req, res) => {
-  const { id, title, subject, description, date, time, forClass, section, teacherName, location } = req.body;
+  const { id, title, subject, description, date, time, forClass, section, teacherName, location, material } = req.body;
     
     try {
         if (id) {
@@ -123,7 +123,8 @@ exports.saveEvent = async (req, res) => {
                 forClass, // Note: Schema has forClass, make sure this matches what is sent
                 section, // Schema doesn't have section explicitly in previous read but let's check
                 teacherName, // Usually shouldn't change, but if admin edits..
-                location
+              location,
+              material
             });
              res.redirect('/createevent');
         } else {
@@ -137,6 +138,7 @@ exports.saveEvent = async (req, res) => {
                 teacherName,
                 forClass, // Ensure this combines class and section if needed or stored as is
                 location,
+                material,
             });
             await event.save();
             res.redirect('/createevent');

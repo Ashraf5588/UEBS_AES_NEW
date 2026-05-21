@@ -13,12 +13,16 @@ const { rootDir } = require("../utils/path");
 const {marksheetSchema} = require("../model/masrksheetschema");
 const { classSchema, subjectSchema, terminalSchema,newsubjectSchema,marksheetsetupSchema } = require("../model/adminschema");
 const { adminSchema,superadminSchema, teacherSchema} = require("../model/admin");
+const { teacherRecordSchema } = require("../model/teacherrecordschema");
+const { staffSchema } = require("../model/staffschema");
 const { studentSchema } = require("../model/schema");
 const student = require("../routers/mainpage");
 const terminal = mongoose.model("terminal", terminalSchema, "terminal");
 const newsubject = mongoose.model("newsubject", newsubjectSchema, "newsubject");
 const newsubjectModel = mongoose.model("newsubject", newsubjectSchema, "newsubject");
 const userlist = mongoose.model("userlist", teacherSchema, "users");
+const TeacherRecord = mongoose.models.teacherRecord || mongoose.model("teacherRecord", teacherRecordSchema, "teacherRecord");
+const Staff = mongoose.models.staff || mongoose.model("staff", staffSchema, "staff");
  const { studentrecordschema } = require("../model/adminschema");
 const modal = mongoose.model("studentrecord", studentrecordschema, "studentrecord");
 const bcrypt = require("bcrypt");
@@ -2370,6 +2374,116 @@ else
   } catch (err) {
     console.error("Error saving user:", err);
     res.status(500).send("Error saving user: " + err.message);
+  }
+};
+
+exports.showTeacherRecord = async (req, res) => {
+  try {
+    const todayBs = String(bs.ADToBS(new Date()) || '');
+    const teacherQuery = String(req.query.teacherName || '').trim();
+    const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    const filter = teacherQuery
+      ? { teacherName: { $regex: `^${escapeRegex(teacherQuery)}$`, $options: 'i' } }
+      : {};
+
+    const records = await TeacherRecord.find(filter)
+      .sort({ teacherName: 1 })
+      .lean();
+
+    const rows = records.map((record) => {
+      const issues = Array.isArray(record.issues) ? record.issues : [];
+      const issueCount = issues.length;
+      const halfLeaveCount = issues.filter((item) => item && item.halfLeave).length;
+      const fullLeaveCount = issues.filter((item) => item && item.fullLeave).length;
+      return {
+        ...record,
+        issueCount,
+        halfLeaveCount,
+        fullLeaveCount,
+        issues: issues.map((item) => ({
+          dateBs: String(item && item.dateBs || ''),
+          issue: String(item && item.issue || ''),
+          halfLeave: Boolean(item && item.halfLeave),
+          fullLeave: Boolean(item && item.fullLeave)
+        }))
+      };
+    });
+
+    res.render('teacher-record', {
+      todayBs,
+      teacherQuery,
+      rows
+    });
+  } catch (error) {
+    console.error('Error loading teacher record page:', error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.searchTeacherRecordTeachers = async (req, res) => {
+  try {
+    const query = String(req.query.q || '').trim();
+    if (query.length < 1) {
+      return res.status(200).json([]);
+    }
+
+    const staffRows = await Staff.find({
+      staffName: { $regex: query, $options: 'i' }
+    })
+      .select('staffName')
+      .limit(10)
+      .lean();
+
+    const results = staffRows
+      .map((staff) => String(staff.staffName || '').trim())
+      .filter(Boolean);
+
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Error searching teachers:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+exports.saveTeacherRecord = async (req, res) => {
+  try {
+    const teacherName = String(req.body.teacherName || '').trim();
+    const issueText = String(req.body.issue || '').trim();
+    const dateBs = String(req.body.dateBs || '').trim();
+    const halfLeave = String(req.body.halfLeave || '').toLowerCase() === 'true';
+    const fullLeave = String(req.body.fullLeave || '').toLowerCase() === 'true';
+
+    if (!teacherName || (!issueText && !halfLeave && !fullLeave)) {
+      return res.status(400).json({ success: false, message: 'Teacher name and either leave or issue are required.' });
+    }
+
+    const issueEntry = {
+      dateBs: dateBs || String(bs.ADToBS(new Date()) || ''),
+      halfLeave,
+      fullLeave,
+      createdAt: new Date()
+    };
+
+    if (issueText) {
+      issueEntry.issue = issueText;
+    }
+
+    await TeacherRecord.updateOne(
+      { teacherName },
+      {
+        $setOnInsert: { teacherName },
+        $push: {
+          issues: issueEntry
+        }
+      },
+      { upsert: true }
+    );
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error saving teacher record:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
 exports.deleteTeacher = async (req, res, next) => {

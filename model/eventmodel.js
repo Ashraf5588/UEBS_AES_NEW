@@ -7,6 +7,7 @@ const eventSchema = new mongoose.Schema({
     date: { type: Date, required: true },
     time: { type: String, required: true },
     location: { type: String, required: false },
+    material: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
    teacherName: { type: String, required: true },
     forClass: { type: String, required: true },

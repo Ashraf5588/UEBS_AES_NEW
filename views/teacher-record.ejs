@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Record</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --paper: #ffffff;
+      --bg: #f3f4f6;
+      --border: #e2e8f0;
+      --shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lexend', sans-serif;
+      background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+      color: var(--ink);
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .header {
+      background: var(--paper);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .header span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .card {
+      background: var(--paper);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .field textarea { min-height: 90px; resize: vertical; }
+
+    .suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+      max-height: 220px;
+      overflow: auto;
+      display: none;
+      z-index: 10;
+    }
+
+    .suggestion-item {
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .suggestion-item:hover {
+      background: #f1f5f9;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toggle-row label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .btn {
+      border: 0;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--ink);
+    }
+
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      font-size: 13px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.4px;
+      color: var(--muted);
+    }
+
+    .issue-list {
+      white-space: pre-line;
+      font-size: 12px;
+      color: var(--ink);
+    }
+
+    .filter-bar {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      align-items: end;
+      margin-bottom: 12px;
+    }
+
+    .status {
+      font-size: 12px;
+      color: var(--muted);
+      min-height: 18px;
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .no-print { display: none !important; }
+      .card { box-shadow: none; }
+      .header { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div>
+        <h1>Teacher Record</h1>
+        <span>Today (BS): <%= todayBs %></span>
+      </div>
+      <button class="btn btn-outline no-print" type="button" onclick="window.print()">Print Issues</button>
+    </div>
+
+    <div class="card no-print">
+      <form id="teacherRecordForm">
+        <div class="form-grid">
+          <div class="field" style="position: relative;">
+            <label for="teacherName">Teacher Name</label>
+            <input id="teacherName" name="teacherName" type="text" autocomplete="off" placeholder="Search teacher" required>
+            <div id="teacherSuggestions" class="suggestions"></div>
+          </div>
+          <div class="field">
+            <label for="dateBs">Date (BS)</label>
+            <input id="dateBs" name="dateBs" type="text" value="<%= todayBs %>" readonly>
+          </div>
+          <div class="field">
+            <label>Leave Type</label>
+            <div class="toggle-row">
+              <label><input type="checkbox" id="halfLeave"> Half Leave</label>
+              <label><input type="checkbox" id="fullLeave"> Full Leave</label>
+            </div>
+          </div>
+        </div>
+        <div class="field" style="margin-top: 12px;">
+          <label for="issue">Issue / Note</label>
+          <textarea id="issue" ></textarea>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Save Record</button>
+        </div>
+        <div id="formStatus" class="status"></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="filter-bar no-print">
+        <div class="field" style="position: relative;">
+          <label for="filterTeacher">Filter by Teacher</label>
+          <input id="filterTeacher" type="text" value="<%= teacherQuery %>" placeholder="Type teacher name">
+          <div id="filterSuggestions" class="suggestions"></div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" type="button" onclick="applyFilter()">Filter</button>
+          <button class="btn btn-outline" type="button" onclick="clearFilter()">Clear</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:60px">SN</th>
+              <th>Teacher Name</th>
+              <th style="width:110px">Half Leave</th>
+              <th style="width:110px">Full Leave</th>
+              <th style="width:110px">Issue Count</th>
+              <th>Issue List</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (rows && rows.length) { %>
+              <% rows.forEach((row, index) => { %>
+                <tr>
+                  <td><%= index + 1 %></td>
+                  <td><%= row.teacherName || '-' %></td>
+                  <td><%= row.halfLeaveCount || 0 %></td>
+                  <td><%= row.fullLeaveCount || 0 %></td>
+                  <td><%= row.issueCount || 0 %></td>
+                  <td class="issue-list">
+                    <% if (row.issues && row.issues.length) { %>
+                      <%= row.issues.map((item, idx) => `${idx + 1}. ${item.dateBs || '-'} - ${item.issue || '-'}`).join('\n') %>
+                    <% } else { %>
+                      -
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6">No teacher records found.</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const teacherInput = document.getElementById('teacherName');
+    const teacherSuggestions = document.getElementById('teacherSuggestions');
+    const filterTeacherInput = document.getElementById('filterTeacher');
+    const filterSuggestions = document.getElementById('filterSuggestions');
+    const formStatus = document.getElementById('formStatus');
+
+    const debounce = (fn, delay) => {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+      };
+    };
+
+    const showSuggestions = (element, items) => {
+      if (!element) return;
+      if (!items.length) {
+        element.innerHTML = '<div class="suggestion-item">No matches found</div>';
+        element.style.display = 'block';
+        return;
+      }
+      element.innerHTML = items.map((name) => `<div class="suggestion-item">${name}</div>`).join('');
+      element.style.display = 'block';
+    };
+
+    const clearSuggestions = (element) => {
+      if (!element) return;
+      element.innerHTML = '';
+      element.style.display = 'none';
+    };
+
+    const fetchTeachers = async (query, element) => {
+      if (!query) {
+        clearSuggestions(element);
+        return;
+      }
+      try {
+        const response = await fetch(`/teacher-record/teachers?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        showSuggestions(element, Array.isArray(data) ? data : []);
+      } catch (error) {
+        clearSuggestions(element);
+      }
+    };
+
+    if (teacherInput) {
+      teacherInput.addEventListener('input', debounce((event) => {
+        fetchTeachers(event.target.value.trim(), teacherSuggestions);
+      }, 200));
+    }
+
+    if (filterTeacherInput) {
+      filterTeacherInput.addEventListener('input', debounce((event) => {
+        fetchTeachers(event.target.value.trim(), filterSuggestions);
+      }, 200));
+    }
+
+    if (teacherSuggestions) {
+      teacherSuggestions.addEventListener('click', (event) => {
+        const item = event.target.closest('.suggestion-item');
+        if (!item || !teacherInput) return;
+        teacherInput.value = item.textContent.trim();
+        clearSuggestions(teacherSuggestions);
+      });
+    }
+
+    if (filterSuggestions) {
+      filterSuggestions.addEventListener('click', (event) => {
+        const item = event.target.closest('.suggestion-item');
+        if (!item || !filterTeacherInput) return;
+        filterTeacherInput.value = item.textContent.trim();
+        clearSuggestions(filterSuggestions);
+      });
+    }
+
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('#teacherName')) {
+        clearSuggestions(teacherSuggestions);
+      }
+      if (!event.target.closest('#filterTeacher')) {
+        clearSuggestions(filterSuggestions);
+      }
+    });
+
+    const form = document.getElementById('teacherRecordForm');
+    if (form) {
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const teacherName = teacherInput.value.trim();
+        const issue = document.getElementById('issue').value.trim();
+        const dateBs = document.getElementById('dateBs').value.trim();
+        const halfLeave = document.getElementById('halfLeave').checked;
+        const fullLeave = document.getElementById('fullLeave').checked;
+
+        if (!teacherName || (!issue && !halfLeave && !fullLeave)) {
+          formStatus.textContent = 'Teacher name and either leave or issue are required.';
+          formStatus.style.color = '#dc2626';
+          return;
+        }
+
+        formStatus.textContent = 'Saving...';
+        formStatus.style.color = '#2563eb';
+
+        try {
+          const response = await fetch('/teacher-record', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              teacherName,
+              issue,
+              dateBs,
+              halfLeave,
+              fullLeave
+            })
+          });
+          const data = await response.json();
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Failed to save record');
+          }
+
+          formStatus.textContent = 'Saved.';
+          formStatus.style.color = '#16a34a';
+          window.location.reload();
+        } catch (error) {
+          formStatus.textContent = error.message || 'Unable to save record.';
+          formStatus.style.color = '#dc2626';
+        }
+      });
+    }
+
+    function applyFilter() {
+      const teacherName = (filterTeacherInput.value || '').trim();
+      const params = new URLSearchParams();
+      if (teacherName) {
+        params.set('teacherName', teacherName);
+      }
+      window.location.href = `/teacher-record${params.toString() ? `?${params.toString()}` : ''}`;
+    }
+
+    function clearFilter() {
+      window.location.href = '/teacher-record';
+    }
+  </script>
+</body>
+</html>

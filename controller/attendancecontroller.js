@@ -1152,8 +1152,11 @@ exports.absentRecordPage = async (req, res) => {
     const monthOptions = Object.keys(BS_MONTH_NAMES).map((monthKey) => BS_MONTH_NAMES[monthKey]);
     const dayOptions = Array.from({ length: 32 }, (_, index) => index + 1);
 
+    const totalAbsentCount = groups.reduce((sum, group) => sum + (group.absentCount || 0), 0);
+
     res.render('./attendance/absent-record', {
       groups,
+      totalAbsentCount,
       todayBs,
       todayDay: selectedDay,
       currentMonthName: selectedMonthName,

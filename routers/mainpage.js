@@ -194,6 +194,9 @@ student.get('/marksheet',verifytoken,authorized,isAdmin, admincontrol.marksheet)
 student.get('/marksheetprint',verifytoken,authorized,isAdmin, admincontrol.marksheetprint);
 student.get('/copytheory',verifytoken,authorized,isAdmin, admincontrol.copytheory);
 student.get('/user/delete-teacher/:teacherId', verifytoken, authorized, isAdmin, admincontrol.deleteTeacher);
+student.get('/teacher-record', verifytoken, authorized, isAdmin, admincontrol.showTeacherRecord);
+student.get('/teacher-record/teachers', verifytoken, authorized, isAdmin, admincontrol.searchTeacherRecordTeachers);
+student.post('/teacher-record', verifytoken, authorized, isAdmin, admincontrol.saveTeacherRecord);
 
 student.get('/practical',verifytoken,authorized, admincontrol.practicalMarks);
 student.post('/practicalMarks/autoSave',verifytoken,authorized, admincontrol.autoSavePracticalMarks);
