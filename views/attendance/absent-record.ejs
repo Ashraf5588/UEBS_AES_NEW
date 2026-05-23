@@ -60,6 +60,14 @@
       font-size:14px;
     }
 
+    .school-absent{
+      margin-top:10px;
+      font-size:15px;
+      font-weight:800;
+      text-align:center;
+      letter-spacing:.3px;
+    }
+
     .filters{
       margin-top:18px;
       background:var(--paper);
@@ -253,6 +261,9 @@
 </head>
 <body>
   <div class="page">
+    <% const schoolAbsentCount = Array.isArray(groups)
+      ? groups.reduce((sum, group) => sum + (Number(group.absentCount) || 0), 0)
+      : 0; %>
     <header class="header">
       <div class="title">Absent Record</div>
       <div class="subtitle">
@@ -262,6 +273,7 @@
         | Day: <strong><%= todayDay %></strong>
         | Total Absent: <strong><%= totalAbsentCount || 0 %></strong>
       </div>
+      <div class="school-absent">School Absent Count: <strong><%= schoolAbsentCount %></strong></div>
     </header>
 
     <form class="filters" method="GET" action="/absent-record">
