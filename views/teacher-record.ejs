@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://nepalidatepicker.sajanmaharjan.com.np/v5/nepali.datepicker/css/nepali.datepicker.v5.0.6.min.css" rel="stylesheet" type="text/css"/>
   <style>
     :root {
       --ink: #1f2937;
@@ -98,6 +99,7 @@
 
     .field textarea { min-height: 90px; resize: vertical; }
 
+
     .suggestions {
       position: absolute;
       top: 100%;
@@ -173,13 +175,13 @@
       overflow: auto;
     }
 
-    table {
+    .table-wrap table {
       width: 100%;
       border-collapse: collapse;
       min-width: 780px;
     }
 
-    th, td {
+    .table-wrap th, .table-wrap td {
       padding: 10px 12px;
       font-size: 13px;
       text-align: left;
@@ -187,7 +189,7 @@
       vertical-align: top;
     }
 
-    th {
+    .table-wrap th {
       background: #f8fafc;
       text-transform: uppercase;
       font-size: 11px;
@@ -243,7 +245,7 @@
           </div>
           <div class="field">
             <label for="dateBs">Date (BS)</label>
-            <input id="dateBs" name="dateBs" type="text" value="<%= todayBs %>" readonly>
+            <input id="dateBs" name="dateBs" type="text" value="<%= todayBs %>" placeholder="YYYY-MM-DD" data-today="<%= todayBs %>">
           </div>
           <div class="field">
             <label>Leave Type</label>
@@ -300,7 +302,11 @@
                   <td><%= row.issueCount || 0 %></td>
                   <td class="issue-list">
                     <% if (row.issues && row.issues.length) { %>
-                      <%= row.issues.map((item, idx) => `${idx + 1}. ${item.dateBs || '-'} - ${item.issue || '-'}`).join('\n') %>
+                      <%= row.issues.map((item, idx) => {
+                        const leaveLabel = item.fullLeave ? 'Full Leave' : item.halfLeave ? 'Half Leave' : '';
+                        const note = item.issue || leaveLabel || '-';
+                        return `${idx + 1}. ${item.dateBs || '-'} - ${note}`;
+                      }).join('\n') %>
                     <% } else { %>
                       -
                     <% } %>
@@ -318,7 +324,20 @@
     </div>
   </div>
 
+  <script src="https://nepalidatepicker.sajanmaharjan.com.np/v5/nepali.datepicker/js/nepali.datepicker.v5.0.6.min.js" type="text/javascript"></script>
   <script>
+    const dateInput = document.getElementById('dateBs');
+    if (dateInput) {
+      if (!dateInput.value && dateInput.dataset.today) {
+        dateInput.value = dateInput.dataset.today;
+      }
+      if (typeof dateInput.nepaliDatePicker === 'function') {
+        dateInput.nepaliDatePicker();
+      } else if (typeof dateInput.NepaliDatePicker === 'function') {
+        dateInput.NepaliDatePicker();
+      }
+    }
+
     const teacherInput = document.getElementById('teacherName');
     const teacherSuggestions = document.getElementById('teacherSuggestions');
     const filterTeacherInput = document.getElementById('filterTeacher');
