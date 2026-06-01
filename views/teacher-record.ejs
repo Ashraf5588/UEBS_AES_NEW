@@ -141,6 +141,16 @@
       gap: 6px;
     }
 
+    .inline-inputs {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 10px;
+    }
+
+    .is-hidden {
+      display: none;
+    }
+
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -254,6 +264,29 @@
               <label><input type="checkbox" id="fullLeave"> Full Leave</label>
             </div>
           </div>
+          <div class="field">
+            <label>Time Exceptions</label>
+            <div class="toggle-row">
+              <label><input type="checkbox" id="lateIn"> Late In</label>
+              <label><input type="checkbox" id="earlyOut"> Early Out</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top: 12px;">
+          <div class="field is-hidden" id="lateInDetails">
+            <label for="lateInTime">Late In Details</label>
+            <div class="inline-inputs">
+              <input id="lateInTime" type="time" placeholder="Time">
+              <input id="lateInReason" type="text" placeholder="Reason for late in">
+            </div>
+          </div>
+          <div class="field is-hidden" id="earlyOutDetails">
+            <label for="earlyOutTime">Early Out Details</label>
+            <div class="inline-inputs">
+              <input id="earlyOutTime" type="time" placeholder="Time">
+              <input id="earlyOutReason" type="text" placeholder="Reason for early out">
+            </div>
+          </div>
         </div>
         <div class="field" style="margin-top: 12px;">
           <label for="issue">Issue / Note</label>
@@ -287,6 +320,8 @@
               <th>Teacher Name</th>
               <th style="width:110px">Half Leave</th>
               <th style="width:110px">Full Leave</th>
+              <th style="width:110px">Late In</th>
+              <th style="width:110px">Early Out</th>
               <th style="width:110px">Issue Count</th>
               <th>Issue List</th>
             </tr>
@@ -299,12 +334,32 @@
                   <td><%= row.teacherName || '-' %></td>
                   <td><%= row.halfLeaveCount || 0 %></td>
                   <td><%= row.fullLeaveCount || 0 %></td>
+                  <td><%= row.lateInCount || 0 %></td>
+                  <td><%= row.earlyOutCount || 0 %></td>
                   <td><%= row.issueCount || 0 %></td>
                   <td class="issue-list">
                     <% if (row.issues && row.issues.length) { %>
                       <%= row.issues.map((item, idx) => {
-                        const leaveLabel = item.fullLeave ? 'Full Leave' : item.halfLeave ? 'Half Leave' : '';
-                        const note = item.issue || leaveLabel || '-';
+                        const parts = [];
+                        if (item.fullLeave) {
+                          parts.push('Full Leave');
+                        } else if (item.halfLeave) {
+                          parts.push('Half Leave');
+                        }
+                        if (item.lateIn) {
+                          const timeLabel = item.lateInTime ? ` at ${item.lateInTime}` : '';
+                          const reasonLabel = item.lateInReason ? ` - ${item.lateInReason}` : '';
+                          parts.push(`Late In${timeLabel}${reasonLabel}`);
+                        }
+                        if (item.earlyOut) {
+                          const timeLabel = item.earlyOutTime ? ` at ${item.earlyOutTime}` : '';
+                          const reasonLabel = item.earlyOutReason ? ` - ${item.earlyOutReason}` : '';
+                          parts.push(`Early Out${timeLabel}${reasonLabel}`);
+                        }
+                        if (item.issue) {
+                          parts.push(item.issue);
+                        }
+                        const note = parts.length ? parts.join(' | ') : '-';
                         return `${idx + 1}. ${item.dateBs || '-'} - ${note}`;
                       }).join('\n') %>
                     <% } else { %>
@@ -315,7 +370,7 @@
               <% }) %>
             <% } else { %>
               <tr>
-                <td colspan="6">No teacher records found.</td>
+                <td colspan="8">No teacher records found.</td>
               </tr>
             <% } %>
           </tbody>
@@ -343,6 +398,14 @@
     const filterTeacherInput = document.getElementById('filterTeacher');
     const filterSuggestions = document.getElementById('filterSuggestions');
     const formStatus = document.getElementById('formStatus');
+    const lateInToggle = document.getElementById('lateIn');
+    const earlyOutToggle = document.getElementById('earlyOut');
+    const lateInDetails = document.getElementById('lateInDetails');
+    const earlyOutDetails = document.getElementById('earlyOutDetails');
+    const lateInTimeInput = document.getElementById('lateInTime');
+    const lateInReasonInput = document.getElementById('lateInReason');
+    const earlyOutTimeInput = document.getElementById('earlyOutTime');
+    const earlyOutReasonInput = document.getElementById('earlyOutReason');
 
     const debounce = (fn, delay) => {
       let timer;
@@ -422,6 +485,33 @@
       }
     });
 
+    const updateTimeFields = () => {
+      if (lateInToggle && lateInDetails) {
+        lateInDetails.classList.toggle('is-hidden', !lateInToggle.checked);
+        if (!lateInToggle.checked) {
+          lateInTimeInput.value = '';
+          lateInReasonInput.value = '';
+        }
+      }
+      if (earlyOutToggle && earlyOutDetails) {
+        earlyOutDetails.classList.toggle('is-hidden', !earlyOutToggle.checked);
+        if (!earlyOutToggle.checked) {
+          earlyOutTimeInput.value = '';
+          earlyOutReasonInput.value = '';
+        }
+      }
+    };
+
+    if (lateInToggle) {
+      lateInToggle.addEventListener('change', updateTimeFields);
+    }
+
+    if (earlyOutToggle) {
+      earlyOutToggle.addEventListener('change', updateTimeFields);
+    }
+
+    updateTimeFields();
+
     const form = document.getElementById('teacherRecordForm');
     if (form) {
       form.addEventListener('submit', async (event) => {
@@ -431,9 +521,50 @@
         const dateBs = document.getElementById('dateBs').value.trim();
         const halfLeave = document.getElementById('halfLeave').checked;
         const fullLeave = document.getElementById('fullLeave').checked;
+        const lateIn = lateInToggle.checked;
+        const earlyOut = earlyOutToggle.checked;
+        const lateInTime = lateInTimeInput.value.trim();
+        const lateInReason = lateInReasonInput.value.trim();
+        const earlyOutTime = earlyOutTimeInput.value.trim();
+        const earlyOutReason = earlyOutReasonInput.value.trim();
 
-        if (!teacherName || (!issue && !halfLeave && !fullLeave)) {
-          formStatus.textContent = 'Teacher name and either leave or issue are required.';
+        const isValid24HourTime = (value) => /^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(value);
+
+        const formatTo12Hour = (value) => {
+          if (!isValid24HourTime(value)) return value;
+          const [hoursStr, minutes] = value.split(':');
+          const hoursNum = Number(hoursStr);
+          const period = hoursNum >= 12 ? 'PM' : 'AM';
+          const hours12 = hoursNum % 12 || 12;
+          return `${hours12}:${minutes}${period}`;
+        };
+
+        if (!teacherName || (!issue && !halfLeave && !fullLeave && !lateIn && !earlyOut)) {
+          formStatus.textContent = 'Teacher name and either leave, time exception, or issue are required.';
+          formStatus.style.color = '#dc2626';
+          return;
+        }
+
+        if (lateIn && (!lateInTime || !lateInReason)) {
+          formStatus.textContent = 'Late in time and reason are required.';
+          formStatus.style.color = '#dc2626';
+          return;
+        }
+
+        if (lateIn && !isValid24HourTime(lateInTime)) {
+          formStatus.textContent = 'Late in time must be in HH:MM format.';
+          formStatus.style.color = '#dc2626';
+          return;
+        }
+
+        if (earlyOut && (!earlyOutTime || !earlyOutReason)) {
+          formStatus.textContent = 'Early out time and reason are required.';
+          formStatus.style.color = '#dc2626';
+          return;
+        }
+
+        if (earlyOut && !isValid24HourTime(earlyOutTime)) {
+          formStatus.textContent = 'Early out time must be in HH:MM format.';
           formStatus.style.color = '#dc2626';
           return;
         }
@@ -450,7 +581,13 @@
               issue,
               dateBs,
               halfLeave,
-              fullLeave
+              fullLeave,
+              lateIn,
+              lateInTime: lateIn ? formatTo12Hour(lateInTime) : '',
+              lateInReason,
+              earlyOut,
+              earlyOutTime: earlyOut ? formatTo12Hour(earlyOutTime) : '',
+              earlyOutReason
             })
           });
           const data = await response.json();

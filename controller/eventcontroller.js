@@ -85,11 +85,11 @@ exports.createEventForm = async (req, res) => {
   let events = [];
   let editEvent = null;
   try {
-      if (req.user.role === 'ADMIN') {
-           events = await Event.find().sort({ date: 1 }).lean();
-      } else {
-           events = await Event.find({ teacherName: req.user.teacherName }).sort({ date: 1 }).lean();
-      }
+       if (req.user.role === 'ADMIN') {
+         events = await Event.find().sort({ date: -1 }).lean();
+       } else {
+         events = await Event.find({ teacherName: req.user.teacherName }).sort({ date: -1 }).lean();
+       }
 
       const editEventId = req.query.id || req.params.id;
       if (editEventId) {
@@ -110,44 +110,56 @@ exports.createEventForm = async (req, res) => {
 // Start or Update event
 exports.saveEvent = async (req, res) => {
   const { id, title, subject, description, date, time, forClass, section, teacherName, location, material } = req.body;
-    
-    try {
-        if (id) {
-            // Update existing event
-            await Event.findByIdAndUpdate(id, {
-                title,
+  const classList = Array.isArray(forClass)
+    ? forClass.map((item) => String(item || '').trim()).filter(Boolean)
+    : [String(forClass || '').trim()].filter(Boolean);
+  const formatTo12Hour = (value) => {
+    const match = String(value || '').match(/^([01][0-9]|2[0-3]):([0-5][0-9])$/);
+    if (!match) return String(value || '').trim();
+    const hoursNum = Number(match[1]);
+    const minutes = match[2];
+    const period = hoursNum >= 12 ? 'PM' : 'AM';
+    const hours12 = hoursNum % 12 || 12;
+    return `${hours12}:${minutes}${period}`;
+  };
+  const formattedTime = formatTo12Hour(time);
+  
+  try {
+    if (id) {
+      // Update existing event
+      await Event.findByIdAndUpdate(id, {
+        title,
         subject,
-                description,
-                date,
-                time,
-                forClass, // Note: Schema has forClass, make sure this matches what is sent
-                section, // Schema doesn't have section explicitly in previous read but let's check
-                teacherName, // Usually shouldn't change, but if admin edits..
-              location,
-              material
-            });
-             res.redirect('/createevent');
-        } else {
-            // Create new event
-            const event = new Event({
-                title,
-              subject,
-                description,
-                date,
-                time,
-                teacherName,
-                forClass, // Ensure this combines class and section if needed or stored as is
-                location,
-                material,
-            });
-            await event.save();
-            res.redirect('/createevent');
-            
-        }
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+        description,
+        date,
+        time: formattedTime,
+        forClass: classList,
+        section,
+        teacherName,
+        location,
+        material
+      });
+      res.redirect('/createevent?saved=1');
+    } else {
+      // Create new event
+      const event = new Event({
+        title,
+        subject,
+        description,
+        date,
+        time: formattedTime,
+        teacherName,
+        forClass: classList,
+        location,
+        material,
+      });
+      await event.save();
+      res.redirect('/createevent?saved=1');
     }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
 };
 
 exports.deleteEvent = async (req, res) => {

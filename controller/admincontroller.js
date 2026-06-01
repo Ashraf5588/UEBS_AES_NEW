@@ -2396,16 +2396,26 @@ exports.showTeacherRecord = async (req, res) => {
       const issueCount = issues.length;
       const halfLeaveCount = issues.filter((item) => item && item.halfLeave).length;
       const fullLeaveCount = issues.filter((item) => item && item.fullLeave).length;
+      const lateInCount = issues.filter((item) => item && item.lateIn).length;
+      const earlyOutCount = issues.filter((item) => item && item.earlyOut).length;
       return {
         ...record,
         issueCount,
         halfLeaveCount,
         fullLeaveCount,
+        lateInCount,
+        earlyOutCount,
         issues: issues.map((item) => ({
           dateBs: String(item && item.dateBs || ''),
           issue: String(item && item.issue || ''),
           halfLeave: Boolean(item && item.halfLeave),
-          fullLeave: Boolean(item && item.fullLeave)
+          fullLeave: Boolean(item && item.fullLeave),
+          lateIn: Boolean(item && item.lateIn),
+          lateInTime: String(item && item.lateInTime || ''),
+          lateInReason: String(item && item.lateInReason || ''),
+          earlyOut: Boolean(item && item.earlyOut),
+          earlyOutTime: String(item && item.earlyOutTime || ''),
+          earlyOutReason: String(item && item.earlyOutReason || '')
         }))
       };
     });
@@ -2453,15 +2463,45 @@ exports.saveTeacherRecord = async (req, res) => {
     const dateBs = String(req.body.dateBs || '').trim();
     const halfLeave = String(req.body.halfLeave || '').toLowerCase() === 'true';
     const fullLeave = String(req.body.fullLeave || '').toLowerCase() === 'true';
+    const lateIn = String(req.body.lateIn || '').toLowerCase() === 'true';
+    const earlyOut = String(req.body.earlyOut || '').toLowerCase() === 'true';
+    const lateInTime = String(req.body.lateInTime || '').trim();
+    const lateInReason = String(req.body.lateInReason || '').trim();
+    const earlyOutTime = String(req.body.earlyOutTime || '').trim();
+    const earlyOutReason = String(req.body.earlyOutReason || '').trim();
 
-    if (!teacherName || (!issueText && !halfLeave && !fullLeave)) {
-      return res.status(400).json({ success: false, message: 'Teacher name and either leave or issue are required.' });
+    const formatTo12Hour = (value) => {
+      const match = String(value || '').match(/^([01][0-9]|2[0-3]):([0-5][0-9])$/);
+      if (!match) return String(value || '').trim();
+      const hoursNum = Number(match[1]);
+      const minutes = match[2];
+      const period = hoursNum >= 12 ? 'PM' : 'AM';
+      const hours12 = hoursNum % 12 || 12;
+      return `${hours12}:${minutes}${period}`;
+    };
+
+    if (!teacherName || (!issueText && !halfLeave && !fullLeave && !lateIn && !earlyOut)) {
+      return res.status(400).json({ success: false, message: 'Teacher name and either leave, time exception, or issue are required.' });
+    }
+
+    if (lateIn && (!lateInTime || !lateInReason)) {
+      return res.status(400).json({ success: false, message: 'Late in time and reason are required.' });
+    }
+
+    if (earlyOut && (!earlyOutTime || !earlyOutReason)) {
+      return res.status(400).json({ success: false, message: 'Early out time and reason are required.' });
     }
 
     const issueEntry = {
       dateBs: dateBs || String(bs.ADToBS(new Date()) || ''),
       halfLeave,
       fullLeave,
+      lateIn,
+      lateInTime: lateIn ? formatTo12Hour(lateInTime) : '',
+      lateInReason,
+      earlyOut,
+      earlyOutTime: earlyOut ? formatTo12Hour(earlyOutTime) : '',
+      earlyOutReason,
       createdAt: new Date()
     };
 

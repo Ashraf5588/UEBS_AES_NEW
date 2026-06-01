@@ -135,6 +135,68 @@
       color: var(--text);
     }
 
+    .helper {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .helper.error {
+      color: var(--danger);
+    }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+    }
+
+    .checkbox-panel {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .checkbox-panel.is-open {
+      display: block;
+    }
+
+    .select-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--text);
+      font-weight: 600;
+      cursor: pointer;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .select-toggle:hover {
+      box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .check-item input {
+      width: 16px;
+      height: 16px;
+    }
+
     input,
     select,
     textarea {
@@ -282,6 +344,27 @@
       background: rgba(255, 255, 255, 0.7);
     }
 
+    .toast {
+      position: fixed;
+      right: 22px;
+      top: 22px;
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 9999;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     @media (max-width: 960px) {
       .content-grid {
         grid-template-columns: 1fr;
@@ -314,9 +397,13 @@
 <body>
   <%
     const currentEditEvent = typeof editEvent !== 'undefined' ? editEvent : null;
-    const subjectOptions = [...new Set((sidenavData.subjects || []).map(s => s.newsubject).filter(Boolean))];
-    const selectedSubject = currentEditEvent ? (currentEditEvent.subject || '') : '';
-    const selectedClass = currentEditEvent ? (currentEditEvent.forClass || '') : '';
+    const selectedClasses = currentEditEvent
+      ? (Array.isArray(currentEditEvent.forClass)
+        ? currentEditEvent.forClass
+        : currentEditEvent.forClass
+          ? [currentEditEvent.forClass]
+          : [])
+      : [];
     const selectedTeacher = currentEditEvent ? (currentEditEvent.teacherName || teacherName || '') : (teacherName || '');
     const selectedTitle = currentEditEvent ? (currentEditEvent.title || '') : '';
     const selectedLocation = currentEditEvent ? (currentEditEvent.location || '') : '';
@@ -356,24 +443,23 @@
               </div>
 
               <div class="field">
-                <label for="subject">Subject</label>
-                <select name="subject" id="subject">
-                  <option value="">Select Subject</option>
-                  <% subjectOptions.forEach((subject) => { %>
-                    <option value="<%= subject %>" <%= selectedSubject === subject ? 'selected' : '' %>><%= subject %></option>
-                  <% }); %>
-                </select>
-              </div>
-
-              <div class="field">
                 <label for="forClass">Class</label>
-                <select name="forClass" id="forClass" required>
-                  <option value="">Select Class</option>
-                  <% (sidenavData.studentClassdata || []).forEach((cls) => { %>
-                    <% const classValue = cls.studentClass + '-' + cls.section; %>
-                    <option value="<%= classValue %>" <%= selectedClass === classValue ? 'selected' : '' %>><%= cls.studentClass %> - <%= cls.section %></option>
-                  <% }); %>
-                </select>
+                <button class="select-toggle" type="button" id="classToggle" aria-expanded="false">
+                  Select Classes
+                </button>
+                <div class="checkbox-panel" id="classPanel">
+                  <div class="checkbox-grid" id="forClass">
+                    <% (sidenavData.studentClassdata || []).forEach((cls, index) => { %>
+                      <% const classValue = cls.studentClass + '-' + cls.section; %>
+                      <label class="check-item">
+                        <input type="checkbox" name="forClass" value="<%= classValue %>" <%= selectedClasses.includes(classValue) ? 'checked' : '' %>>
+                        <span><%= cls.studentClass %> - <%= cls.section %></span>
+                      </label>
+                    <% }); %>
+                  </div>
+                </div>
+                <span class="helper">Tap the button to choose multiple classes.</span>
+                <span class="helper" id="classError"></span>
               </div>
 
               <div class="field">
@@ -408,7 +494,7 @@
 
               <div class="field full">
                 <label for="eventDescription">Event Description</label>
-                <textarea id="eventDescription" name="description" rows="4" placeholder="Write a short description" required><%= selectedDescription %></textarea>
+                <textarea id="eventDescription" name="description" rows="4" placeholder="Write a short description"><%= selectedDescription %></textarea>
               </div>
             </div>
 
@@ -437,17 +523,15 @@
                       <h3 class="event-title"><%= event.title %></h3>
                       <div class="event-meta">
                         <span class="pill"><%= event.date ? new Date(event.date).toLocaleDateString('en-GB') : 'No date' %></span>
-                        <span class="pill alt"><%= event.time %></span>
+                        <span class="pill alt"><%= event.time ? String(event.time).replace(/\s?(AM|PM)$/i, ' $1') : '' %></span>
                       </div>
                     </div>
                   </div>
 
                   <div class="event-meta">
-                    <% if (event.subject) { %>
-                      <span class="pill">Subject: <%= event.subject %></span>
-                    <% } %>
                     <% if (event.forClass) { %>
-                      <span class="pill alt">Class: <%= event.forClass %></span>
+                      <% const classList = Array.isArray(event.forClass) ? event.forClass : [event.forClass]; %>
+                      <span class="pill alt">Class: <%= classList.filter(Boolean).join(', ') %></span>
                     <% } %>
                     <% if (event.teacherName) { %>
                       <span class="pill">Teacher: <%= event.teacherName %></span>
@@ -477,6 +561,9 @@
         </div>
       </section>
     </div>
+  </div>
+  <div class="toast" id="saveToast" role="status" aria-live="polite" aria-atomic="true">
+    <span>Saved successfully.</span>
   </div>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
@@ -541,6 +628,55 @@
       } else if (nepaliInput.value && !englishInput.value) {
         syncFromNepali();
       }
+    })();
+
+    (() => {
+      const form = document.querySelector('form[action="/createevent"]');
+      const classError = document.getElementById('classError');
+      const classToggle = document.getElementById('classToggle');
+      const classPanel = document.getElementById('classPanel');
+      if (!form) {
+        return;
+      }
+
+      if (classToggle && classPanel) {
+        classToggle.addEventListener('click', () => {
+          const isOpen = classPanel.classList.toggle('is-open');
+          classToggle.setAttribute('aria-expanded', String(isOpen));
+        });
+      }
+
+      form.addEventListener('submit', (event) => {
+        const selected = form.querySelectorAll('input[name="forClass"]:checked');
+        if (selected.length === 0) {
+          event.preventDefault();
+          if (classError) {
+            classError.textContent = 'Select at least one class.';
+            classError.classList.add('error');
+          }
+          if (classPanel && !classPanel.classList.contains('is-open')) {
+            classPanel.classList.add('is-open');
+            if (classToggle) {
+              classToggle.setAttribute('aria-expanded', 'true');
+            }
+          }
+        } else if (classError) {
+          classError.textContent = '';
+          classError.classList.remove('error');
+        }
+      });
+    })();
+
+    (() => {
+      const toast = document.getElementById('saveToast');
+      const params = new URLSearchParams(window.location.search);
+      if (!toast || params.get('saved') !== '1') {
+        return;
+      }
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2800);
     })();
 
     initFcmNotifications();
