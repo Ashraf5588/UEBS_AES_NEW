@@ -404,6 +404,43 @@
           ? [currentEditEvent.forClass]
           : [])
       : [];
+    const selectedClassNames = [...new Set(
+      selectedClasses
+        .map((value) => String(value || '').split('-')[0].trim())
+        .filter(Boolean)
+    )];
+    const classSortOrder = ['nursery', 'lkg', 'ukg', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+    const wordToNumber = {
+      one: '1',
+      two: '2',
+      three: '3',
+      four: '4',
+      five: '5',
+      six: '6',
+      seven: '7',
+      eight: '8',
+      nine: '9',
+      ten: '10'
+    };
+    const normalizeClassName = (value) => String(value || '').trim();
+    const getClassRank = (value) => {
+      const raw = normalizeClassName(value).toLowerCase();
+      const key = wordToNumber[raw] || raw;
+      const index = classSortOrder.indexOf(key);
+      if (index !== -1) {
+        return index;
+      }
+      const numeric = Number.parseInt(key, 10);
+      if (!Number.isNaN(numeric)) {
+        return classSortOrder.length + numeric;
+      }
+      return classSortOrder.length + 100;
+    };
+    const uniqueClassNames = [...new Set(
+      (sidenavData.studentClassdata || [])
+        .map((cls) => normalizeClassName(cls.studentClass))
+        .filter(Boolean)
+    )].sort((a, b) => getClassRank(a) - getClassRank(b) || a.localeCompare(b));
     const selectedTeacher = currentEditEvent ? (currentEditEvent.teacherName || teacherName || '') : (teacherName || '');
     const selectedTitle = currentEditEvent ? (currentEditEvent.title || '') : '';
     const selectedLocation = currentEditEvent ? (currentEditEvent.location || '') : '';
@@ -449,11 +486,10 @@
                 </button>
                 <div class="checkbox-panel" id="classPanel">
                   <div class="checkbox-grid" id="forClass">
-                    <% (sidenavData.studentClassdata || []).forEach((cls, index) => { %>
-                      <% const classValue = cls.studentClass + '-' + cls.section; %>
+                    <% uniqueClassNames.forEach((className) => { %>
                       <label class="check-item">
-                        <input type="checkbox" name="forClass" value="<%= classValue %>" <%= selectedClasses.includes(classValue) ? 'checked' : '' %>>
-                        <span><%= cls.studentClass %> - <%= cls.section %></span>
+                        <input type="checkbox" name="forClass" value="<%= className %>" <%= selectedClassNames.includes(className) ? 'checked' : '' %>>
+                        <span><%= className %></span>
                       </label>
                     <% }); %>
                   </div>
@@ -531,7 +567,9 @@
                   <div class="event-meta">
                     <% if (event.forClass) { %>
                       <% const classList = Array.isArray(event.forClass) ? event.forClass : [event.forClass]; %>
-                      <span class="pill alt">Class: <%= classList.filter(Boolean).join(', ') %></span>
+                      <% const classNames = [...new Set(classList.map((value) => String(value || '').split('-')[0].trim()).filter(Boolean))]; %>
+                      <% const sortedClassNames = classNames.sort((a, b) => getClassRank(a) - getClassRank(b) || a.localeCompare(b)); %>
+                      <span class="pill alt">Class: <%= sortedClassNames.join(', ') %></span>
                     <% } %>
                     <% if (event.teacherName) { %>
                       <span class="pill">Teacher: <%= event.teacherName %></span>
