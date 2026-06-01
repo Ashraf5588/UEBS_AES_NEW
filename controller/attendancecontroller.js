@@ -1031,11 +1031,17 @@ exports.absentRecordPage = async (req, res) => {
     }
 
     const groupMap = new Map();
+    const monthSummaryMap = new Map();
 
     const isAbsentStatus = (value) => {
       const normalized = normalizeText(value);
       return normalized === 'absent' || normalized === 'a' || normalized === 'false';
     };
+
+    const monthDisplayMap = Object.values(BS_MONTH_NAMES).reduce((acc, name) => {
+      acc[normalizeText(name)] = name;
+      return acc;
+    }, {});
 
     const CLASS_ORDER = {
       nursery: 1,
@@ -1077,6 +1083,7 @@ exports.absentRecordPage = async (req, res) => {
       attendanceEntries.forEach((entry) => {
         const entryYear = String(entry && entry.academicYear || '').trim();
         const entryMonth = normalizeText(entry && entry.month);
+        const entryMonthLabelRaw = String(entry && entry.month || '').trim();
         const entryDay = Number.parseInt(entry && entry.day, 10);
         const entryStatus = normalizeText(entry && entry.status);
 
@@ -1094,6 +1101,28 @@ exports.absentRecordPage = async (req, res) => {
 
         if (!isAbsentStatus(entryStatus)) {
           return;
+        }
+
+        if (entryMonth) {
+          const monthLabel = monthDisplayMap[entryMonth] || entryMonthLabelRaw || entryMonth;
+          if (!monthSummaryMap.has(entryMonth)) {
+            monthSummaryMap.set(entryMonth, {
+              month: monthLabel,
+              groupMap: new Map()
+            });
+          }
+
+          const summaryGroupKey = `${studentClassValue}||${sectionValue}`;
+          const summaryGroupMap = monthSummaryMap.get(entryMonth).groupMap;
+          if (!summaryGroupMap.has(summaryGroupKey)) {
+            summaryGroupMap.set(summaryGroupKey, {
+              studentClass: studentClassValue,
+              section: sectionValue,
+              absentCount: 0
+            });
+          }
+
+          summaryGroupMap.get(summaryGroupKey).absentCount += 1;
         }
 
         const groupKey = `${studentClassValue}||${sectionValue}`;
@@ -1152,10 +1181,33 @@ exports.absentRecordPage = async (req, res) => {
     const monthOptions = Object.keys(BS_MONTH_NAMES).map((monthKey) => BS_MONTH_NAMES[monthKey]);
     const dayOptions = Array.from({ length: 32 }, (_, index) => index + 1);
 
+    const monthSummaries = Array.from(monthSummaryMap.entries())
+      .map(([monthKey, summary]) => {
+        const groups = Array.from(summary.groupMap.values())
+          .sort((a, b) => {
+            const classOrderA = getClassSortKey(a.studentClass);
+            const classOrderB = getClassSortKey(b.studentClass);
+            if (classOrderA !== classOrderB) {
+              return classOrderA - classOrderB;
+            }
+
+            return String(a.section).localeCompare(String(b.section));
+          });
+
+        return {
+          month: summary.month,
+          monthKey,
+          totalAbsent: groups.reduce((sum, group) => sum + (group.absentCount || 0), 0),
+          groups
+        };
+      })
+      .sort((a, b) => (BS_MONTH_ORDER[a.monthKey] || 99) - (BS_MONTH_ORDER[b.monthKey] || 99));
+
     const totalAbsentCount = groups.reduce((sum, group) => sum + (group.absentCount || 0), 0);
 
     res.render('./attendance/absent-record', {
       groups,
+      monthSummaries,
       totalAbsentCount,
       todayBs,
       todayDay: selectedDay,
