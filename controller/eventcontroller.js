@@ -192,7 +192,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.pass 
   }
 });
-const sendReminderEmail = async (to, title, description, date, time, location, forClass, subject, teacherName) => {
+const sendReminderEmail = async (to, title, description, date, time, location, forClass, teacherName) => {
   const mailOptions = {
     from: process.env.user,
     to: to,
@@ -201,7 +201,7 @@ const sendReminderEmail = async (to, title, description, date, time, location, f
     <h2>Reminder: ${title}</h2>
     <p><b>Time:</b> ${time}</p>
     <p><b>Location:</b> ${location}</p>
-    <p><b>Class:</b> ${forClass}</p>
+ 
     <p><b>Subject:</b> ${subject}</p>
     <p><b>Description:</b> ${description}</p>
     <hr>
@@ -219,7 +219,7 @@ const sendReminderEmail = async (to, title, description, date, time, location, f
 
 const checkEventReminders = async () => {
   try {
-    const emailtoSend = ["ashrafalimiya77@gmail.com","admin@msrebs.edu.np"]
+    const emailtoSend = ["ashrafalimiya77@gmail.com","rehanmiya977@gmail.com","axeldhungana123@gmail.com","unitedecd@gmail.com"];
  
     const today = new Date();
     today.setHours(0, 0, 0, 0);
