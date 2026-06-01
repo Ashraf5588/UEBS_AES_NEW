@@ -235,7 +235,7 @@ const checkEventReminders = async () => {
 const diffDays = Math.round((eventDate - today) / (1000 * 60 * 60 * 24));
       if (diffDays === 7 && !event.reminder7Sent) {
         await sendReminderPush(event.title);
-        await sendReminderEmail(emailtoSend, event.title, event.description, event.date.toDateString(), event.time, event.location, event.forClass, event.subject, event.teacherName);
+        await sendReminderEmail(emailtoSend, event.title, event.description, event.date.toDateString(), event.time, event.location, event.forClass, event.teacherName);
         event.reminder7Sent = true;
         await event.save();
         
@@ -250,7 +250,7 @@ const diffDays = Math.round((eventDate - today) / (1000 * 60 * 60 * 24));
           event.time,
           event.location,
           event.forClass,
-          event.subject,
+         
           event.teacherName
         );
 
