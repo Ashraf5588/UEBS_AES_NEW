@@ -446,7 +446,14 @@
     const selectedLocation = currentEditEvent ? (currentEditEvent.location || '') : '';
     const selectedMaterial = currentEditEvent ? (currentEditEvent.material || '') : '';
     const selectedDescription = currentEditEvent ? (currentEditEvent.description || '') : '';
-    const selectedTime = currentEditEvent ? (currentEditEvent.time || '') : '';
+    const selectedTime = currentEditEvent
+      ? (() => {
+          const time = String(currentEditEvent.time || '').trim();
+          if (!time) return '';
+          if (time.includes(':')) return time;
+          return time;
+        })()
+      : '';
     const selectedDate = currentEditEvent && currentEditEvent.date
       ? (() => {
           const date = new Date(currentEditEvent.date);
@@ -455,6 +462,9 @@
           const day = String(date.getDate()).padStart(2, '0');
           return `${year}-${month}-${day}`;
         })()
+      : '';
+    const selectedNepaliDate = currentEditEvent && currentEditEvent.nepaliDate
+      ? String(currentEditEvent.nepaliDate || '').trim()
       : '';
   %>
 
@@ -519,7 +529,7 @@
               </div>
  <div class="field">
                 <label for="nepaliDate">Nepali Date</label>
-                <input type="text" id="nepaliDate" name="nepaliDate" placeholder="Select Nepali Date">
+                <input type="text" id="nepaliDate" name="nepaliDate" placeholder="Select Nepali Date" value="<%= selectedNepaliDate %>">
               </div>
               <div class="field">
                 <label for="eventDate">Event Date</label>
@@ -559,6 +569,9 @@
                       <h3 class="event-title"><%= event.title %></h3>
                       <div class="event-meta">
                         <span class="pill"><%= event.date ? new Date(event.date).toLocaleDateString('en-GB') : 'No date' %></span>
+                        <% if (event.nepaliDate) { %>
+                          <span class="pill alt">(<%= event.nepaliDate %>)</span>
+                        <% } %>
                         <span class="pill alt"><%= event.time ? String(event.time).replace(/\s?(AM|PM)$/i, ' $1') : '' %></span>
                       </div>
                     </div>

@@ -11,6 +11,7 @@ const eventSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
    teacherName: { type: String, required: true },
     forClass: { type: [String], required: true },
+    nepaliDate: { type: String, default: '' },
     reminder7Sent: { type: Boolean, default: false },
     reminder7SentDate: { type: String, default: '' },
     reminder1Sent: { type: Boolean, default: false },

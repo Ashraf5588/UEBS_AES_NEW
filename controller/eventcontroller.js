@@ -109,7 +109,7 @@ exports.createEventForm = async (req, res) => {
 
 // Start or Update event
 exports.saveEvent = async (req, res) => {
-  const { id, title, subject, description, date, time, forClass, section, teacherName, location, material } = req.body;
+  const { id, title, subject, description, date, time, forClass, section, teacherName, location, material, nepaliDate } = req.body;
   const classList = Array.isArray(forClass)
     ? forClass.map((item) => String(item || '').trim()).filter(Boolean)
     : [String(forClass || '').trim()].filter(Boolean);
@@ -122,7 +122,27 @@ exports.saveEvent = async (req, res) => {
     const hours12 = hoursNum % 12 || 12;
     return `${hours12}:${minutes}${period}`;
   };
+  
+  const computeNepaliDate = (englishDate) => {
+    try {
+      if (!englishDate || typeof bs === 'undefined') {
+        return '';
+      }
+      const d = new Date(englishDate);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const englishDateStr = `${year}-${month}-${day}`;
+      const nepaliResult = bs.ADToBS(englishDateStr);
+      return nepaliResult ? String(nepaliResult).trim() : '';
+    } catch (error) {
+      console.error('Error computing Nepali date:', error);
+      return '';
+    }
+  };
+  
   const formattedTime = formatTo12Hour(time);
+  const computedNepaliDate = nepaliDate || computeNepaliDate(date);
   
   try {
     if (id) {
@@ -137,7 +157,8 @@ exports.saveEvent = async (req, res) => {
         section,
         teacherName,
         location,
-        material
+        material,
+        nepaliDate: computedNepaliDate
       });
       res.redirect('/createevent?saved=1');
     } else {
@@ -152,6 +173,7 @@ exports.saveEvent = async (req, res) => {
         forClass: classList,
         location,
         material,
+        nepaliDate: computedNepaliDate
       });
       await event.save();
       res.redirect('/createevent?saved=1');
