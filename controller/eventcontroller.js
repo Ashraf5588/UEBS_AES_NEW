@@ -299,35 +299,40 @@ const checkEventReminders = async () => {
          continue;
        }
       const diffDays = Math.round((eventUtc - todayUtc) / (1000 * 60 * 60 * 24));
-      if (diffDays === 7 && !event.reminder7Sent) {
-        await sendReminderEmail(emailtoSend, event.title, event.description, event.date, event.time, event.location, event.forClass, event.teacherName, 7);
-        event.reminder7Sent = true;
-        await event.save();
-        
-      }
-       const isOneDayBefore = diffDays === 1;
-       const kathmanduHour = Number(new Intl.DateTimeFormat('en-GB', {
-         timeZone: 'Asia/Kathmandu',
-         hour: '2-digit',
-         hour12: false
-       }).format(now));
-       const isSameDayAfterSeven = diffDays === 0 && kathmanduHour >= 7;
-       if ((isOneDayBefore || isSameDayAfterSeven) && !event.reminder1Sent) {
-        await sendReminderPush(event.title);
-        await sendReminderEmail(
-          emailtoSend,
-          event.title,
-          event.description,
-          event.date,
-          event.time,
-          event.location,
-          event.forClass,
-          event.teacherName,
-          1
-        );
 
-        event.reminder1Sent = true;
-        await event.save();
+      if (diffDays === 7) {
+        const lastSentDate = String(event.reminder7SentDate || '').trim();
+        if (lastSentDate !== todayKey) {
+          await sendReminderEmail(emailtoSend, event.title, event.description, event.date, event.time, event.location, event.forClass, event.teacherName, 7);
+          event.reminder7Sent = true;
+          event.reminder7SentDate = todayKey;
+          await event.save();
+          console.log(`7-day reminder sent for event: ${event.title}`);
+        }
+      }
+
+      const isOneDayBefore = diffDays === 1;
+      const isSameDayMorning = diffDays === 0;
+      if (isOneDayBefore || isSameDayMorning) {
+        const lastSentDate = String(event.reminder1SentDate || '').trim();
+        if (lastSentDate !== todayKey) {
+          await sendReminderPush(event.title);
+          await sendReminderEmail(
+            emailtoSend,
+            event.title,
+            event.description,
+            event.date,
+            event.time,
+            event.location,
+            event.forClass,
+            event.teacherName,
+            1
+          );
+          event.reminder1Sent = true;
+          event.reminder1SentDate = todayKey;
+          await event.save();
+          console.log(`1-day reminder sent for event: ${event.title}`);
+        }
       }
     }
 
@@ -337,9 +342,14 @@ const checkEventReminders = async () => {
     console.error("Error checking event reminders:", err);
   }
 };
-cron.schedule("0 7 * * *", async () => {
-  console.log("Running reminder job...");
-  await checkEventReminders();
+// Schedule reminder checks at 7 AM, 9 AM, 11 AM, 1 PM, 3 PM, 5 PM, 7 PM, 9 PM, 11 PM
+const reminderHours = [7, 9, 11, 13, 15, 17, 19, 21, 23];
+
+reminderHours.forEach((hour) => {
+  cron.schedule(`0 ${hour} * * *`, async () => {
+    console.log(`Running reminder job at ${hour}:00 Kathmandu time...`);
+    await checkEventReminders();
+  });
 });
 
 

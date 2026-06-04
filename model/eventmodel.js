@@ -12,9 +12,9 @@ const eventSchema = new mongoose.Schema({
    teacherName: { type: String, required: true },
     forClass: { type: [String], required: true },
     reminder7Sent: { type: Boolean, default: false },
-reminder1Sent: { type: Boolean, default: false }
-
-
+    reminder7SentDate: { type: String, default: '' },
+    reminder1Sent: { type: Boolean, default: false },
+    reminder1SentDate: { type: String, default: '' }
 });
 
 const EventModel = mongoose.model('Event', eventSchema, 'Events');

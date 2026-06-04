@@ -77,25 +77,30 @@
       return;
     }
 
-    const token = await messaging.getToken({
-      vapidKey,
-      serviceWorkerRegistration: registration
-    });
+    try {
+      const token = await messaging.getToken({
+        vapidKey,
+        serviceWorkerRegistration: registration
+      });
 
-    if (!token) {
-      throw new Error('FCM token was not created');
-    }
+      if (!token) {
+        console.warn('FCM token was not created');
+        return;
+      }
 
-    console.log('FCM Token:', token);
+      console.log('FCM Token:', token);
 
-    const response = await fetch('/save-fcm-token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token })
-    });
+      const response = await fetch('/save-fcm-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to save FCM token: ${response.status}`);
+      if (!response.ok) {
+        console.warn(`Failed to save FCM token: ${response.status}`);
+      }
+    } catch (error) {
+      console.warn('FCM token registration failed:', error && error.message ? error.message : error);
     }
   }
 
