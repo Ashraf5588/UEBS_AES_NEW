@@ -14,6 +14,7 @@ const quantityInput = document.getElementById('quantity');
 const studentIdField = document.getElementById('studentId');
 const recordRange = document.getElementById('recordRange');
 const recordDate = document.getElementById('recordDate');
+const recordDateBs = document.getElementById('recordDateBs');
 const recordFilterBtn = document.getElementById('recordFilterBtn');
 const recordsTableBody = document.getElementById('recordsTableBody');
 const padDateDisplay = document.getElementById('padDateDisplay');
@@ -41,7 +42,58 @@ const escapeHtml = (value) => String(value || '')
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&#39;');
 
-const formatKathmanduDate = (value) => {
+const formatIsoDate = (value) => {
+  if (!value) {
+    return '';
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kathmandu',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(date);
+  const year = parts.find((part) => part.type === 'year')?.value;
+  const month = parts.find((part) => part.type === 'month')?.value;
+  const day = parts.find((part) => part.type === 'day')?.value;
+
+  if (!year || !month || !day) {
+    return '';
+  }
+
+  return `${year}-${month}-${day}`;
+};
+
+const convertAdToBs = (value) => {
+  if (!value || typeof NepaliFunctions === 'undefined') {
+    return '';
+  }
+
+  try {
+    return NepaliFunctions.AD2BS(String(value).trim());
+  } catch (error) {
+    return '';
+  }
+};
+
+const convertBsToAd = (value) => {
+  if (!value || typeof NepaliFunctions === 'undefined') {
+    return '';
+  }
+
+  try {
+    return NepaliFunctions.BS2AD(String(value).trim());
+  } catch (error) {
+    return '';
+  }
+};
+
+const formatAdLabel = (value) => {
   const date = value ? new Date(value) : new Date();
   if (Number.isNaN(date.getTime())) {
     return '-';
@@ -53,6 +105,17 @@ const formatKathmanduDate = (value) => {
     month: 'short',
     year: 'numeric'
   });
+};
+
+const formatDualDate = (value) => {
+  const iso = formatIsoDate(value || new Date());
+  if (!iso) {
+    return '-';
+  }
+
+  const bs = convertAdToBs(iso);
+
+  return bs || '-';
 };
 
 const openNav = () => {
@@ -143,22 +206,69 @@ const clearSuggestions = () => {
   suggestions.style.display = 'none';
 };
 
-const formatRecordDate = (value) => {
-  if (!value) {
-    return '-';
+const formatRecordDate = (value) => formatDualDate(value);
+
+const syncRecordDateFromBs = () => {
+  if (!recordDate || !recordDateBs) {
+    return;
   }
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return '-';
+  const englishValue = convertBsToAd(recordDateBs.value);
+  if (englishValue) {
+    recordDate.value = englishValue;
+  }
+};
+
+const syncRecordDateFromAd = () => {
+  if (!recordDate || !recordDateBs) {
+    return;
   }
 
-  return date.toLocaleDateString('en-GB', {
-    timeZone: 'Asia/Kathmandu',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
+  const nepaliValue = convertAdToBs(recordDate.value);
+  if (nepaliValue) {
+    recordDateBs.value = nepaliValue;
+  }
+};
+
+const initRecordDateSync = () => {
+  if (!recordDate || !recordDateBs) {
+    return;
+  }
+
+  const todayIso = formatIsoDate(new Date());
+  const todayBs = todayIso ? convertAdToBs(todayIso) : '';
+
+  if (!recordDate.value && todayIso) {
+    recordDate.value = todayIso;
+  }
+  if (!recordDateBs.value && todayBs) {
+    recordDateBs.value = todayBs;
+  }
+
+  if (typeof recordDateBs.nepaliDatePicker === 'function') {
+    recordDateBs.nepaliDatePicker({
+      onSelect: () => {
+        syncRecordDateFromBs();
+        loadRecords();
+      }
+    });
+  }
+
+  recordDateBs.addEventListener('change', () => {
+    syncRecordDateFromBs();
+    loadRecords();
   });
+
+  recordDate.addEventListener('change', () => {
+    syncRecordDateFromAd();
+    loadRecords();
+  });
+
+  if (recordDate.value && !recordDateBs.value) {
+    syncRecordDateFromAd();
+  } else if (recordDateBs.value && !recordDate.value) {
+    syncRecordDateFromBs();
+  }
 };
 
 const renderRecords = (records) => {
@@ -333,13 +443,16 @@ form.addEventListener('submit', async (event) => {
     clearSuggestions();
     renderSummary(null);
     if (padDateDisplay) {
-      padDateDisplay.value = formatKathmanduDate(new Date());
+      padDateDisplay.value = formatDualDate(new Date());
     }
     if (recordRange) {
       recordRange.value = 'today';
     }
     if (recordDate) {
       recordDate.value = '';
+    }
+    if (recordDateBs) {
+      recordDateBs.value = '';
     }
     await loadRecords();
   } catch (error) {
@@ -357,13 +470,14 @@ if (recordRange) {
   });
 }
 
-if (recordDate) {
+if (recordDate && !recordDateBs) {
   recordDate.addEventListener('change', loadRecords);
 }
 
 if (padDateDisplay) {
-  padDateDisplay.value = formatKathmanduDate(new Date());
+  padDateDisplay.value = formatDualDate(new Date());
 }
 
+initRecordDateSync();
 renderSummary(null);
 loadRecords();

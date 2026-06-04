@@ -192,20 +192,48 @@ const transporter = nodemailer.createTransport({
     pass: process.env.pass 
   }
 });
-const sendReminderEmail = async (to, title, description, date, time, location, forClass, teacherName) => {
+const formatEventDate = (value) => {
+  if (!value) {
+    return '';
+  }
+
+  const parsed = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return String(value);
+  }
+
+  return parsed.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+};
+
+const sendReminderEmail = async (to, title, description, date, time, location, forClass, teacherName, daysBefore) => {
+  const label = daysBefore === 1 ? '1-day reminder' : '7-day reminder';
+  const formattedDate = formatEventDate(date) || String(date || '').trim();
+  const classLabel = Array.isArray(forClass) ? forClass.join(', ') : String(forClass || '').trim();
+
   const mailOptions = {
     from: process.env.user,
     to: to,
-    subject: `Reminder: ${title}`,
-      html: `
-    <h2>Reminder: ${title}</h2>
-    <p><b>Time:</b> ${time}</p>
-    <p><b>Location:</b> ${location}</p>
- 
-    <p><b>Subject:</b> ${subject}</p>
-    <p><b>Description:</b> ${description}</p>
-    <hr>
-    <p>Sent by: ${teacherName}</p>
+    subject: `Event reminder (${label}): ${title}`,
+    html: `
+    <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#1f2933;">
+      <h2 style="margin:0 0 8px;">Upcoming event reminder</h2>
+      <p style="margin:0 0 16px;">This is your ${label} for the event below.</p>
+      <table style="border-collapse:collapse;">
+        <tr><td style="padding:4px 12px 4px 0;"><b>Event</b></td><td>${title}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;"><b>Date</b></td><td>${formattedDate}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;"><b>Time</b></td><td>${time || '-'}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;"><b>Location</b></td><td>${location || '-'}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;"><b>Class</b></td><td>${classLabel || '-'}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;"><b>Teacher</b></td><td>${teacherName || '-'}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;"><b>Description</b></td><td>${description || '-'}</td></tr>
+      </table>
+      <hr style="margin:20px 0;border:none;border-top:1px solid #e5e7eb;" />
+      <p style="margin:0;color:#6b7280;">This is an automated reminder from the school system.</p>
+    </div>
   `
   };
 
@@ -221,8 +249,43 @@ const checkEventReminders = async () => {
   try {
     const emailtoSend = ["ashrafalimiya77@gmail.com","rehanmiya977@gmail.com","axeldhungana123@gmail.com","unitedecd@gmail.com"];
  
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const getKathmanduDateKey = (value) => {
+      if (!value) {
+        return '';
+      }
+
+      const date = value instanceof Date ? value : new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return '';
+      }
+
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kathmandu',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(date);
+      const year = parts.find((part) => part.type === 'year')?.value;
+      const month = parts.find((part) => part.type === 'month')?.value;
+      const day = parts.find((part) => part.type === 'day')?.value;
+      if (!year || !month || !day) {
+        return '';
+      }
+
+      return `${year}-${month}-${day}`;
+    };
+
+    const dateKeyToUtc = (key) => {
+      const [year, month, day] = String(key || '').split('-').map((part) => Number(part));
+      if (!year || !month || !day) {
+        return null;
+      }
+      return Date.UTC(year, month - 1, day);
+    };
+
+    const todayKey = getKathmanduDateKey(now);
+    const todayUtc = dateKeyToUtc(todayKey);
 
     
 
@@ -230,28 +293,37 @@ const checkEventReminders = async () => {
      // Events in the next 7 days
     for (const event of upcomingEvents) {
        const eventDate = new Date(event.date);
-       eventDate.setHours(0, 0, 0, 0);
-      const diffTime = eventDate - today;
-const diffDays = Math.round((eventDate - today) / (1000 * 60 * 60 * 24));
+       const eventKey = getKathmanduDateKey(eventDate);
+       const eventUtc = dateKeyToUtc(eventKey);
+       if (!eventKey || eventUtc === null || todayUtc === null) {
+         continue;
+       }
+      const diffDays = Math.round((eventUtc - todayUtc) / (1000 * 60 * 60 * 24));
       if (diffDays === 7 && !event.reminder7Sent) {
-        await sendReminderPush(event.title);
-        await sendReminderEmail(emailtoSend, event.title, event.description, event.date.toDateString(), event.time, event.location, event.forClass, event.teacherName);
+        await sendReminderEmail(emailtoSend, event.title, event.description, event.date, event.time, event.location, event.forClass, event.teacherName, 7);
         event.reminder7Sent = true;
         await event.save();
         
       }
-       if (diffDays === 1 && !event.reminder1Sent) {
+       const isOneDayBefore = diffDays === 1;
+       const kathmanduHour = Number(new Intl.DateTimeFormat('en-GB', {
+         timeZone: 'Asia/Kathmandu',
+         hour: '2-digit',
+         hour12: false
+       }).format(now));
+       const isSameDayAfterSeven = diffDays === 0 && kathmanduHour >= 7;
+       if ((isOneDayBefore || isSameDayAfterSeven) && !event.reminder1Sent) {
         await sendReminderPush(event.title);
         await sendReminderEmail(
           emailtoSend,
           event.title,
           event.description,
-          event.date.toDateString(),
+          event.date,
           event.time,
           event.location,
           event.forClass,
-         
-          event.teacherName
+          event.teacherName,
+          1
         );
 
         event.reminder1Sent = true;

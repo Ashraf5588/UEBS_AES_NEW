@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const csv = require('csvtojson');
 const HealthRecord = require('../model/nurseschema');
+const bs = require('bikram-sambat-js');
 const Medicine = require('../model/medicineschema');
 const MedicineDistribution = require('../model/medicinedistribution');
 const PadDistribution = require('../model/padrecordschema');
@@ -100,6 +101,18 @@ const naturalSort = (left, right) => String(left).localeCompare(String(right), u
     numeric: true,
     sensitivity: 'base'
 });
+
+const toNepaliDate = (value) => {
+    if (!value) {
+        return '';
+    }
+
+    try {
+        return String(bs.ADToBS(value) || '').trim();
+    } catch (error) {
+        return '';
+    }
+};
 
 const parseBmiValue = (value) => {
     const bmi = Number.parseFloat(String(value || '').trim());
@@ -540,6 +553,14 @@ exports.createHealthRecord = async (req, res) => {
             });
         }
 
+        const createdAt = new Date();
+        let nepaliDate = '';
+        try {
+            nepaliDate = String(bs.ADToBS(createdAt) || '').trim();
+        } catch (error) {
+            nepaliDate = '';
+        }
+
         const healthRecord = new HealthRecord({
             reg,
             name,
@@ -548,6 +569,8 @@ exports.createHealthRecord = async (req, res) => {
             roll,
             fatherName,
             address,
+            createdAt,
+            nepaliDate,
             diagnosis,
             treatment,
             remarks,
@@ -760,8 +783,10 @@ exports.getHealthRecordsFiltered = async (req, res) => {
 
         const responseData = records.map((record) => {
             const contact = contactMap.get(String(record.reg || '')) || '';
+            const nepaliDate = String(record.nepaliDate || '').trim() || toNepaliDate(record.createdAt);
             return {
                 ...record,
+                nepaliDate,
                 contact,
                 dialNumber: sanitizePhone(contact)
             };

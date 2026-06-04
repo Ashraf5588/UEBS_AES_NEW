@@ -236,6 +236,7 @@
         .card-skyblue .icon-wrapper { background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); color: #fff; }
         .card-oranges .icon-wrapper { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #fff; }
         .card-violet .icon-wrapper { background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); color: #fff; }
+        .card-darkgreen .icon-wrapper { background: linear-gradient(135deg, #1d6c03 0%, #053c2b 100%); color: #fff; }
         .card-emerald .icon-wrapper { background: linear-gradient(135deg, #14b8a6 0%, #0f766e 100%); color: #fff; }
         .card-slate .icon-wrapper { background: linear-gradient(135deg, #475569 0%, #1e293b 100%); color: #fff; }
         .card-rose .icon-wrapper { background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); color: #fff; }
@@ -590,7 +591,7 @@
                             <div class="text-wrapper">Student Update</div>
                         </a>
                         <% if (userrole === 'ADMIN') { %>
-                            <a href="/absent-record" class="action-card card-slate" aria-label="Absent Record">
+                            <a href="/absent-record" class="action-card card-rose" aria-label="Absent Record">
                             <div class="icon-wrapper"><i class="fa-solid fa-user-pen"></i></div>
                             <div class="text-wrapper">Absent Record</div>
                         </a>
@@ -606,6 +607,10 @@
                             <a href="/teacher-record" class="action-card card-yellow" aria-label="Teacher Record">
                             <div class="icon-wrapper"><i class="fa-solid fa-user"></i></div>
                             <div class="text-wrapper">Teacher Record</div>
+                        </a>
+                            <a href="/healthrecord" class="action-card card-darkgreen" aria-label="Health Record">
+                            <div class="icon-wrapper"><i class="fa-solid fa-kit-medical"></i></div>
+                            <div class="text-wrapper">Health Record</div>
                         </a>
                         <% } %>
                         <a href="/createevent" class="action-card card-emerald" aria-label="Create Event">

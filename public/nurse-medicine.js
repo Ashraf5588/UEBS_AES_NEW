@@ -74,17 +74,50 @@ window.addEventListener('keydown', (event) => {
   }
 });
 
-const formatDate = (value) => {
+const formatIsoDate = (value) => {
   if (!value) {
-    return '-';
+    return '';
   }
 
-  const date = new Date(value);
+  const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return '-';
+    return '';
   }
 
-  return date.toLocaleString();
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kathmandu',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(date);
+  const year = parts.find((part) => part.type === 'year')?.value;
+  const month = parts.find((part) => part.type === 'month')?.value;
+  const day = parts.find((part) => part.type === 'day')?.value;
+
+  if (!year || !month || !day) {
+    return '';
+  }
+
+  return `${year}-${month}-${day}`;
+};
+
+const convertAdToBs = (value) => {
+  if (!value || typeof NepaliFunctions === 'undefined') {
+    return '';
+  }
+
+  try {
+    return NepaliFunctions.AD2BS(String(value).trim());
+  } catch (error) {
+    return '';
+  }
+};
+
+const formatDate = (value) => {
+  const iso = formatIsoDate(value);
+  const bs = iso ? convertAdToBs(iso) : '';
+
+  return bs || '-';
 };
 
 const setEditMode = (medicine) => {

@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://nepalidatepicker.sajanmaharjan.com.np/v5/nepali.datepicker/css/nepali.datepicker.v5.0.6.min.css" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="/health-record.css">
 </head>
 <body class="hm-body">
@@ -106,7 +107,12 @@
               </label>
 
               <label class="hm-field hm-inline-field">
-                <span>Specific Date</span>
+                <span>Specific Date (BS)</span>
+                <input type="text" id="recordDateBs" class="nepali-datepicker" placeholder="YYYY-MM-DD" />
+              </label>
+
+              <label class="hm-field hm-inline-field">
+                <span>Specific Date (AD)</span>
                 <input type="date" id="recordDate" />
               </label>
 
@@ -136,6 +142,7 @@
     </div>
   </div>
 
+  <script src="https://nepalidatepicker.sajanmaharjan.com.np/v5/nepali.datepicker/js/nepali.datepicker.v5.0.6.min.js" type="text/javascript"></script>
   <script src="/nurse-padrecord.js"></script>
 </body>
 </html>

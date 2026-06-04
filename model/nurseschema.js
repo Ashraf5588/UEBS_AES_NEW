@@ -10,6 +10,7 @@ const healthrecordschema = new mongoose.Schema({
     address: { type: String, required: false },
     contactNumber: { type: String, required: false },
     createdAt: { type: Date, default: Date.now },
+    nepaliDate: { type: String, default: '' },
     diagnosis: { type: String, required: true },
     treatment: { type: String, required: true },
     remarks: { type: String },
