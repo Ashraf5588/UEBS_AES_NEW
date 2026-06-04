@@ -294,6 +294,7 @@ student.get('/formatchoosestudent',examdashboardcontroller.formatChooseStudent)
 student.get('/student/generatemarksheet',examdashboardcontroller.generateMarksheetStudent)
 student.get('/studentportfolio',verifytoken,authorized,examdashboardcontroller.studentPortfolio)
 student.post('/addComplaint',verifytoken,authorized,examdashboardcontroller.addComplaint)
+student.put('/complaint/:id',verifytoken,authorized,examdashboardcontroller.updateComplaint)
 student.post('/studentportfolio/record',verifytoken,authorized,examdashboardcontroller.saveStudentRecordFromPortfolio)
 student.post('/studentportfolio/call-log',verifytoken,authorized,attendancecontroller.saveFrontdeskCallLog)
 

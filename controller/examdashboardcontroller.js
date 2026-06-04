@@ -1517,6 +1517,43 @@ exports.addComplaint = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Failed to save complaint.' });
   }
 };
+
+exports.updateComplaint = async (req, res) => {
+  try {
+    const complaintId = String(req.params && req.params.id ? req.params.id : '').trim();
+    const reg = String(req.body && req.body.reg ? req.body.reg : '').trim();
+    const reason = String(req.body && req.body.complaint ? req.body.complaint : '').trim();
+    const rawImages = req.body && req.body.images;
+    const imageUrls = (Array.isArray(rawImages) ? rawImages : [rawImages])
+      .filter((item) => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    if (!reg || !reason || !complaintId) {
+      return res.status(400).json({ success: false, message: 'Reg, complaint, and complaint ID are required.' });
+    }
+
+    const result = await Portfolio.updateOne(
+      { reg, 'complaints._id': complaintId },
+      {
+        $set: {
+          'complaints.$.reason': reason,
+          'complaints.$.imageUrls': imageUrls
+        }
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Complaint not found.' });
+    }
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating complaint:', error);
+    return res.status(500).json({ success: false, message: 'Failed to update complaint.' });
+  }
+};
+
 exports.saveStudentRecordFromPortfolio = async (req, res) => {
   try {
     const reg = String(req.body && req.body.reg ? req.body.reg : '').trim();

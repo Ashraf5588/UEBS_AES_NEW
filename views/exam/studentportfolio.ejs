@@ -1429,7 +1429,7 @@
                                  <li class="complaint-item">
                                     <div class="complaint-meta">
                                        <span>By: <%= item.by || 'Unknown' %></span>
-                                       <span>Date: <%= item.date ? new Date(item.date).toLocaleDateString() : 'N/A' %></span>
+                                       <span>Date: <%= convertAdToBsForDisplay(item.date) %></span>
                                     </div>
                                     <div class="complaint-reason"><%= item.reason || '-' %></div>
                                     <% if (Array.isArray(item.imageUrls) && item.imageUrls.length) { %>
@@ -1439,6 +1439,9 @@
                                         <% }) %>
                                       </div>
                                     <% } %>
+                                    <div style="margin-top: 8px; display: flex; gap: 6px;">
+                                       <button type="button" class="btn btn-outline" onclick="editComplaint('<%= item._id %>', '<%= item.by || '' %>', '<%= (item.reason || '').replace(/'/g, "\\'") %>')">Edit</button>
+                                    </div>
                                  </li>
                               <% }) %>
                            </ul>
@@ -1956,6 +1959,10 @@
                <input id="info_blood_group" name="bloodGroup" type="text" />
             </div>
             <div class="modal-field">
+               <label for="info_ward_no">Ward No.</label>
+               <input id="info_ward_no" name="wardNo" type="text" />
+            </div>
+            <div class="modal-field">
                <label for="info_height">Height</label>
                <input id="info_height" name="height" type="text" placeholder="e.g. 145 cm" />
             </div>
@@ -2067,6 +2074,7 @@
          <button type="button" class="btn-secondary" onclick="closeComplaintModal()">Close</button>
       </div>
       <form id="complaintForm">
+         <input id="complaint_id" type="hidden" />
          <div class="modal-body" style="grid-template-columns: 1fr;">
             <div class="modal-field">
                <label for="complaint_reg">Reg No</label>
@@ -2303,6 +2311,26 @@
       return date.toISOString().slice(0, 10);
    }
 
+   function convertAdToBsForDisplay(dateValue) {
+      if (!dateValue) return 'N/A';
+      if (typeof NepaliFunctions === 'undefined') {
+         const date = new Date(dateValue);
+         return date.toLocaleDateString();
+      }
+      try {
+         const date = new Date(dateValue);
+         const year = date.getFullYear();
+         const month = String(date.getMonth() + 1).padStart(2, '0');
+         const day = String(date.getDate()).padStart(2, '0');
+         const adDate = `${year}-${month}-${day}`;
+         const bsDate = NepaliFunctions.AD2BS(adDate);
+         return bsDate || date.toLocaleDateString();
+      } catch (error) {
+         const date = new Date(dateValue);
+         return date.toLocaleDateString();
+      }
+   }
+
    function setField(id, value) {
       const el = document.getElementById(id);
       if (!el) return;
@@ -2371,6 +2399,7 @@
       setField('info_guardian_contact', data.otherguardianContact);
       setField('info_yearly_income', data.yearlyIncome);
       setField('info_blood_group', data.bloodGroup);
+      setField('info_ward_no', data.wardNo);
       setField('info_height', data.height);
       setField('info_weight', data.weight);
       setField('info_medical', Array.isArray(data.anyMedicalCondition) ? data.anyMedicalCondition.join(', ') : data.anyMedicalCondition);
@@ -2464,14 +2493,31 @@
       }
    }
 
+   function editComplaint(complaintId, by, reason) {
+      setField('complaint_id', complaintId);
+      setField('complaint_reason', reason);
+      complaintImageUrls = [];
+      renderComplaintPreview();
+      setComplaintUploadStatus('');
+
+      const modal = document.getElementById('complaintModal');
+      const title = document.getElementById('complaintModalTitle');
+      if (title) title.textContent = 'Edit Complaint';
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+   }
+
    function openComplaintModal(reg) {
       setField('complaint_reg', reg);
+      setField('complaint_id', '');
       setField('complaint_reason', '');
       complaintImageUrls = [];
       renderComplaintPreview();
       setComplaintUploadStatus('');
 
       const modal = document.getElementById('complaintModal');
+      const title = document.getElementById('complaintModalTitle');
+      if (title) title.textContent = 'Add Complaint';
       modal.classList.add('is-open');
       modal.setAttribute('aria-hidden', 'false');
    }
@@ -2592,25 +2638,30 @@
          event.preventDefault();
          const reg = (document.getElementById('complaint_reg').value || '').trim();
          const complaint = (document.getElementById('complaint_reason').value || '').trim();
+         const complaintId = (document.getElementById('complaint_id').value || '').trim();
 
          if (!reg || !complaint) {
             alert('Reg and complaint are required.');
             return;
          }
 
-         fetch('/addComplaint', {
-            method: 'POST',
+         const endpoint = complaintId ? `/complaint/${complaintId}` : '/addComplaint';
+         const method = complaintId ? 'PUT' : 'POST';
+
+         fetch(endpoint, {
+            method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ reg, complaint, images: complaintImageUrls })
          })
          .then(response => response.json())
          .then((data) => {
             if (data.success) {
-               alert('Complaint added successfully!');
+               alert(complaintId ? 'Complaint updated successfully!' : 'Complaint added successfully!');
                closeComplaintModal();
                window.location.reload();
             } else {
-               alert(data.message || 'Failed to add complaint. Please try again.');
+               alert(data.message || 'Failed to save complaint. Please try again.');
+            }
             }
          })
          .catch((error) => {
@@ -2712,14 +2763,14 @@
       if (!value) return '';
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return '';
-      return date.toLocaleString();
+      const dateStr = convertAdToBsForDisplay(date);
+      const timeStr = date.toLocaleTimeString();
+      return `${dateStr} ${timeStr}`;
    }
 
    function formatDateOnly(value) {
       if (!value) return '';
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '';
-      return date.toLocaleDateString();
+      return convertAdToBsForDisplay(value);
    }
 
    function formatComplaints(items) {
