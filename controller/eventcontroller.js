@@ -232,7 +232,20 @@ const formatEventDate = (value) => {
 };
 
 const sendReminderEmail = async (to, title, description, date, time, location, forClass, teacherName, daysBefore) => {
-  const label = daysBefore === 1 ? '1-day reminder' : '7-day reminder';
+  let label = '';
+  let urgency = '';
+  
+  if (daysBefore === 7) {
+    label = '7-day reminder';
+    urgency = 'upcoming';
+  } else if (daysBefore === 1) {
+    label = '1-day reminder';
+    urgency = 'tomorrow';
+  } else if (daysBefore === 0) {
+    label = 'TODAY - Event happening now!';
+    urgency = 'today';
+  }
+  
   const formattedDate = formatEventDate(date) || String(date || '').trim();
   const classLabel = Array.isArray(forClass) ? forClass.join(', ') : String(forClass || '').trim();
 
@@ -242,28 +255,56 @@ const sendReminderEmail = async (to, title, description, date, time, location, f
     subject: `Event reminder (${label}): ${title}`,
     html: `
     <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#1f2933;">
-      <h2 style="margin:0 0 8px;">Upcoming event reminder</h2>
-      <p style="margin:0 0 16px;">This is your ${label} for the event below.</p>
-      <table style="border-collapse:collapse;">
-        <tr><td style="padding:4px 12px 4px 0;"><b>Event</b></td><td>${title}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;"><b>Date</b></td><td>${formattedDate}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;"><b>Time</b></td><td>${time || '-'}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;"><b>Location</b></td><td>${location || '-'}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;"><b>Class</b></td><td>${classLabel || '-'}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;"><b>Teacher</b></td><td>${teacherName || '-'}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;"><b>Description</b></td><td>${description || '-'}</td></tr>
+      <h2 style="margin:0 0 8px; color: ${daysBefore === 0 ? '#dc2626' : '#1f2933'};">
+        ${daysBefore === 0 ? '🔔 TODAY - ' : '📅 '}Event reminder
+      </h2>
+      <p style="margin:0 0 16px;">
+        This is your <strong>${label}</strong> for the event below.
+      </p>
+      <table style="border-collapse:collapse; width:100%;">
+        <tr style="background: ${daysBefore === 0 ? '#fee2e2' : '#f9fafb'};">
+          <td style="padding:8px 12px; font-weight:bold; border:1px solid #e5e7eb;"><b>Event</b></td>
+          <td style="padding:8px 12px; border:1px solid #e5e7eb;">${title}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px; font-weight:bold; border:1px solid #e5e7eb;"><b>Date</b></td>
+          <td style="padding:8px 12px; border:1px solid #e5e7eb;">${formattedDate}</td>
+        </tr>
+        <tr style="background:#f9fafb;">
+          <td style="padding:8px 12px; font-weight:bold; border:1px solid #e5e7eb;"><b>Time</b></td>
+          <td style="padding:8px 12px; border:1px solid #e5e7eb;">${time || '-'}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px; font-weight:bold; border:1px solid #e5e7eb;"><b>Location</b></td>
+          <td style="padding:8px 12px; border:1px solid #e5e7eb;">${location || '-'}</td>
+        </tr>
+        <tr style="background:#f9fafb;">
+          <td style="padding:8px 12px; font-weight:bold; border:1px solid #e5e7eb;"><b>Class</b></td>
+          <td style="padding:8px 12px; border:1px solid #e5e7eb;">${classLabel || '-'}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px; font-weight:bold; border:1px solid #e5e7eb;"><b>Teacher</b></td>
+          <td style="padding:8px 12px; border:1px solid #e5e7eb;">${teacherName || '-'}</td>
+        </tr>
+        <tr style="background:#f9fafb;">
+          <td style="padding:8px 12px; font-weight:bold; border:1px solid #e5e7eb;"><b>Description</b></td>
+          <td style="padding:8px 12px; border:1px solid #e5e7eb;">${description || '-'}</td>
+        </tr>
       </table>
       <hr style="margin:20px 0;border:none;border-top:1px solid #e5e7eb;" />
-      <p style="margin:0;color:#6b7280;">This is an automated reminder from the school system.</p>
+      <p style="margin:0;color:#6b7280;font-size:0.9em;">
+        This is an automated ${label} from the school system. 
+        ${daysBefore === 0 ? '⏰ The event is happening TODAY!' : ''}
+      </p>
     </div>
   `
   };
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log("Email sent");
+    console.log(`✅ ${label} email sent to: ${to.join(', ')}`);
   } catch (err) {
-    console.log(err);
+    console.error(`❌ Failed to send ${label} email:`, err);
   }
 };
 
@@ -272,30 +313,36 @@ const checkEventReminders = async () => {
     const emailtoSend = ["ashrafalimiya77@gmail.com","rehanmiya977@gmail.com","axeldhungana123@gmail.com","unitedecd@gmail.com"];
  
     const now = new Date();
-    const getKathmanduDateKey = (value) => {
-      if (!value) {
-        return '';
-      }
-
+    
+    // Get current Kathmandu time and hour
+    const getKathmanduDateTime = (value) => {
       const date = value instanceof Date ? value : new Date(value);
       if (Number.isNaN(date.getTime())) {
-        return '';
+        return { dateKey: '', hour: -1 };
       }
 
       const parts = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Asia/Kathmandu',
         year: 'numeric',
         month: '2-digit',
-        day: '2-digit'
+        day: '2-digit',
+        hour: '2-digit',
+        hour12: false
       }).formatToParts(date);
+      
       const year = parts.find((part) => part.type === 'year')?.value;
       const month = parts.find((part) => part.type === 'month')?.value;
       const day = parts.find((part) => part.type === 'day')?.value;
-      if (!year || !month || !day) {
-        return '';
+      const hour = parts.find((part) => part.type === 'hour')?.value;
+      
+      if (!year || !month || !day || hour === undefined) {
+        return { dateKey: '', hour: -1 };
       }
 
-      return `${year}-${month}-${day}`;
+      return {
+        dateKey: `${year}-${month}-${day}`,
+        hour: Number(hour)
+      };
     };
 
     const dateKeyToUtc = (key) => {
@@ -306,39 +353,31 @@ const checkEventReminders = async () => {
       return Date.UTC(year, month - 1, day);
     };
 
-    const todayKey = getKathmanduDateKey(now);
-    const todayUtc = dateKeyToUtc(todayKey);
+    const currentTime = getKathmanduDateTime(now);
+    const currentDateKey = currentTime.dateKey;
+    const currentHour = currentTime.hour;
+    const currentDateUtc = dateKeyToUtc(currentDateKey);
 
-    
+    console.log(`⏰ Checking reminders at ${currentDateKey} ${currentHour}:00 Kathmandu time`);
 
     const upcomingEvents = await Event.find();
-     // Events in the next 7 days
+    
     for (const event of upcomingEvents) {
-       const eventDate = new Date(event.date);
-       const eventKey = getKathmanduDateKey(eventDate);
-       const eventUtc = dateKeyToUtc(eventKey);
-       if (!eventKey || eventUtc === null || todayUtc === null) {
-         continue;
-       }
-      const diffDays = Math.round((eventUtc - todayUtc) / (1000 * 60 * 60 * 24));
-
-      if (diffDays === 7) {
-        const lastSentDate = String(event.reminder7SentDate || '').trim();
-        if (lastSentDate !== todayKey) {
-          await sendReminderEmail(emailtoSend, event.title, event.description, event.date, event.time, event.location, event.forClass, event.teacherName, 7);
-          event.reminder7Sent = true;
-          event.reminder7SentDate = todayKey;
-          await event.save();
-          console.log(`7-day reminder sent for event: ${event.title}`);
-        }
+      const eventDate = new Date(event.date);
+      const eventDateKey = getKathmanduDateTime(eventDate).dateKey;
+      const eventDateUtc = dateKeyToUtc(eventDateKey);
+      
+      if (!eventDateKey || eventDateUtc === null || currentDateUtc === null) {
+        continue;
       }
 
-      const isOneDayBefore = diffDays === 1;
-      const isSameDayMorning = diffDays === 0;
-      if (isOneDayBefore || isSameDayMorning) {
-        const lastSentDate = String(event.reminder1SentDate || '').trim();
-        if (lastSentDate !== todayKey) {
-          await sendReminderPush(event.title);
+      const diffDays = Math.round((eventDateUtc - currentDateUtc) / (1000 * 60 * 60 * 24));
+      
+      // 7-day reminder logic
+      if (diffDays === 7) {
+        // Send if not sent in this hour yet
+        if (event.reminder7SentHour !== currentHour) {
+          console.log(`📧 Sending 7-day reminder for "${event.title}" (Day: ${diffDays}, Hour: ${currentHour})`);
           await sendReminderEmail(
             emailtoSend,
             event.title,
@@ -348,20 +387,65 @@ const checkEventReminders = async () => {
             event.location,
             event.forClass,
             event.teacherName,
-            1
+            7
           );
-          event.reminder1Sent = true;
-          event.reminder1SentDate = todayKey;
+          event.reminder7SentHour = currentHour;
+          event.reminder7SentDate = currentDateKey; // Keep for backward compatibility
+          event.reminder7Sent = true;
           await event.save();
-          console.log(`1-day reminder sent for event: ${event.title}`);
+          console.log(`✅ 7-day reminder sent for: ${event.title}`);
+        } else {
+          console.log(`⏭️ 7-day reminder already sent for "${event.title}" in hour ${currentHour}`);
+        }
+      }
+
+      // 1-day and same-day reminder logic
+      const isOneDayBefore = diffDays === 1;
+      const isSameDay = diffDays === 0;
+      
+      if (isOneDayBefore || isSameDay) {
+        const reminderType = isOneDayBefore ? '1-day' : 'same-day';
+        const reminderHourField = isOneDayBefore ? 'reminder1SentHour' : 'reminder0SentHour';
+        
+        // Send if not sent in this hour yet
+        if (event[reminderHourField] !== currentHour) {
+          console.log(`📧 Sending ${reminderType} reminder for "${event.title}" (Day: ${diffDays}, Hour: ${currentHour})`);
+          
+          // Send push notification
+          await sendReminderPush(event.title);
+          
+          // Send email
+          await sendReminderEmail(
+            emailtoSend,
+            event.title,
+            event.description,
+            event.date,
+            event.time,
+            event.location,
+            event.forClass,
+            event.teacherName,
+            isOneDayBefore ? 1 : 0
+          );
+          
+          event[reminderHourField] = currentHour;
+          
+          if (isOneDayBefore) {
+            event.reminder1SentDate = currentDateKey;
+            event.reminder1Sent = true;
+          }
+          
+          await event.save();
+          console.log(`✅ ${reminderType} reminder sent for: ${event.title}`);
+        } else {
+          console.log(`⏭️ ${reminderType} reminder already sent for "${event.title}" in hour ${currentHour}`);
         }
       }
     }
 
-    
+    console.log(`✔️ Reminder check completed at ${currentDateKey} ${currentHour}:00`);
     
   } catch (err) {
-    console.error("Error checking event reminders:", err);
+    console.error("❌ Error checking event reminders:", err);
   }
 };
 // Schedule reminder checks at 7 AM, 9 AM, 11 AM, 1 PM, 3 PM, 5 PM, 7 PM, 9 PM, 11 PM

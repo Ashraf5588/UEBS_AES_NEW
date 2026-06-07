@@ -21,12 +21,17 @@
     }
 
     if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      await registration.showNotification(title, {
-        body,
-        icon: '/favicon.ico',
-        data: payload && payload.data ? payload.data : {}
-      });
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification(title, {
+          body,
+          icon: '/favicon.ico',
+          data: payload && payload.data ? payload.data : {}
+        });
+      } catch (err) {
+        console.error('Service Worker notification error:', err);
+        new Notification(title, { body, icon: '/favicon.ico' });
+      }
       return;
     }
 
@@ -42,11 +47,7 @@
     }
     started = true;
 
-    if (!window.firebase || !firebase.messaging) {
-      console.warn('Firebase messaging script is not loaded.');
-      return;
-    }
-
+    // Browser support check
     if (!('serviceWorker' in navigator) || !('Notification' in window) || !('PushManager' in window)) {
       console.warn('Push notifications are not supported in this browser.');
       return;
@@ -57,50 +58,101 @@
       return;
     }
 
-    firebase.initializeApp(firebaseConfig);
-
-    const messaging = firebase.messaging();
-
-    messaging.onMessage(async (payload) => {
-      console.log('Foreground message:', payload);
-      await showNotification(payload);
-    });
-
-    await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-    const registration = await navigator.serviceWorker.ready;
-    console.log('Service Worker ready:', registration);
-
-    const permission = await Notification.requestPermission();
-    console.log('Notification permission:', permission);
-
-    if (permission !== 'granted') {
+    // Firebase availability check
+    if (!window.firebase || !window.firebase.messaging) {
+      console.warn('Firebase messaging script is not loaded. Retrying in 1 second...');
+      setTimeout(initFcm, 1000);
       return;
     }
 
     try {
-      const token = await messaging.getToken({
-        vapidKey,
-        serviceWorkerRegistration: registration
+      // Check if Firebase is already initialized
+      if (!firebase.apps || firebase.apps.length === 0) {
+        firebase.initializeApp(firebaseConfig);
+      }
+
+      const messaging = firebase.messaging();
+
+      // Set up foreground message handler
+      messaging.onMessage(async (payload) => {
+        console.log('Foreground message:', payload);
+        await showNotification(payload);
       });
 
-      if (!token) {
-        console.warn('FCM token was not created');
+      // Register service worker with error handling
+      let registration;
+      try {
+        const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
+        registration = reg;
+        console.log('Service Worker registered successfully:', reg);
+      } catch (swError) {
+        console.error('Service Worker registration error:', swError);
+        // Try without scope
+        const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        registration = reg;
+      }
+
+      const registration_ready = await navigator.serviceWorker.ready;
+      console.log('Service Worker ready:', registration_ready);
+
+      // Request notification permission
+      const permission = await Notification.requestPermission();
+      console.log('Notification permission:', permission);
+
+      if (permission !== 'granted') {
+        console.warn('User denied notification permission');
         return;
       }
 
-      console.log('FCM Token:', token);
-
-      const response = await fetch('/save-fcm-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token })
-      });
-
-      if (!response.ok) {
-        console.warn(`Failed to save FCM token: ${response.status}`);
+      // Get FCM token with retry logic
+      let token = null;
+      let retries = 3;
+      
+      while (!token && retries > 0) {
+        try {
+          token = await messaging.getToken({
+            vapidKey: vapidKey,
+            serviceWorkerRegistration: registration
+          });
+          
+          if (token) {
+            console.log('✅ FCM Token obtained:', token);
+            break;
+          }
+        } catch (tokenError) {
+          retries--;
+          console.warn(`FCM token error (${retries} retries left):`, tokenError.message);
+          if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
       }
+
+      if (!token) {
+        console.error('❌ Failed to obtain FCM token after retries');
+        return;
+      }
+
+      // Save token to server
+      try {
+        const response = await fetch('/save-fcm-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: token })
+        });
+
+        if (response.ok) {
+          console.log('✅ FCM token saved successfully');
+        } else {
+          console.error('❌ Failed to save FCM token:', response.status, response.statusText);
+        }
+      } catch (fetchError) {
+        console.error('❌ Error saving FCM token to server:', fetchError);
+      }
+
     } catch (error) {
-      console.warn('FCM token registration failed:', error && error.message ? error.message : error);
+      console.error('❌ FCM initialization error:', error);
+      console.error('Error details:', error.message || error.code || error);
     }
   }
 

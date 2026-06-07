@@ -12,37 +12,56 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
+
+// Handle background messages
 messaging.setBackgroundMessageHandler(function(payload) {
-  console.log('[SW] Background message ', payload);
+  console.log('[SW] Background message:', payload);
 
   const notification = payload && payload.notification ? payload.notification : {};
   const title = notification.title || (payload && payload.data && payload.data.title) || 'Notification';
   const body = notification.body || (payload && payload.data && payload.data.body) || '';
 
-  return self.registration.showNotification(title, {
-    body,
+  const notificationOptions = {
+    body: body,
     icon: '/favicon.ico',
-    data: payload && payload.data ? payload.data : {}
-  });
+    badge: '/favicon.ico',
+    data: payload && payload.data ? payload.data : {},
+    tag: 'notification',
+    requireInteraction: false
+  };
+
+  return self.registration.showNotification(title, notificationOptions);
+});
+
+// Handle message in service worker (modern approach)
+self.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
+  const urlToOpen = '/createevent';
+
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
-      for (const client of clientList) {
-        if ('focus' in client) {
-          if ('navigate' in client) {
-            return client.navigate('/createevent').then(() => client.focus());
-          }
+      // Check if there's already a window/tab with the target URL open and focused
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url === urlToOpen && 'focus' in client) {
           return client.focus();
         }
       }
-
+      // If not, open a new window/tab with the target URL
       if (clients.openWindow) {
-        return clients.openWindow('/createevent');
+        return clients.openWindow(urlToOpen);
       }
     })
   );
+});
+
+self.addEventListener('notificationclose', function(event) {
+  console.log('[SW] Notification closed:', event.notification.tag);
 });
