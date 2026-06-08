@@ -925,7 +925,8 @@
             studentClass=="Three" ||
 
               studentClass=="three" || studentClass=="THREE"
-              studentClass=="3"
+              studentClass=="3" || studentClass=="Four" || studentClass=="FOUR" || studentClass=="four" || studentClass=="4" ||
+              studentClass=="Five" || studentClass=="FIVE" || studentClass=="five" || studentClass=="5"
             ) { %>+ Add Theme<% }else{ %>+ मुल्याङ्कनका आधार थप्नुहोस (Add evaluation Criteria)<% } %></button>
         </div>
 
@@ -1085,22 +1086,22 @@
 
       themeDiv.innerHTML = `
         <div class="theme-header">
-          <h3><% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+          <h3><% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three" || studentClass=="four" || studentClass=="FOUR" || studentClass=="4" || studentClass=="Four" || studentClass=="five" || studentClass=="FIVE" || studentClass=="5" || studentClass=="Five"
             ) { %>थीम ${themeIndex + 1}<% }else{ %> मुल्याङ्कन आधार ${themeIndex + 1} (Evaluation Criteria-${themeIndex + 1})<% } %></h3>
           <button type="button" class="btn btn-danger" onclick="removeTheme(this)">Remove Theme</button>
         </div>
         <div class="form-group">
-          <label for="themeName_${themeIndex}"><% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+          <label for="themeName_${themeIndex}"><% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three" || studentClass=="four" || studentClass=="FOUR" || studentClass=="4" || studentClass=="Four" || studentClass=="five" || studentClass=="FIVE" || studentClass=="5" || studentClass=="Five"
             ) { %>Theme Name<% }else{ %>मुल्याङ्कन आधारको नाम (Evaluation Criteria Name)<% } %></label>
           <textarea name="themes[${themeIndex}][themeName]" id="themeName_${themeIndex}" 
-                 placeholder="<% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+                 placeholder="<% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three" || studentClass=="four" || studentClass=="FOUR" || studentClass=="4" || studentClass=="Four" || studentClass=="five" || studentClass=="FIVE" || studentClass=="5" || studentClass=="Five"
             ) { %>Enter Theme Name<% }else{ %>Enter मुल्याङ्कन आधारको नाम (Enter Evaluation Criteria Name)<% } %>" 
                  required rows="1" 
                  oninput="autoResize(this); scheduleAutoSave();">${themeData ? themeData.themeName || '' : ''}</textarea>
         </div>
         <div class="outcomes-container" id="outcomes-${themeIndex}"></div>
         <div class="btn-group">
-          <button type="button" class="btn btn-primary" onclick="addOutcome(${themeIndex})">+ <% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+          <button type="button" class="btn btn-primary" onclick="addOutcome(${themeIndex})">+ <% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three" || studentClass=="four" || studentClass=="FOUR" || studentClass=="4" || studentClass=="Four" || studentClass=="five" || studentClass=="FIVE" || studentClass=="5" || studentClass=="Five"
             ) { %>+ Add Learning Outcome<% }else{ %>परिक्षण पक्षको नाम थप्नुहोस (Add Examination Criteria Name)<% } %></button>
         </div>
       `;
@@ -1136,16 +1137,18 @@
 
       outcomeDiv.innerHTML = `
         <div class="outcome-header">
-          <h4><% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+          <h4><% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three" || studentClass=="four" || studentClass=="FOUR" || studentClass=="4" || studentClass=="Four" || studentClass=="five" || studentClass=="FIVE" || studentClass=="5" || studentClass=="Five"
             ) { %>मुख्य सिकाइ उपलब्धि ${outcomeIndex + 1}<% }else{ %>परिक्षण पक्ष (Examination Criteria) ${outcomeIndex + 1}<% } %></h4>
           <button type="button" class="btn btn-warning" onclick="removeOutcome(this)">Remove</button>
         </div>
         <div class="form-group">
           <label for="outcomeName_${themeIdx}_${outcomeIndex}"><% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+            || studentClass=="four" || studentClass=="FOUR" || studentClass=="4" || studentClass=="Four"
+            || studentClass=="five" || studentClass=="FIVE" || studentClass=="5" || studentClass=="Five"
             ) { %>Learning Outcome Name<% }else{ %>परिक्षण पक्षको नाम (Examination Criteria Name)<% } %></label>
           <textarea name="themes[${themeIdx}][learningOutcome][${outcomeIndex}][learningOutcomeName]" 
                  id="outcomeName_${themeIdx}_${outcomeIndex}" 
-                 placeholder="Enter <% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three"
+                 placeholder="Enter <% if(studentClass<=3 || studentClass=="one" || studentClass=="ONE" || studentClass=="1" || studentClass=="One" || studentClass=="two" || studentClass=="TWO" || studentClass=="2" || studentClass=="Two" || studentClass=="three" || studentClass=="THREE" || studentClass=="3" || studentClass=="Three" || studentClass=="four" || studentClass=="FOUR" || studentClass=="4" || studentClass=="Four"             || studentClass=="five" || studentClass=="FIVE" || studentClass=="5" || studentClass=="Five"
             ) { %>Learning Outcome Name<% }else{ %>परिक्षण पक्षको नाम (Examination Criteria Name)<% } %>" 
                   rows="1"
                  oninput="autoResize(this); scheduleAutoSave();">${outcomeData ? outcomeData.learningOutcomeName || '' : ''}</textarea>

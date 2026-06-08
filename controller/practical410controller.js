@@ -194,7 +194,7 @@ exports.choosesubject = async (req,res)=>
 exports.evaluationForm = async (req, res) => {
   const {studentClass,section,subject,terminal} = req.query;
   console.log(studentClass,section);
-  if(studentClass==='1' || studentClass==='2' || studentClass==='3') {
+  if(studentClass==='1' || studentClass==='2' || studentClass==='3' || studentClass=='4' || studentClass==='5' || studentClass=="One" || studentClass=="Two" || studentClass=="Three" || studentClass=="Four" || studentClass=="Five" || studentClass=="ONE" || studentClass=="TWO" || studentClass=="THREE" || studentClass=="FOUR" || studentClass=="FIVE" || studentClass=="one" || studentClass=="two" || studentClass=="three" || studentClass=="four" || studentClass=="five") {
     return res.render("theme/theme", {...await getSidenavData(req),editing: false, studentClass, section,subject,terminal});
   } else {
      return res.render("theme/practicalform410pannel", {...await getSidenavData(req),editing: false, studentClass, section,subject,terminal});
