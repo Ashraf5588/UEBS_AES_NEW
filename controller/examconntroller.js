@@ -279,3 +279,160 @@ res.redirect("/uploadolddata?success=true");
     res.status(500).send("Internal Server Error");
   }
 };
+
+// Show parent analysis form
+exports.parentsDataForm = async (req, res, next) => {
+  try {
+    const studentClassdata = await studentClass.find({}).lean();
+    const user = req.user;
+    
+    let accessibleClass = [];
+    if(user.role === "ADMIN") {
+      accessibleClass = studentClassdata;
+    } else {
+      accessibleClass = studentClassdata.filter(studentclass =>
+        user.allowedSubjects.some(allowed =>
+          allowed.studentClass === studentclass.studentClass && allowed.section === studentclass.section
+        )
+      );
+    }
+    
+    res.render("./exam/parentsdatae", { 
+      currentPage: "parents-analysis",
+      studentClassdata: accessibleClass,
+      user,
+    });
+  } catch (error) {
+    console.error("Error loading parents data form:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+// Helper function to count set bits
+const countSetBits = (n) => {
+  let count = 0;
+  while (n) {
+    count += n & 1;
+    n >>= 1;
+  }
+  return count;
+};
+
+// Analyze parents with children in multiple groups
+exports.analyzeParentsData = async (req, res, next) => {
+  try {
+    const { groups } = req.body;
+    
+    // groups should be an array of arrays: [[class1, class2...], [class3, class4...], ...]
+    if (!groups || !Array.isArray(groups) || groups.length === 0) {
+      return res.status(400).json({ error: "Invalid groups data" });
+    }
+
+    // Get all students with their parent info
+    const allStudents = await studentRecord.find({}).lean();
+
+    // Create a map of parents -> their children by group
+    const parentGroupMap = new Map();
+
+    allStudents.forEach(student => {
+      // Use fatherName and address as unique parent identifier
+      const parentId = `${student.fatherName || student.motherName || 'Unknown'}-${student.address || 'Unknown'}`;
+      
+      if (!parentGroupMap.has(parentId)) {
+        parentGroupMap.set(parentId, {
+          parentName: student.fatherName || student.motherName || 'Unknown',
+          address: student.address || '',
+          groups: new Array(groups.length).fill(null).map(() => []),
+          allData: student
+        });
+      }
+
+      const parentData = parentGroupMap.get(parentId);
+      
+      // Check which group this student belongs to
+      for (let i = 0; i < groups.length; i++) {
+        if (groups[i].includes(student.studentClass)) {
+          parentData.groups[i].push({
+            name: student.name,
+            class: student.studentClass,
+            section: student.section,
+            roll: student.roll,
+            reg: student.reg
+          });
+        }
+      }
+    });
+
+    // Analyze combinations
+    const results = [];
+    const totalGroups = groups.length;
+
+    // Generate all possible combinations
+    for (let mask = 1; mask < (1 << totalGroups); mask++) {
+      if (countSetBits(mask) < 2) continue; // Skip single groups
+      
+      const activeGroups = [];
+      for (let i = 0; i < totalGroups; i++) {
+        if (mask & (1 << i)) {
+          activeGroups.push(i);
+        }
+      }
+
+      const combination = {
+        groupIndices: activeGroups,
+        groupLabels: activeGroups.map(i => `Group ${i + 1} (${groups[i].join(', ')})`).join(' & '),
+        parents: [],
+        count: 0
+      };
+
+      // Find parents with children in all groups of this combination
+      for (const [parentId, parentData] of parentGroupMap) {
+        const hasAllGroups = activeGroups.every(groupIdx => parentData.groups[groupIdx].length > 0);
+        
+        if (hasAllGroups) {
+          combination.parents.push({
+            parentName: parentData.parentName,
+            address: parentData.address,
+            children: activeGroups.flatMap(groupIdx => parentData.groups[groupIdx])
+          });
+          combination.count++;
+        }
+      }
+
+      if (combination.parents.length > 0) {
+        results.push(combination);
+      }
+    }
+
+    res.json({
+      success: true,
+      groups: groups,
+      totalCombinations: results.length,
+      results: results
+    });
+
+  } catch (error) {
+    console.error("Error analyzing parents data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.analysisOfParents = async (req, res, next) => { 
+  try {
+
+    const aggregatedData = await studentRecord.aggregate([
+      {
+        $match:{
+          
+        }
+      }
+    ])
+    res.json(aggregatedData);
+
+
+
+  }catch (error) {
+    console.error("Error in analysis of parents:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};

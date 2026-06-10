@@ -433,6 +433,12 @@ student.get('/delete-event/:id', verifytoken, authorized, eventcontroller.delete
 // push notification routes
 student.post("/save-fcm-token", verifytoken, authorized, eventcontroller.saveFcmToken);
 
+// analyis of parents
+student.get('/data', verifytoken, authorized, examcontroller.analysisOfParents);
+
+// Parent data analysis routes
+student.get('/parentsdata', verifytoken, authorized, isAdmin, examcontroller.parentsDataForm);
+student.post('/parentsdata/analyze', verifytoken, authorized, isAdmin, examcontroller.analyzeParentsData);
 
 student.get('/forms/:subjectinput/:studentClass/:section/:terminal',verifytoken,authorized,controller.showForm)
 student.post('/forms/:subjectinput/:studentClass?/:section?/:terminal?',verifytoken,authorized,controller.saveForm)
