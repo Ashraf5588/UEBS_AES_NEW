@@ -19,7 +19,14 @@ const teacherRecordSchema = new mongoose.Schema(
         earlyOut: { type: Boolean, default: false },
         earlyOutTime: { type: String, default: '' },
         earlyOutReason: { type: String, default: '' },
-        createdAt: { type: Date, default: Date.now }
+        createdAt: { type: Date, default: Date.now },
+        // Temporary out fields
+        temporaryOut: { type: Boolean, default: false },
+        outTime: { type: String, default: '' },
+        comebackTime: { type: String, default: '' },
+        outReason: { type: String, default: '' },
+        addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'userlist', default: null },
+        addedByName: { type: String, default: '' }
       }
     ]
   },

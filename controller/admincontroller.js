@@ -2393,11 +2393,15 @@ exports.showTeacherRecord = async (req, res) => {
 
     const rows = records.map((record) => {
       const issues = Array.isArray(record.issues) ? record.issues : [];
-      const issueCount = issues.length;
+      // Count only entries that have a non-empty `issue` text
+      const issueCount = issues.filter(it => it && String(it.issue || '').trim()).length;
       const halfLeaveCount = issues.filter((item) => item && item.halfLeave).length;
       const fullLeaveCount = issues.filter((item) => item && item.fullLeave).length;
       const lateInCount = issues.filter((item) => item && item.lateIn).length;
       const earlyOutCount = issues.filter((item) => item && item.earlyOut).length;
+      // Ensure issues are ordered oldest-first so first entry shows first
+      const orderedIssues = Array.isArray(issues) ? issues.slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)) : [];
+
       return {
         ...record,
         issueCount,
@@ -2405,7 +2409,7 @@ exports.showTeacherRecord = async (req, res) => {
         fullLeaveCount,
         lateInCount,
         earlyOutCount,
-        issues: issues.map((item) => ({
+        issues: orderedIssues.map((item) => ({
           dateBs: String(item && item.dateBs || ''),
           issue: String(item && item.issue || ''),
           halfLeave: Boolean(item && item.halfLeave),
@@ -2415,7 +2419,13 @@ exports.showTeacherRecord = async (req, res) => {
           lateInReason: String(item && item.lateInReason || ''),
           earlyOut: Boolean(item && item.earlyOut),
           earlyOutTime: String(item && item.earlyOutTime || ''),
-          earlyOutReason: String(item && item.earlyOutReason || '')
+          earlyOutReason: String(item && item.earlyOutReason || ''),
+          temporaryOut: Boolean(item && item.temporaryOut),
+          outTime: String(item && item.outTime || ''),
+          comebackTime: String(item && item.comebackTime || ''),
+          outReason: String(item && item.outReason || ''),
+          addedBy: item && item.addedBy ? String(item.addedBy) : '',
+          addedByName: String(item && item.addedByName || '')
         }))
       };
     });
@@ -2465,10 +2475,14 @@ exports.saveTeacherRecord = async (req, res) => {
     const fullLeave = String(req.body.fullLeave || '').toLowerCase() === 'true';
     const lateIn = String(req.body.lateIn || '').toLowerCase() === 'true';
     const earlyOut = String(req.body.earlyOut || '').toLowerCase() === 'true';
+    const temporaryOut = String(req.body.temporaryOut || '').toLowerCase() === 'true';
     const lateInTime = String(req.body.lateInTime || '').trim();
     const lateInReason = String(req.body.lateInReason || '').trim();
     const earlyOutTime = String(req.body.earlyOutTime || '').trim();
     const earlyOutReason = String(req.body.earlyOutReason || '').trim();
+    const outTime = String(req.body.outTime || '').trim();
+    const comebackTime = String(req.body.comebackTime || '').trim();
+    const outReason = String(req.body.outReason || '').trim();
 
     const formatTo12Hour = (value) => {
       const match = String(value || '').match(/^([01][0-9]|2[0-3]):([0-5][0-9])$/);
@@ -2480,8 +2494,8 @@ exports.saveTeacherRecord = async (req, res) => {
       return `${hours12}:${minutes}${period}`;
     };
 
-    if (!teacherName || (!issueText && !halfLeave && !fullLeave && !lateIn && !earlyOut)) {
-      return res.status(400).json({ success: false, message: 'Teacher name and either leave, time exception, or issue are required.' });
+    if (!teacherName || (!issueText && !halfLeave && !fullLeave && !lateIn && !earlyOut && !temporaryOut)) {
+      return res.status(400).json({ success: false, message: 'Teacher name and either leave, time exception, temporary out, or issue are required.' });
     }
 
     if (lateIn && (!lateInTime || !lateInReason)) {
@@ -2490,6 +2504,10 @@ exports.saveTeacherRecord = async (req, res) => {
 
     if (earlyOut && (!earlyOutTime || !earlyOutReason)) {
       return res.status(400).json({ success: false, message: 'Early out time and reason are required.' });
+    }
+
+    if (temporaryOut && !outReason && !outTime) {
+      return res.status(400).json({ success: false, message: 'Temporary out time or reason is required.' });
     }
 
     const issueEntry = {
@@ -2509,6 +2527,28 @@ exports.saveTeacherRecord = async (req, res) => {
       issueEntry.issue = issueText;
     }
 
+    // If temporary out fields provided, include
+    if (temporaryOut) {
+      issueEntry.temporaryOut = true;
+      issueEntry.outTime = outTime;
+      issueEntry.comebackTime = comebackTime;
+      issueEntry.outReason = outReason;
+    }
+
+    // Prevent duplicate entry for same teacher and date
+    const existing = await TeacherRecord.findOne({ teacherName, 'issues.dateBs': issueEntry.dateBs });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'Record for this date already exists.' });
+    }
+
+    // Attach information about the user creating this entry if available
+    try {
+      if (req.user && req.user._id) {
+        issueEntry.addedBy = req.user._id;
+        issueEntry.addedByName = String(req.user.teacherName || req.user.username || '');
+      }
+    } catch (e) {}
+
     await TeacherRecord.updateOne(
       { teacherName },
       {
@@ -2523,6 +2563,53 @@ exports.saveTeacherRecord = async (req, res) => {
     res.status(200).json({ success: true });
   } catch (error) {
     console.error('Error saving teacher record:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+// Update an existing issue (subdocument) by its id
+exports.updateTeacherIssue = async (req, res) => {
+  try {
+    const issueId = req.params.issueId;
+    if (!issueId) return res.status(400).json({ success: false, message: 'Issue id required' });
+
+    const update = {};
+    const body = req.body || {};
+
+    // populate fields if present in body
+    const allowed = ['issue', 'dateBs', 'halfLeave', 'fullLeave', 'lateIn', 'lateInTime', 'lateInReason', 'earlyOut', 'earlyOutTime', 'earlyOutReason', 'temporaryOut', 'outTime', 'comebackTime', 'outReason'];
+    allowed.forEach((k) => {
+      if (typeof body[k] !== 'undefined') {
+        update[`issues.$.${k}`] = body[k];
+      }
+    });
+
+    const result = await TeacherRecord.updateOne({ 'issues._id': issueId }, { $set: update });
+    // Fetch the updated issue to return
+    const updated = await TeacherRecord.findOne({ 'issues._id': issueId }, { 'issues.$': 1 }).lean();
+    if (!updated || !updated.issues || !updated.issues.length) {
+      return res.status(404).json({ success: false, message: 'Issue not found' });
+    }
+
+    res.json({ success: true, issue: updated.issues[0] });
+  } catch (error) {
+    console.error('Error updating issue:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+// Return teacher record data as JSON for editing
+exports.getTeacherRecordData = async (req, res) => {
+  try {
+    const teacherName = String(req.query.teacherName || '').trim();
+    if (!teacherName) return res.status(400).json({ success: false, message: 'teacherName required' });
+
+    const record = await TeacherRecord.findOne({ teacherName }).lean();
+    if (!record) return res.status(404).json({ success: false, message: 'Record not found' });
+
+    res.json({ success: true, data: record });
+  } catch (error) {
+    console.error('Error fetching teacher record data:', error);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };

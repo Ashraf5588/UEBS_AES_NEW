@@ -197,6 +197,10 @@ student.get('/user/delete-teacher/:teacherId', verifytoken, authorized, isAdmin,
 student.get('/teacher-record', verifytoken, authorized, isAdmin, admincontrol.showTeacherRecord);
 student.get('/teacher-record/teachers', verifytoken, authorized, isAdmin, admincontrol.searchTeacherRecordTeachers);
 student.post('/teacher-record', verifytoken, authorized, isAdmin, admincontrol.saveTeacherRecord);
+// Update existing issue
+student.post('/teacher-record/issue/:issueId', verifytoken, authorized, isAdmin, admincontrol.updateTeacherIssue);
+// Get teacher record data for editing
+student.get('/teacher-record/data', verifytoken, authorized, isAdmin, admincontrol.getTeacherRecordData);
 
 student.get('/practical',verifytoken,authorized, admincontrol.practicalMarks);
 student.post('/practicalMarks/autoSave',verifytoken,authorized, admincontrol.autoSavePracticalMarks);
