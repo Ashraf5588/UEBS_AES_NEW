@@ -340,8 +340,9 @@ exports.saveOnlineAttendance = async (req, res) => {
                  academicYear: academicYear,
                  month: month,
                  day: String(day),
-                 status: status === 'absent' ? 'absent' : 'present',
-                 reason: nextReason
+                  status: status === 'absent' ? 'absent' : 'present',
+                  reason: nextReason,
+                  savedAt: new Date().toISOString()
                }
              }
            }
@@ -635,7 +636,8 @@ exports.saveFrontdeskCallLog = async (req, res) => {
               callReason: trimmedCallReason,
               parentResponse: trimmedParentResponse,
               callLoggedAt: new Date().toISOString(),
-              ...(callBy ? { callBy } : {})
+              ...(callBy ? { callBy } : {}),
+              savedAt: new Date().toISOString()
             }
           }
         },
@@ -886,6 +888,13 @@ exports.frontdeskPage = async (req, res) => {
 
     if (ensurePresentOps.length > 0) {
       try {
+        // attach savedAt timestamp to each pushed attendance entry
+        const nowIso = new Date().toISOString();
+        ensurePresentOps.forEach((op) => {
+          if (op && op.updateOne && op.updateOne.update && op.updateOne.update.$push && op.updateOne.update.$push.attendance) {
+            op.updateOne.update.$push.attendance.savedAt = nowIso;
+          }
+        });
         await onlineAttendance.bulkWrite(ensurePresentOps, { ordered: false });
       } catch (error) {
         console.error('Error saving auto-present attendance:', error);
@@ -1142,31 +1151,90 @@ exports.absentRecordPage = async (req, res) => {
       });
     });
 
-    const groups = Array.from(groupMap.values())
-      .map((group) => {
-        const students = group.students
-          .filter((student) => student.name || student.roll !== undefined)
-          .sort((a, b) => String(a.roll || '').localeCompare(String(b.roll || ''), 'en', { numeric: true }))
-          .map((student, index) => ({
-            sn: index + 1,
-            ...student
-          }));
+    // Build student counts per class-section to compute present = total - absent
+    const countsAgg = await studentRecord.aggregate([
+      { $group: { _id: { studentClass: '$studentClass', section: '$section' }, count: { $sum: 1 } } }
+    ]);
+    const countsMap = new Map();
+    (Array.isArray(countsAgg) ? countsAgg : []).forEach((it) => {
+      const cls = String((it._id && it._id.studentClass) || '').trim();
+      const sec = String((it._id && it._id.section) || '').trim();
+      countsMap.set(`${cls}||${sec}`, Number(it.count) || 0);
+    });
 
-        return {
-          ...group,
-          students,
-          absentCount: students.length
-        };
-      })
-      .sort((a, b) => {
-        const classOrderA = getClassSortKey(a.studentClass);
-        const classOrderB = getClassSortKey(b.studentClass);
-        if (classOrderA !== classOrderB) {
-          return classOrderA - classOrderB;
+    // Determine earliest savedAt per class-section for the selected day
+    const enteredTimeMap = new Map();
+    attendanceDocs.forEach((doc) => {
+      const attendanceEntries = Array.isArray(doc && doc.attendance) ? doc.attendance : [];
+      const studentClassValue = String(doc && doc.studentClass || '').trim();
+      const sectionValue = String(doc && doc.section || '').trim();
+      const groupKey = `${studentClassValue}||${sectionValue}`;
+
+      attendanceEntries.forEach((entry) => {
+        const entryYear = String(entry && entry.academicYear || '').trim();
+        const entryMonth = normalizeText(entry && entry.month);
+        const entryDay = Number.parseInt(entry && entry.day, 10);
+
+        if (!entryYear || entryYear !== targetAcademicYear) return;
+        if (!Number.isFinite(entryDay) || entryDay !== selectedDay) return;
+        if (monthVariants.length > 0 && !monthVariants.includes(entryMonth)) return;
+
+        const savedAtRaw = entry && entry.savedAt;
+        let ts = null;
+        if (savedAtRaw) {
+          try { ts = new Date(savedAtRaw); } catch (e) { ts = null; }
         }
+        if (!ts && doc && doc._id && typeof doc._id.getTimestamp === 'function') {
+          try { ts = doc._id.getTimestamp(); } catch (e) { ts = null; }
+        }
+        if (!ts) return;
 
-        return String(a.section).localeCompare(String(b.section));
+        const prev = enteredTimeMap.get(groupKey);
+        if (!prev || ts < prev) {
+          enteredTimeMap.set(groupKey, ts);
+        }
       });
+    });
+
+    // Build full set of class-section keys from student counts and existing groupMap
+    const allKeys = new Set([
+      ...Array.from(countsMap.keys()),
+      ...Array.from(groupMap.keys()),
+      ...Array.from(enteredTimeMap.keys())
+    ]);
+
+    const builtGroups = Array.from(allKeys).map((key) => {
+      const [studentClassValue, sectionValue] = key.split('||');
+      const grp = groupMap.get(key) || { studentClass: studentClassValue, section: sectionValue, students: [] };
+      const students = (Array.isArray(grp.students) ? grp.students : []).filter((s) => s.name || s.roll !== undefined)
+        .sort((a, b) => String(a.roll || '').localeCompare(String(b.roll || ''), 'en', { numeric: true }))
+        .map((student, idx) => ({ sn: idx + 1, ...student }));
+
+      const absentCount = students.length || 0;
+      const totalStudents = countsMap.get(key) || 0;
+      const attendanceDone = enteredTimeMap.has(key) || absentCount > 0;
+      const present = attendanceDone && Number.isFinite(totalStudents) ? (totalStudents - absentCount) : null;
+      const timeTs = enteredTimeMap.get(key);
+      const timeStr = timeTs ? new Date(timeTs).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : (attendanceDone ? 'Recorded' : null);
+
+      return {
+        studentClass: studentClassValue || '',
+        section: sectionValue || '',
+        students,
+        absentCount,
+        totalStudents,
+        present: present === null ? (attendanceDone && totalStudents === 0 ? 0 : present) : present,
+        enteredTime: timeStr,
+        attendanceDone
+      };
+    });
+
+    const groups = builtGroups.sort((a, b) => {
+      const classOrderA = getClassSortKey(a.studentClass);
+      const classOrderB = getClassSortKey(b.studentClass);
+      if (classOrderA !== classOrderB) return classOrderA - classOrderB;
+      return String(a.section).localeCompare(String(b.section));
+    });
 
     const academicYearOptionsRaw = await onlineAttendance.distinct('academicYear');
     const academicYearOptions = (Array.isArray(academicYearOptionsRaw) ? academicYearOptionsRaw : [])

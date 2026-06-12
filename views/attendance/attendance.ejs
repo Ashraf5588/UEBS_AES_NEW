@@ -763,6 +763,7 @@ input[type="submit"]{
   <button class="load-btn" onclick="loadform()">Load Form</button>
   <button class="edit-toggle-btn" id="toggleRollEdit" type="button">Edit Roll Numbers</button>
   <button class="house-toggle-btn" id="toggleHouseColumn" type="button">Add House</button>
+  <button class="load-btn" id="markAllPresentBtn" type="button">Mark All Present</button>
   <label class="default-option" for="setDefaultAttendance">
     <input type="checkbox" id="setDefaultAttendance">
     Set current class as default attendance view
@@ -1512,6 +1513,21 @@ const month = urlParams.get('month');
     const day = checkbox.dataset.day;
     applyInformUiState(getInformElements(reg, day), checkbox.checked);
   });
+  const markAllPresentBtn = document.getElementById('markAllPresentBtn');
+  if (markAllPresentBtn) {
+    markAllPresentBtn.addEventListener('click', async () => {
+      if (!confirm('Mark all students present? This will save present status for all.')) return;
+      const checkboxes = Array.from(document.querySelectorAll('.attendance-check'));
+      checkboxes.forEach((cb) => {
+        cb.checked = false; // unchecked means present in this UI
+        setSavedHighlight(cb, false);
+        autoSaveCheckbox(cb);
+        const reg = cb.dataset.reg;
+        const day = cb.dataset.day;
+        applyInformUiState(getInformElements(reg, day), false);
+      });
+    });
+  }
  </script>
 </body>
 </html>
