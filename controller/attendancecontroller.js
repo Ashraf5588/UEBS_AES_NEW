@@ -824,7 +824,9 @@ exports.frontdeskPage = async (req, res) => {
       return null;
     };
 
-    const ensurePresentOps = [];
+    // Do not auto-insert "present" entries when generating reports.
+    // Previously we pushed a present entry for every student with no selected-day entry
+    // which caused reports to show present counts and timestamps even when no one saved attendance.
 
     attendanceDocs.forEach((doc) => {
       const attendanceEntries = Array.isArray(doc && doc.attendance) ? doc.attendance : [];
@@ -867,39 +869,11 @@ exports.frontdeskPage = async (req, res) => {
         attendanceIndexByReg.set(regKey, monthMap);
       }
 
-      if (!hasSelectedEntry && Number.isFinite(selectedDay) && selectedMonthName) {
-        ensurePresentOps.push({
-          updateOne: {
-            filter: { _id: doc._id },
-            update: {
-              $push: {
-                attendance: {
-                  academicYear: String(targetAcademicYear),
-                  month: String(selectedMonthName),
-                  day: String(selectedDay),
-                  status: 'present'
-                }
-              }
-            }
-          }
-        });
-      }
+      // Intentionally do nothing here if there is no selected-day entry.
+      // Attendance should only be created when a user explicitly saves it (e.g. using the UI).
     });
 
-    if (ensurePresentOps.length > 0) {
-      try {
-        // attach savedAt timestamp to each pushed attendance entry
-        const nowIso = new Date().toISOString();
-        ensurePresentOps.forEach((op) => {
-          if (op && op.updateOne && op.updateOne.update && op.updateOne.update.$push && op.updateOne.update.$push.attendance) {
-            op.updateOne.update.$push.attendance.savedAt = nowIso;
-          }
-        });
-        await onlineAttendance.bulkWrite(ensurePresentOps, { ordered: false });
-      } catch (error) {
-        console.error('Error saving auto-present attendance:', error);
-      }
-    }
+    // No automatic bulk write performed. Keep data immutable unless user action occurs.
 
     const uniqueByReg = new Map();
     absentCandidates.forEach((student) => {
@@ -1184,9 +1158,8 @@ exports.absentRecordPage = async (req, res) => {
         if (savedAtRaw) {
           try { ts = new Date(savedAtRaw); } catch (e) { ts = null; }
         }
-        if (!ts && doc && doc._id && typeof doc._id.getTimestamp === 'function') {
-          try { ts = doc._id.getTimestamp(); } catch (e) { ts = null; }
-        }
+        // Only consider explicit savedAt timestamps. Do not fall back to document _id timestamps
+        // because those reflect document creation times and create misleading "entered time" values.
         if (!ts) return;
 
         const prev = enteredTimeMap.get(groupKey);
